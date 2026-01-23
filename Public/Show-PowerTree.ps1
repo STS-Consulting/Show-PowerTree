@@ -1,4 +1,99 @@
 ﻿function Show-PowerTree {
+    <#
+    .SYNOPSIS
+        Displays a directory tree with advanced filtering and sorting options.
+
+    .DESCRIPTION
+        The Show-PowerTree cmdlet (alias ptree) generates a visual representation of a directory structure.
+        It supports filtering by file size, extensions, and dates, as well as sorting by various criteria.
+        It can also export the output to a file and display execution statistics.
+
+    .PARAMETER LiteralPath
+        The path to the directory to visualize. Defaults to the current directory.
+
+    .PARAMETER Depth
+        The maximum depth of the tree to display. Defaults to -1 (no limit) or the value in config.
+
+    .PARAMETER Examples
+        Displays usage examples.
+
+    .PARAMETER PruneEmptyFolders
+        If set, empty folders (or folders that become empty after filtering) are not displayed.
+
+    .PARAMETER DisplayAll
+        Enables display of all file attributes: CreationDate, LastAccessDate, ModificationDate, Size, and Mode.
+
+    .PARAMETER DisplayMode
+        Displays the file/directory mode (attributes).
+
+    .PARAMETER DisplaySize
+        Displays the size of files and directories.
+
+    .PARAMETER DisplayModificationDate
+        Displays the last modification date.
+
+    .PARAMETER DisplayCreationDate
+        Displays the creation date.
+
+    .PARAMETER DisplayLastAccessDate
+        Displays the last access date.
+
+    .PARAMETER DirectoryOnly
+        Displays only directories, excluding files.
+
+    .PARAMETER ExcludeDirectories
+        An array of directory names or patterns to exclude.
+
+    .PARAMETER Sort
+        Specifies the sorting criteria: 'size', 'name', 'md', 'cd', 'la'.
+
+    .PARAMETER SortByModificationDate
+        Sorts items by modification date.
+
+    .PARAMETER SortByCreationDate
+        Sorts items by creation date.
+
+    .PARAMETER SortByLastAccessDate
+        Sorts items by last access date.
+
+    .PARAMETER SortBySize
+        Sorts items by size.
+
+    .PARAMETER SortByName
+        Sorts items by name.
+
+    .PARAMETER Descending
+        Sorts items in descending order.
+
+    .PARAMETER FileSizeMinimum
+        Excludes files smaller than the specified size (e.g., '1kb', '10mb').
+
+    .PARAMETER FileSizeMaximum
+        Excludes files larger than the specified size.
+
+    .PARAMETER FileSizeFilter
+        Alias for FileSizeFilter (seems duplicate purpose, maybe legacy).
+
+    .PARAMETER ExcludeExtensions
+        Excludes files with specified extensions.
+
+    .PARAMETER IncludeExtensions
+        Includes only files with specified extensions.
+
+    .PARAMETER ShowHiddenFiles
+        Forces display of hidden files and directories.
+
+    .PARAMETER OutFile
+        Writes the output to the specified file.
+
+    .EXAMPLE
+        Show-PowerTree -Path "C:\Projects" -Depth 2
+        Displays the tree structure of C:\Projects up to 2 levels deep.
+
+    .EXAMPLE
+        Show-PowerTree -DisplaySize -SortBySize -Descending
+        Displays the current directory tree showing sizes, sorted by size descending.
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Position = 0)]
@@ -199,7 +294,7 @@
         } catch {
             Write-Error "Details: $($_.Exception.Message)"
             Write-Error "Location: $($_.InvocationInfo.ScriptLineNumber), $($_.InvocationInfo.PositionMessage)"
-            Write-Verbose "Exception details: $($_ | Format-List * -Force | Out-String)"
+            Write-Verbose "Exception details: $($PSItem | Format-List * -Force | Out-String)"
         }
     }
 
@@ -215,9 +310,9 @@
             $fullOutputPath = $treeConfig.OutFile
         }
 
-        Write-Host ''
-        Write-Host "Output saved to: $($fullOutputPath)" -ForegroundColor Cyan
+        Write-Information -MessageData ' ' -InformationAction Continue
+        Write-Information -MessageData "$($PSStyle.Foreground.Cyan)Output saved to: $($fullOutputPath)$($PSStyle.Reset)" -InformationAction Continue
     }
 
-    Write-Host ''
+    Write-Information -MessageData ' ' -InformationAction Continue
 }

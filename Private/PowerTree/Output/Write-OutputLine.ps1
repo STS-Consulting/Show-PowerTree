@@ -5,7 +5,7 @@ function Write-OutputLine {
     )
     if ($null -ne $OutputBuilder) {
         [void]$OutputBuilder.AppendLine($Line)
-    }else {
-        Write-Host $Line
+    } else {
+        Write-Information -MessageData $Line -InformationAction Continue
     }
 }
