@@ -1,114 +1,114 @@
 ﻿function Show-PowerTree {
     [CmdletBinding()]
     param(
-        [Parameter(Position=0)]
-        [string]$LiteralPath = ".",
+        [Parameter(Position = 0)]
+        [string]$LiteralPath = '.',
 
         [Parameter()]
-        [Alias("l", "level")]
+        [Alias('l', 'level')]
         [int]$Depth = -1,
 
         [Parameter()]
-        [Alias("ex", "example")]
+        [Alias('ex', 'example')]
         [switch]$Examples,
-    
+
         [Parameter()]
-        [Alias("prune", "p")]
+        [Alias('prune', 'p')]
         [switch]$PruneEmptyFolders,
 
         [Parameter()]
-        [Alias("da")]
+        [Alias('da')]
         [switch]$DisplayAll,
 
         [Parameter()]
-        [Alias("dm", "m")]
+        [Alias('dm', 'm')]
         [switch]$DisplayMode,
-                
+
         [Parameter()]
-        [Alias("s", "size")]
+        [Alias('s', 'size')]
         [switch]$DisplaySize,
 
         [Parameter()]
-        [Alias("dmd")]
+        [Alias('dmd')]
         [switch]$DisplayModificationDate,
 
         [Parameter()]
-        [Alias("dcd")]
+        [Alias('dcd')]
         [switch]$DisplayCreationDate,
 
         [Parameter()]
-        [Alias("dla")]
+        [Alias('dla')]
         [switch]$DisplayLastAccessDate,
 
         [Parameter()]
-        [Alias("d", "dir")]
+        [Alias('d', 'dir')]
         [switch]$DirectoryOnly,
-    
+
         [Parameter()]
-        [Alias("e", "exclude")]
+        [Alias('e', 'exclude')]
         [string[]]$ExcludeDirectories = @(),
-    
+
         [Parameter()]
-        [ValidateSet("size", "name", "md", "cd", "la")]
+        [ValidateSet('size', 'name', 'md', 'cd', 'la')]
         [string]$Sort,
 
         [Parameter()]
-        [Alias("smd")]
+        [Alias('smd')]
         [switch]$SortByModificationDate,
 
         [Parameter()]
-        [Alias("scd")]
+        [Alias('scd')]
         [switch]$SortByCreationDate,
 
         [Parameter()]
-        [Alias("sla", "sld")]
+        [Alias('sla', 'sld')]
         [switch]$SortByLastAccessDate,
-    
+
         [Parameter()]
-        [Alias("ss")]
+        [Alias('ss')]
         [switch]$SortBySize,
-    
+
         [Parameter()]
-        [Alias("sn")]
+        [Alias('sn')]
         [switch]$SortByName,
 
         [Parameter()]
-        [Alias("des", "desc")]
+        [Alias('des', 'desc')]
         [switch]$Descending,
 
         [Parameter()]
         [ValidateScript({
-            # Validate format of lower bound size filter
-            $_ -match '^\d+(?:\.\d+)?(b|kb|mb|gb|tb)?$'
-        })]
+                # Validate format of lower bound size filter
+                $_ -match '^\d+(?:\.\d+)?(b|kb|mb|gb|tb)?$'
+            })]
         [Alias('fsmi')]
-        [string]$FileSizeMinimum = "-1kb",
-   
+        [string]$FileSizeMinimum = '-1kb',
+
         [Parameter()]
         [ValidateScript({
-            # Validate format of upper bound size filter
-            $_ -match '^\d+(?:\.\d+)?(b|kb|mb|gb|tb)?$'
-        })]
+                # Validate format of upper bound size filter
+                $_ -match '^\d+(?:\.\d+)?(b|kb|mb|gb|tb)?$'
+            })]
         [Alias('fsma')]
-        [string]$FileSizeMaximum = "-1kb",
-    
+        [string]$FileSizeMaximum = '-1kb',
+
         [Alias('fs', 'filesize')]
         [string]$FileSizeFilter,
-    
+
         [Parameter()]
-        [Alias("ef")]
+        [Alias('ef')]
         [string[]]$ExcludeExtensions = @(),
-    
+
         [Parameter()]
-        [Alias("if")]
+        [Alias('if')]
         [string[]]$IncludeExtensions = @(),
 
         [Parameter()]
-        [Alias("force")]
+        [Alias('force')]
         [switch]$ShowHiddenFiles,
 
         [Parameter()]
-        [Alias("o", "of")]
+        [Alias('o', 'of')]
         [string]$OutFile
     )
 
@@ -117,57 +117,57 @@
         return
     }
 
-    if($DisplayAll){
+    if ($DisplayAll) {
         $DisplayCreationDate = $true
         $DisplayLastAccessDate = $true
         $DisplayModificationDate = $true
         $DisplaySize = $true
-        $DisplayMode= $true
+        $DisplayMode = $true
     }
 
     $treeStats = New-Object TreeStats
-    
+
     # Ensure config file exists before loading settings
     Initialize-ConfigFile
-    
-    $jsonSettings = Get-SettingsFromJson -Mode "FileSystem"
+
+    $jsonSettings = Get-SettingsFromJson -Mode 'FileSystem'
 
     $treeConfig = New-Object TreeConfig
     $treeConfig.Path = $LiteralPath
     $treeConfig.LineStyle = Build-TreeLineStyle -Style $jsonSettings.LineStyle
     $treeConfig.DirectoryOnly = $DirectoryOnly
     $treeConfig.ExcludeDirectories = Build-ExcludedDirectoryParams -CommandLineExcludedDir $ExcludeDirectories `
-                                                                   -Settings $jsonSettings
+        -Settings $jsonSettings
     $treeConfig.SortBy = Get-SortingMethod -SortBySize $SortBySize `
-                                           -SortByName $SortByName `
-                                           -SortByCreationDate $SortByCreationDate `
-                                           -SortByLastAccessDate $SortByLastAccessDate `
-                                           -SortByModificationDate $SortByModificationDate `
-                                           -DefaultSort $jsonSettings.Sorting.By `
-                                           -Sort $Sort
+        -SortByName $SortByName `
+        -SortByCreationDate $SortByCreationDate `
+        -SortByLastAccessDate $SortByLastAccessDate `
+        -SortByModificationDate $SortByModificationDate `
+        -DefaultSort $jsonSettings.Sorting.By `
+        -Sort $Sort
     $treeConfig.SortDescending = $Descending
     $treeConfig.SortFolders = $jsonSettings.Sorting.SortFolders
     $treeConfig.HeaderTable = Get-HeaderTable -DisplayCreationDate $DisplayCreationDate `
-                                              -DisplayLastAccessDate $DisplayLastAccessDate `
-                                              -DisplayModificationDate $DisplayModificationDate `
-                                              -DisplaySize $DisplaySize `
-                                              -DisplayMode $DisplayMode `
-                                              -LineStyle $treeConfig.LineStyle
+        -DisplayLastAccessDate $DisplayLastAccessDate `
+        -DisplayModificationDate $DisplayModificationDate `
+        -DisplaySize $DisplaySize `
+        -DisplayMode $DisplayMode `
+        -LineStyle $treeConfig.LineStyle
 
     $treeConfig.ShowConnectorLines = $jsonSettings.ShowConnectorLines
     $treeConfig.ShowHiddenFiles = $ShowHiddenFiles
     $treeConfig.MaxDepth = if ($Depth -ne -1) { $Depth } else { $jsonSettings.MaxDepth }
     $treeConfig.FileSizeBounds = Build-FileSizeParams -CommandLineMaxSize $FileSizeMaximum `
-                                                      -CommandlineMinSize $FileSizeMinimum `
-                                                      -SettingsLineMaxSize $jsonSettings.Files.FileSizeMaximum `
-                                                      -SettingsLineMinSize $jsonSettings.Files.FileSizeMinimum
+        -CommandlineMinSize $FileSizeMinimum `
+        -SettingsLineMaxSize $jsonSettings.Files.FileSizeMaximum `
+        -SettingsLineMinSize $jsonSettings.Files.FileSizeMinimum
     $treeConfig.OutFile = Add-DefaultExtension -FilePath $OutFile `
-                                                -IsRegistry $false
-                                                
+        -IsRegistry $false
+
     $treeConfig.PruneEmptyFolders = $PruneEmptyFolders
     $treeConfig.HumanReadableSizes = $jsonSettings.HumanReadableSizes
-    
-    $outputBuilder = Invoke-OutputBuilder -TreeConfig $treeConfig -ShowExecutionStats $jsonSettings.ShowExecutionStats
+
+    $outputBuilder = Invoke-OutputBuilder -TreeConfig $treeConfig -ShowExecutionStats $jsonSettings.ShowExecutionStats -ShowConfigurations $jsonSettings.ShowConfigurations
 
     # Main entry point
     $executionResultTime = Measure-Command {
@@ -175,25 +175,27 @@
             if (-not (Test-Path $LiteralPath)) {
                 throw "Cannot find path '$LiteralPath'"
             }
-            
+
             $ChildItemDirectoryParams = Build-ChildItemDirectoryParams $ShowHiddenFiles
             $ChildItemFileParams = Build-ChildItemFileParams -ShowHiddenFiles $ShowHiddenFiles `
-                                                            -CommandLineIncludeExt $IncludeExtensions `
-                                                            -CommandLineExcludeExt $ExcludeExtensions `
-                                                            -FileSettings $jsonSettings.Files
+                -CommandLineIncludeExt $IncludeExtensions `
+                -CommandLineExcludeExt $ExcludeExtensions `
+                -FileSettings $jsonSettings.Files
 
-            Write-ConfigurationToHost -Config $treeConfig 
+            if ($jsonSettings.ShowConfigurations) {
+                Write-ConfigurationToHost -Config $treeConfig
+            }
 
             Write-HeaderToOutput -HeaderTable $treeConfig.HeaderTable `
-                              -OutputBuilder $outputBuilder `
-                              -LineStyle $treeConfig.LineStyle
+                -OutputBuilder $outputBuilder `
+                -LineStyle $treeConfig.LineStyle
 
             Get-TreeView -TreeConfig $treeConfig `
-                         -TreeStats $treeStats `
-                         -ChildItemDirectoryParams $ChildItemDirectoryParams `
-                         -ChildItemFileParams $ChildItemFileParams `
-                         -OutputBuilder $outputBuilder
-        
+                -TreeStats $treeStats `
+                -ChildItemDirectoryParams $ChildItemDirectoryParams `
+                -ChildItemFileParams $ChildItemFileParams `
+                -OutputBuilder $outputBuilder
+
         } catch {
             Write-Error "Details: $($_.Exception.Message)"
             Write-Error "Location: $($_.InvocationInfo.ScriptLineNumber), $($_.InvocationInfo.PositionMessage)"
@@ -201,11 +203,11 @@
         }
     }
 
-    if($jsonSettings.ShowExecutionStats) {
+    if ($jsonSettings.ShowExecutionStats) {
         Show-TreeStats -TreeStats $treeStats -ExecutionTime $executionResultTime -OutputBuilder $outputBuilder -LineStyle $treeConfig.LineStyle -DisplaySize $DisplaySize
     }
 
-    if($null -ne $outputBuilder) {
+    if ($null -ne $outputBuilder) {
         $outputBuilder.ToString() | Write-ToFile -FilePath $treeConfig.OutFile -OpenOutputFileOnFinish $jsonSettings.OpenOutputFileOnFinish
 
         $fullOutputPath = Resolve-Path $treeConfig.OutFile -ErrorAction SilentlyContinue
@@ -213,9 +215,9 @@
             $fullOutputPath = $treeConfig.OutFile
         }
 
-        Write-Host ""
+        Write-Host ''
         Write-Host "Output saved to: $($fullOutputPath)" -ForegroundColor Cyan
     }
 
-    Write-Host ""
+    Write-Host ''
 }
