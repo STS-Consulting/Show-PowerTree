@@ -20,7 +20,7 @@ function Show-RegistryStats {
         'Keys',
         'Values',
         'Total Items',
-        'Max Depth',
+        'Maximum Depth',
         'Execution Time'
     )
 
@@ -30,7 +30,7 @@ function Show-RegistryStats {
         $RegistryStats.KeysProcessed,
         $RegistryStats.ValuesProcessed,
         $totalItems,
-        $RegistryStats.MaxDepthReached,
+        $RegistryStats.MaximumDepthReached,
         $formattedTime
     )
 
@@ -47,9 +47,9 @@ function Show-RegistryStats {
     }
 
     $valuesLine = ''
-    for ($i = 0; $i -lt $headers.Count; $i++) {
-        $value = $values[$i].ToString()
-        $valuesLine += $value.PadRight($headers[$i].Length) + $spacing
+    for ($iteration = 0; $iteration -lt $headers.Count; $iteration++) {
+        $value = $values[$iteration].ToString()
+        $valuesLine += $value.PadRight($headers[$iteration].Length) + $spacing
     }
 
     if ($OutputBuilder -ne $null) {

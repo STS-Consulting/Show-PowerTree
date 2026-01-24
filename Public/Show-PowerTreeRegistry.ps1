@@ -87,35 +87,35 @@ function Show-PowerTreeRegistry {
         throw 'This script can only be run on Windows.'
     }
 
-    # Ensure config file exists before loading settings
-    Initialize-ConfigFile
+    # Ensure configuration file exists before loading settings
+    Initialize-ConfigurationFile
 
     $jsonSettings = Get-SettingsFromJson -Mode 'Registry'
 
-    $treeRegistryConfig = New-Object treeRegistryConfig
-    $treeRegistryConfig.Path = Get-Path -Path $Path
-    $treeRegistryConfig.NoValues = $NoValues
-    $treeRegistryConfig.Exclude = $Exclude
-    $treeRegistryConfig.Include = $Include
-    $treeRegistryConfig.MaxDepth = if ($Depth -ne -1) { $Depth } else { $jsonSettings.MaxDepth }
-    $treeRegistryConfig.LineStyle = Build-TreeLineStyle -Style $jsonSettings.LineStyle
-    $treeRegistryConfig.DisplayItemCounts = $DisplayItemCounts
-    $treeRegistryConfig.SortValuesByType = $SortValuesByType
-    $treeRegistryConfig.SortDescending = $SortDescending
-    $treeRegistryConfig.UseRegistryDataTypes = $UseRegistryDataTypes
-    $treeRegistryConfig.OutFile = Add-DefaultExtension -FilePath $OutFile -IsRegistry $true
+    $treeRegistryConfiguration = New-Object treeRegistryConfig
+    $treeRegistryConfiguration.Path = Get-Path -Path $Path
+    $treeRegistryConfiguration.NoValues = $NoValues
+    $treeRegistryConfiguration.Exclude = $Exclude
+    $treeRegistryConfiguration.Include = $Include
+    $treeRegistryConfiguration.MaximumDepth = if ($Depth -ne -1) { $Depth } else { $jsonSettings.MaximumDepth }
+    $treeRegistryConfiguration.LineStyle = Build-TreeLineStyle -Style $jsonSettings.LineStyle
+    $treeRegistryConfiguration.DisplayItemCounts = $DisplayItemCounts
+    $treeRegistryConfiguration.SortValuesByType = $SortValuesByType
+    $treeRegistryConfiguration.SortDescending = $SortDescending
+    $treeRegistryConfiguration.UseRegistryDataTypes = $UseRegistryDataTypes
+    $treeRegistryConfiguration.OutFile = Add-DefaultExtension -FilePath $OutFile -IsRegistry $true
 
     $outputBuilder = $null
     $output = $null
     $registryStats = $null
 
     $executionResultTime = Measure-Command {
-        $hasOutputFile = -not [string]::IsNullOrEmpty($treeRegistryConfig.OutFile)
+        $hasOutputFile = -not [string]::IsNullOrEmpty($treeRegistryConfiguration.OutFile)
 
         if ($hasOutputFile) {
-            $outputBuilder = Invoke-OutputBuilderRegistry -TreeRegistryConfig $treeRegistryConfig -ShowConfigurations $jsonSettings.ShowConfigurations
+            $outputBuilder = Invoke-OutputBuilderRegistry -TreeRegistryConfiguration $treeRegistryConfiguration -ShowConfigurations $jsonSettings.ShowConfigurations
             $output = [Collections.Generic.List[string]]::new()
-            $registryStats = Get-TreeRegistryView -TreeRegistryConfig $treeRegistryConfig -OutputCollection $output
+            $registryStats = Get-TreeRegistryView -TreeRegistryConfiguration $treeRegistryConfiguration -OutputCollection $output
 
             foreach ($line in $output) {
                 [void]$outputBuilder.AppendLine($line)
@@ -123,29 +123,29 @@ function Show-PowerTreeRegistry {
 
         } else {
             if ($jsonSettings.ShowConfigurations) {
-                Write-ConfigurationToHost -Config $treeRegistryConfig
+                Write-ConfigurationToHost -Configuration $treeRegistryConfiguration
             }
-            $registryStats = Get-TreeRegistryView -TreeRegistryConfig $treeRegistryConfig
+            $registryStats = Get-TreeRegistryView -TreeRegistryConfiguration $treeRegistryConfiguration
         }
     }
 
     if ($null -ne $registryStats -and $jsonSettings.ShowExecutionStats) {
-        $hasOutputFile = -not [string]::IsNullOrEmpty($treeRegistryConfig.OutFile)
+        $hasOutputFile = -not [string]::IsNullOrEmpty($treeRegistryConfiguration.OutFile)
 
         if ($hasOutputFile) {
-            [void](Show-RegistryStats -RegistryStats $registryStats -ExecutionTime $executionResultTime -LineStyle $treeRegistryConfig.LineStyle -OutputBuilder $outputBuilder)
-            $outputBuilder.ToString() | Out-File -FilePath $treeRegistryConfig.OutFile -Encoding UTF8
+            [void](Show-RegistryStats -RegistryStats $registryStats -ExecutionTime $executionResultTime -LineStyle $treeRegistryConfiguration.LineStyle -OutputBuilder $outputBuilder)
+            $outputBuilder.ToString() | Out-File -FilePath $treeRegistryConfiguration.OutFile -Encoding UTF8
         } else {
-            Show-RegistryStats -RegistryStats $registryStats -ExecutionTime $executionResultTime -LineStyle $treeRegistryConfig.LineStyle
+            Show-RegistryStats -RegistryStats $registryStats -ExecutionTime $executionResultTime -LineStyle $treeRegistryConfiguration.LineStyle
         }
-    } elseif (-not [string]::IsNullOrEmpty($treeRegistryConfig.OutFile)) {
-        $outputBuilder.ToString() | Out-File -FilePath $treeRegistryConfig.OutFile -Encoding UTF8
+    } elseif (-not [string]::IsNullOrEmpty($treeRegistryConfiguration.OutFile)) {
+        $outputBuilder.ToString() | Out-File -FilePath $treeRegistryConfiguration.OutFile -Encoding UTF8
     }
 
-    if (-not [string]::IsNullOrEmpty($treeRegistryConfig.OutFile)) {
-        $fullOutputPath = Resolve-Path $treeRegistryConfig.OutFile -ErrorAction SilentlyContinue
+    if (-not [string]::IsNullOrEmpty($treeRegistryConfiguration.OutFile)) {
+        $fullOutputPath = Resolve-Path $treeRegistryConfiguration.OutFile -ErrorAction SilentlyContinue
         if ($null -eq $fullOutputPath) {
-            $fullOutputPath = $treeRegistryConfig.OutFile
+            $fullOutputPath = $treeRegistryConfiguration.OutFile
         }
         Write-Information -MessageData ' ' -InformationAction Continue
         Write-Information -MessageData "$($PSStyle.Foreground.Cyan)Output saved to: $($fullOutputPath)$($PSStyle.Reset)" -InformationAction Continue

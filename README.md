@@ -9,6 +9,7 @@ A modern replacement for the `tree` command that lets you explore directory stru
 ![PowerShell Version](https://img.shields.io/badge/PowerShell-7.0%2B-blue)
 
 ## Preview Videos
+
 <details>
 <summary>🎥 File System Explorer Demo</summary>
 https://github.com/user-attachments/assets/3fbe8eb4-0844-4df8-925a-0608e391be17
@@ -37,8 +38,9 @@ Install-Module PowerTree
 
 # Commands
 
-## Show-PowerTree   <sup><sub>Alias: `ptree`, `PowerTree`</sub></sup>
-A modern replacement for the tree command that lets you explore directory structures with detailed information and advanced filtering possibilities. Explore all available parameters and advanced features in the [full documentation](docs/Show-PowerTree.md).
+## Show-PowerTree <sup><sub>Alias: `ptree`, `PowerTree`</sub></sup>
+
+A modern replacement for the tree command that lets you explore directory structures with detailed information and advanced filtering possibilities. Explore all available parameters and advanced features in the [full documentation](documentation/Show-PowerTree.md).
 
 ### Example Images
 
@@ -86,8 +88,9 @@ ptree -DirectoryOnly -DisplaySize
   <img src="./images/Directory_Only.JPG" alt="PowerTree directory only view">
 </details>
 
-## Show-PowerTreeRegistry   <sup><sub>Alias: `ptreer`, `PowerRegistry`</sub></sup>
-Shows Windows Registry keys and values in tree format. Displays both registry keys and their values, making it easy to see the structure of any registry hive or specific key. Explore all available parameters and advanced features in the [full documentation](docs/Show-PowerTreeRegistry.md).
+## Show-PowerTreeRegistry <sup><sub>Alias: `ptreer`, `PowerRegistry`</sub></sup>
+
+Shows Windows Registry keys and values in tree format. Displays both registry keys and their values, making it easy to see the structure of any registry hive or specific key. Explore all available parameters and advanced features in the [full documentation](documentation/Show-PowerTreeRegistry.md).
 
 ### Example Images
 
@@ -113,8 +116,9 @@ PowerRegistry HKLM:\SOFTWARE\ -DisplayItemCounts -Exclude "*data*" -l 2 -UseRegi
     <img src="./images/Registry_Filtered.JPG" alt="Filtered PowerTree Registry View">
 </details>
 
-## Edit-PowerTreeConfig   <sup><sub>Alias: `Edit-PowerTree`, `Edit-ptree`</sub></sup>
-Opens the configuration file to change default settings. Set which directories to always exclude, default sorting, and tree display style. Explore all available parameters and advanced features in the [full documentation](docs/Edit-PowerTreeConfig.md).
+## Edit-PowerTreeConfiguration <sup><sub>Alias: `Edit-PowerTree`, `Edit-ptree`</sub></sup>
+
+Opens the configuration file to change default settings. Set which directories to always exclude, default sorting, and tree display style. Explore all available parameters and advanced features in the [full documentation](documentation/Edit-PowerTreeConfiguration.md).
 
 ## Common Use Cases
 
@@ -148,9 +152,9 @@ ptree -IncludeExtensions md,txt -OutFile project_docs.txt
 
 For detailed parameter references and advanced usage examples:
 
-- **[Show-PowerTree](docs/Show-PowerTree.md)** 
-- **[Show-PowerTreeRegistry](docs/Show-PowerTreeRegistry.md)**
-- **[Edit-PowerTreeConfig](docs/Edit-PowerTreeConfig.md)**
+- **[Show-PowerTree](documentation/Show-PowerTree.md)**
+- **[Show-PowerTreeRegistry](documentation/Show-PowerTreeRegistry.md)**
+- **[Edit-PowerTreeConfiguration](documentation/Edit-PowerTreeConfiguration.md)**
 
 ## License
 
@@ -172,4 +176,5 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - Enhanced registry data type visualization
 
 ## Media
+
 Florian Burnel created a great article about PowerTree which you can read [here](https://www.it-connect.fr/powershell-visualisez-arborescence-de-vos-donnees-avec-powertree/) (in French)

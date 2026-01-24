@@ -2,24 +2,24 @@ function Invoke-OutputBuilderRegistry {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory=$true)]
-        [TreeRegistryConfig]$TreeRegistryConfig,
+        [TreeRegistryConfig]$TreeRegistryConfiguration,
         [bool]$ShowExecutionStats = $true,
         [bool]$ShowConfigurations = $true
     )
 
     $outputBuilder = New-Object System.Text.StringBuilder
-    
+
     [void]$outputBuilder.AppendLine("# PowerTreeRegistry Output")
     [void]$outputBuilder.AppendLine("# Generated: $(Get-Date)")
-    [void]$outputBuilder.AppendLine("# Registry Path: $($TreeRegistryConfig.Path)")
+    [void]$outputBuilder.AppendLine("# Registry Path: $($TreeRegistryConfiguration.Path)")
     [void]$outputBuilder.AppendLine("")
 
     if($ShowConfigurations){
         [void]$outputBuilder.AppendLine("Configuration:")
-        [void]$outputBuilder.AppendLine(($TreeRegistryConfig.LineStyle.SingleLine * 13))
-        $configData = Get-RegistryConfigurationData -TreeRegistryConfig $TreeRegistryConfig
-        foreach ($configLine in $configData) {
-            [void]$outputBuilder.AppendLine($configLine)
+        [void]$outputBuilder.AppendLine(($TreeRegistryConfiguration.LineStyle.SingleLine * 13))
+        $configurationData = Get-RegistryConfigurationData -TreeRegistryConfiguration $TreeRegistryConfiguration
+        foreach ($configurationLine in $configurationData) {
+            [void]$outputBuilder.AppendLine($configurationLine)
         }
         [void]$outputBuilder.AppendLine("")
     }
@@ -27,7 +27,7 @@ function Invoke-OutputBuilderRegistry {
     # Add placeholder for execution stats if needed
     if ($ShowExecutionStats) {
         [void]$outputBuilder.AppendLine("Execution Stats:")
-        [void]$outputBuilder.AppendLine(($TreeRegistryConfig.LineStyle.SingleLine * 15))
+        [void]$outputBuilder.AppendLine(($TreeRegistryConfiguration.LineStyle.SingleLine * 15))
         [void]$outputBuilder.AppendLine("Append the stats here later!!")
         [void]$outputBuilder.AppendLine("")
     }

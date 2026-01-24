@@ -2,13 +2,13 @@ function Invoke-OutputBuilder {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [TreeConfig]$TreeConfig,
+        [TreeConfig]$TreeConfiguration,
         [bool]$ShowExecutionStats,
         [bool]$ShowConfigurations = $true
     )
 
     # Only create OutputBuilder if we need to save to a file
-    if ([string]::IsNullOrEmpty($TreeConfig.OutFile)) {
+    if ([string]::IsNullOrEmpty($TreeConfiguration.OutFile)) {
         return $null
     }
 
@@ -17,16 +17,16 @@ function Invoke-OutputBuilder {
     # Add file header
     [void]$outputBuilder.AppendLine('# PowerTree Output')
     [void]$outputBuilder.AppendLine("# Generated: $(Get-Date)")
-    [void]$outputBuilder.AppendLine("# Path: $($TreeConfig.Path)")
-    if (-not [string]::IsNullOrEmpty($TreeConfig.OutFile)) {
-        [void]$outputBuilder.AppendLine("# Output File: $($TreeConfig.OutFile)")
+    [void]$outputBuilder.AppendLine("# Path: $($TreeConfiguration.Path)")
+    if (-not [string]::IsNullOrEmpty($TreeConfiguration.OutFile)) {
+        [void]$outputBuilder.AppendLine("# Output File: $($TreeConfiguration.OutFile)")
     }
 
     if ($ShowConfigurations) {
         # Get configuration lines for file output
-        $configLines = Get-TreeConfigurationData -TreeConfig $TreeConfig
+        $configurationLines = Get-TreeConfigurationData -TreeConfiguration $TreeConfiguration
 
-        foreach ($line in $configLines) {
+        foreach ($line in $configurationLines) {
             [void]$outputBuilder.AppendLine($line)
         }
     }

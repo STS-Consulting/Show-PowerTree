@@ -22,7 +22,7 @@ function Get-SortingMethod {
         }
     }
 
-    $sortBy = $DefaultSort # Default sorting from psTree.config.json
+    $sortBy = $DefaultSort # Default sorting from PowerTree.config.json
     if ($SortByModificationDate) { $sortBy = 'Modification Date' }
     elseif ($SortByCreationDate) { $sortBy = 'Creation Date' }
     elseif ($SortByLastAccessDate) { $sortBy = 'Last Access Date' }
@@ -70,7 +70,8 @@ function Group-Items {
                 } else {
                     # For files, use file length
                     $PSItem.Length
-                } }
+                }
+            }
         }
 
         default {

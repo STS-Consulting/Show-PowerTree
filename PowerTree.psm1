@@ -3,9 +3,9 @@ $script:ModuleRoot = $PSScriptRoot
 New-Alias -Name 'ptree' -Value 'Show-PowerTree'
 New-Alias -Name 'PowerTree' -Value 'Show-PowerTree'
 New-Alias -Name 'Start-PowerTree' -Value 'Show-PowerTree'
-New-Alias -Name 'Edit-PtreeConfig' -Value 'Edit-PowerTreeConfig'
-New-Alias -Name 'Edit-Ptree' -Value 'Edit-PowerTreeConfig'
-New-Alias -Name 'Edit-PowerTree' -Value 'Edit-PowerTreeConfig'
+New-Alias -Name 'Edit-PtreeConfig' -Value 'Edit-PowerTreeConfiguration'
+New-Alias -Name 'Edit-Ptree' -Value 'Edit-PowerTreeConfiguration'
+New-Alias -Name 'Edit-PowerTree' -Value 'Edit-PowerTreeConfiguration'
 New-Alias -Name 'ptreer' -Value 'Show-PowerTreeRegistry'
 New-Alias -Name 'PowerRegistry' -Value 'Show-PowerTreeRegistry'
 
@@ -39,10 +39,10 @@ $PrivateFiles = @(
     'Private\PowerTree\Size\Get-FilesByFilteredSize.ps1',
 
     # Param Helpers
-    'Private\PowerTree\Configuration\ParamHelpers\Build-ChildItemDirectoryParams.ps1',
-    'Private\PowerTree\Configuration\ParamHelpers\Build-ChildItemFileParams.ps1',
-    'Private\PowerTree\Configuration\ParamHelpers\Build-ExcludeDirectoryParams.ps1',
-    'Private\PowerTree\Configuration\ParamHelpers\Build-FileSizeParam.ps1',
+    'Private\PowerTree\Configuration\ParamHelpers\Build-ChildItemDirectoryParameters.ps1',
+    'Private\PowerTree\Configuration\ParamHelpers\Build-ChildItemFileParameters.ps1',
+    'Private\PowerTree\Configuration\ParamHelpers\Build-ExcludeDirectoryParameters.ps1',
+    'Private\PowerTree\Configuration\ParamHelpers\Build-FileSizeParameters.ps1',
 
     # Output / Formatting
     'Private\PowerTree\Output\Build-OutputLine.ps1',
@@ -73,10 +73,11 @@ $PrivateFiles = @(
 
     # Shared / Common
     'Private\Shared\DataModel\ClassLoader.ps1',
-    'Private\Shared\JsonConfig\Get-ConfigPaths.ps1',
-    'Private\Shared\JsonConfig\Get-DefaultConfig.ps1',
-    'Private\Shared\JsonConfig\Get-SettingsFromJson.ps1',
-    'Private\Shared\JsonConfig\Initialize-ConfigFile.ps1',
+    'Private\Shared\Get-OneDriveStatus.ps1',
+    'Private\Shared\JsonConfiguration\Get-ConfigurationPaths.ps1',
+    'Private\Shared\JsonConfiguration\Get-DefaultConfiguration.ps1',
+    'Private\Shared\JsonConfiguration\Get-SettingsFromJson.ps1',
+    'Private\Shared\JsonConfiguration\Initialize-ConfigurationFile.ps1',
     'Private\Shared\Output\Add-DefaultExtension.ps1',
     'Private\Shared\Output\Convert-StatsInOutputFile.ps1',
     'Private\Shared\Output\Format-ExecutionTime.ps1',
@@ -100,7 +101,7 @@ foreach ($file in $PrivateFiles) {
 
 # 3. Public Functions
 $PublicFiles = @(
-    'Public\Edit-PowerTreeConfig.ps1',
+    'Public\Edit-PowerTreeConfiguration.ps1',
     'Public\Show-PowerTree.ps1',
     'Public\Show-PowerTreeRegistry.ps1'
 )
@@ -121,5 +122,5 @@ foreach ($file in $PublicFiles) {
 }
 
 # Export public functions
-Export-ModuleMember -Function 'Show-PowerTree', 'Edit-PowerTreeConfig', 'Show-PowerTreeRegistry'
-Export-ModuleMember -Function 'Show-PowerTree', 'Edit-PowerTreeConfig', 'Show-PowerTreeRegistry' -Alias 'ptree', 'PowerTree', 'Start-PowerTree', 'Edit-PtreeConfig', 'Edit-Ptree', 'Edit-PowerTree', 'ptreer', 'PowerRegistry'
+Export-ModuleMember -Function 'Show-PowerTree', 'Edit-PowerTreeConfiguration', 'Show-PowerTreeRegistry'
+Export-ModuleMember -Function 'Show-PowerTree', 'Edit-PowerTreeConfiguration', 'Show-PowerTreeRegistry' -Alias 'ptree', 'PowerTree', 'Start-PowerTree', 'Edit-PtreeConfig', 'Edit-Ptree', 'Edit-PowerTree', 'ptreer', 'PowerRegistry'

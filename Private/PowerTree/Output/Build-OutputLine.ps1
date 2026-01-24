@@ -15,7 +15,9 @@ function Build-OutputLine {
         [bool]$HumanReadableSizes
     )
 
-    $dirSize = 0
+    $directorySize = 0
+    $namePosition = -1
+    $nameLength = 0
 
     $outputLine = ' ' * $HeaderTable.HeaderLine.Length
 
@@ -25,6 +27,9 @@ function Build-OutputLine {
             # Handle hierarchy column separately (it contains the tree structure and filename)
             $hierarchyPosition = $HeaderTable.Indentations[$column]
             $content = "$TreePrefix$($Item.Name)"
+
+            $namePosition = $hierarchyPosition + $TreePrefix.Length
+            $nameLength = $Item.Name.Length
 
             # Replace characters at the hierarchy position with the content
             if ($hierarchyPosition -lt $outputLine.Length) {
@@ -61,15 +66,15 @@ function Build-OutputLine {
                             $content = $Item.Length
                         }
                         # Set to zero for files
-                        $dirSize = 0
+                        $directorySize = 0
                     } else {
                         # Calculate directory size
-                        $dirSize = (Get-ChildItem -LiteralPath $Item.FullName -Recurse -File -ErrorAction SilentlyContinue |
+                        $directorySize = (Get-ChildItem -LiteralPath $Item.FullName -Recurse -File -ErrorAction SilentlyContinue |
                                 Measure-Object -Property Length -Sum).Sum
                         if ($HumanReadableSizes) {
-                            $content = Get-HumanReadableSize -Bytes $dirSize -Format 'Padded'
+                            $content = Get-HumanReadableSize -Bytes $directorySize -Format 'Padded'
                         } else {
-                            $content = $dirSize
+                            $content = $directorySize
                         }
                     }
                 }
@@ -118,10 +123,12 @@ function Build-OutputLine {
         } else {
             0
         }
-        DirSize       = if ($Item -isnot [System.IO.FileInfo]) {
-            $dirSize
+        DirectorySize = if ($Item -isnot [System.IO.FileInfo]) {
+            $directorySize
         } else {
             0
         }
+        NamePosition  = $namePosition
+        NameLength    = $nameLength
     }
 }

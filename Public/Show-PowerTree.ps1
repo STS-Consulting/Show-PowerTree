@@ -12,7 +12,7 @@
         The path to the directory to visualize. Defaults to the current directory.
 
     .PARAMETER Depth
-        The maximum depth of the tree to display. Defaults to -1 (no limit) or the value in config.
+        The maximum depth of the tree to display. Defaults to -1 (no limit) or the value in the configuration file.
 
     .PARAMETER Examples
         Displays usage examples.
@@ -226,21 +226,21 @@
 
     $treeStats = New-Object TreeStats
 
-    # Ensure config file exists before loading settings
-    Initialize-ConfigFile
+    # Ensure configuration file exists before loading settings
+    Initialize-ConfigurationFile
 
     $jsonSettings = Get-SettingsFromJson -Mode 'FileSystem'
 
-    $treeConfig = New-Object TreeConfig
-    $treeConfig.Path = $LiteralPath
-    $treeConfig.LineStyle = Build-TreeLineStyle -Style $jsonSettings.LineStyle
-    $treeConfig.DirectoryOnly = $DirectoryOnly
-    $excludedDirParams = @{
-        CommandLineExcludedDir = $ExcludeDirectories
-        Settings               = $jsonSettings
+    $treeConfiguration = New-Object TreeConfig
+    $treeConfiguration.Path = $LiteralPath
+    $treeConfiguration.LineStyle = Build-TreeLineStyle -Style $jsonSettings.LineStyle
+    $treeConfiguration.DirectoryOnly = $DirectoryOnly
+    $excludedDirParameters = @{
+        CommandLineExcludedDirectory = $ExcludeDirectories
+        Settings                     = $jsonSettings
     }
-    $treeConfig.ExcludeDirectories = Build-ExcludedDirectoryParams @excludedDirParams
-    $sortingParams = @{
+    $treeConfiguration.ExcludeDirectories = Build-ExcludedDirectoryParameters @excludedDirParameters
+    $sortingParameters = @{
         SortBySize             = $SortBySize
         SortByName             = $SortByName
         SortByCreationDate     = $SortByCreationDate
@@ -249,35 +249,35 @@
         DefaultSort            = $jsonSettings.Sorting.By
         Sort                   = $Sort
     }
-    $treeConfig.SortBy = Get-SortingMethod @sortingParams
-    $treeConfig.SortDescending = $Descending
-    $treeConfig.SortFolders = $jsonSettings.Sorting.SortFolders
-    $headerTableParams = @{
+    $treeConfiguration.SortBy = Get-SortingMethod @sortingParameters
+    $treeConfiguration.SortDescending = $Descending
+    $treeConfiguration.SortFolders = $jsonSettings.Sorting.SortFolders
+    $headerTableParameters = @{
         DisplayCreationDate     = $DisplayCreationDate
         DisplayLastAccessDate   = $DisplayLastAccessDate
         DisplayModificationDate = $DisplayModificationDate
         DisplaySize             = $DisplaySize
         DisplayMode             = $DisplayMode
-        LineStyle               = $treeConfig.LineStyle
+        LineStyle               = $treeConfiguration.LineStyle
     }
-    $treeConfig.HeaderTable = Get-HeaderTable @headerTableParams
+    $treeConfiguration.HeaderTable = Get-HeaderTable @headerTableParameters
 
-    $treeConfig.ShowConnectorLines = $jsonSettings.ShowConnectorLines
-    $treeConfig.ShowHiddenFiles = $ShowHiddenFiles
-    $treeConfig.MaxDepth = if ($Depth -ne -1) { $Depth } else { $jsonSettings.MaxDepth }
-    $fileSizeParams = @{
-        CommandLineMaxSize  = $FileSizeMaximum
-        CommandlineMinSize  = $FileSizeMinimum
-        SettingsLineMaxSize = $jsonSettings.Files.FileSizeMaximum
-        SettingsLineMinSize = $jsonSettings.Files.FileSizeMinimum
+    $treeConfiguration.ShowConnectorLines = $jsonSettings.ShowConnectorLines
+    $treeConfiguration.ShowHiddenFiles = $ShowHiddenFiles
+    $treeConfiguration.MaximumDepth = if ($Depth -ne -1) { $Depth } else { $jsonSettings.MaximumDepth }
+    $fileSizeParameters = @{
+        CommandLineMaximumSize  = $FileSizeMaximum
+        CommandlineMinimumSize  = $FileSizeMinimum
+        SettingsLineMaximumSize = $jsonSettings.Files.FileSizeMaximum
+        SettingsLineMinimumSize = $jsonSettings.Files.FileSizeMinimum
     }
-    $treeConfig.FileSizeBounds = Build-FileSizeParams @fileSizeParams
-    $treeConfig.OutFile = Add-DefaultExtension -FilePath $OutFile -IsRegistry $false
+    $treeConfiguration.FileSizeBounds = Build-FileSizeParameters @fileSizeParameters
+    $treeConfiguration.OutFile = Add-DefaultExtension -FilePath $OutFile -IsRegistry $false
 
-    $treeConfig.PruneEmptyFolders = $PruneEmptyFolders
-    $treeConfig.HumanReadableSizes = $jsonSettings.HumanReadableSizes
+    $treeConfiguration.PruneEmptyFolders = $PruneEmptyFolders
+    $treeConfiguration.HumanReadableSizes = $jsonSettings.HumanReadableSizes
 
-    $outputBuilder = Invoke-OutputBuilder -TreeConfig $treeConfig -ShowExecutionStats $jsonSettings.ShowExecutionStats -ShowConfigurations $jsonSettings.ShowConfigurations
+    $outputBuilder = Invoke-OutputBuilder -TreeConfiguration $treeConfiguration -ShowExecutionStats $jsonSettings.ShowExecutionStats -ShowConfigurations $jsonSettings.ShowConfigurations
 
     # Main entry point
     $executionResultTime = Measure-Command {
@@ -286,34 +286,34 @@
                 throw "Cannot find path '$LiteralPath'"
             }
 
-            $ChildItemDirectoryParams = Build-ChildItemDirectoryParams -ShowHiddenFiles $ShowHiddenFiles -ShowHiddenFolders $ShowHiddenFolders
-            $childItemFileParams = @{
-                ShowHiddenFiles       = $ShowHiddenFiles
-                CommandLineIncludeExt = $IncludeExtensions
-                CommandLineExcludeExt = $ExcludeExtensions
-                FileSettings          = $jsonSettings.Files
+            $ChildItemDirectoryParameters = Build-ChildItemDirectoryParameters -ShowHiddenFiles $ShowHiddenFiles -ShowHiddenFolders $ShowHiddenFolders
+            $childItemFileParameters = @{
+                ShowHiddenFiles             = $ShowHiddenFiles
+                CommandLineIncludeExtension = $IncludeExtensions
+                CommandLineExcludeExtension = $ExcludeExtensions
+                FileSettings                = $jsonSettings.Files
             }
-            $ChildItemFileParams = Build-ChildItemFileParams @childItemFileParams
+            $ChildItemFileParameters = Build-ChildItemFileParameters @childItemFileParameters
 
             if ($jsonSettings.ShowConfigurations) {
-                Write-ConfigurationToHost -Config $treeConfig
+                Write-ConfigurationToHost -Configuration $treeConfiguration
             }
 
-            $headerOutputParams = @{
-                HeaderTable   = $treeConfig.HeaderTable
+            $headerOutputParameters = @{
+                HeaderTable   = $treeConfiguration.HeaderTable
                 OutputBuilder = $outputBuilder
-                LineStyle     = $treeConfig.LineStyle
+                LineStyle     = $treeConfiguration.LineStyle
             }
-            Write-HeaderToOutput @headerOutputParams
+            Write-HeaderToOutput @headerOutputParameters
 
-            $treeViewParams = @{
-                TreeConfig               = $treeConfig
-                TreeStats                = $treeStats
-                ChildItemDirectoryParams = $ChildItemDirectoryParams
-                ChildItemFileParams      = $ChildItemFileParams
-                OutputBuilder            = $outputBuilder
+            $treeViewParameters = @{
+                TreeConfiguration            = $treeConfiguration
+                TreeStats                    = $treeStats
+                ChildItemDirectoryParameters = $ChildItemDirectoryParameters
+                ChildItemFileParameters      = $ChildItemFileParameters
+                OutputBuilder                = $outputBuilder
             }
-            Get-TreeView @treeViewParams
+            Get-TreeView @treeViewParameters
 
         } catch {
             Write-Error "Details: $($PSItem.Exception.Message)"
@@ -323,15 +323,15 @@
     }
 
     if ($jsonSettings.ShowExecutionStats) {
-        Show-TreeStats -TreeStats $treeStats -ExecutionTime $executionResultTime -OutputBuilder $outputBuilder -LineStyle $treeConfig.LineStyle -DisplaySize $DisplaySize
+        Show-TreeStats -TreeStats $treeStats -ExecutionTime $executionResultTime -OutputBuilder $outputBuilder -LineStyle $treeConfiguration.LineStyle -DisplaySize $DisplaySize
     }
 
     if ($null -ne $outputBuilder) {
-        $outputBuilder.ToString() | Write-ToFile -FilePath $treeConfig.OutFile -OpenOutputFileOnFinish $jsonSettings.OpenOutputFileOnFinish
+        $outputBuilder.ToString() | Write-ToFile -FilePath $treeConfiguration.OutFile -OpenOutputFileOnFinish $jsonSettings.OpenOutputFileOnFinish
 
-        $fullOutputPath = Resolve-Path $treeConfig.OutFile -ErrorAction SilentlyContinue
+        $fullOutputPath = Resolve-Path $treeConfiguration.OutFile -ErrorAction SilentlyContinue
         if ($null -eq $fullOutputPath) {
-            $fullOutputPath = $treeConfig.OutFile
+            $fullOutputPath = $treeConfiguration.OutFile
         }
 
         Write-Information -MessageData ' ' -InformationAction Continue

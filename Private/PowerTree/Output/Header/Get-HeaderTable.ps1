@@ -16,7 +16,7 @@ function Get-HeaderTable {
         HeaderColumns = @()
     }
     $regularSpacing = "   "
-    
+
     $headerConfigs = @(
         @{
             Condition = $DisplayMode
@@ -41,31 +41,31 @@ function Get-HeaderTable {
         @{
             Condition = $DisplaySize
             HeaderString = "Size"
-            ExtraSpacing = "      " 
+            ExtraSpacing = "      "
         }
     )
-    
+
     # Add headers based on display flags
-    foreach ($config in $headerConfigs) {
-        if ($config.Condition) {
-            $headerString = $config.HeaderString
-            $extraSpacing = $config.ExtraSpacing
-            
+    foreach ($configuration in $headerConfigs) {
+        if ($configuration.Condition) {
+            $headerString = $configuration.HeaderString
+            $extraSpacing = $configuration.ExtraSpacing
+
             $headerTable.Indentations[$headerString] = $headerTable.HeaderLine.Length
-            
+
             $headerTable.HeaderLine += "$headerString$regularSpacing$extraSpacing"
             $headerTable.UnderscoreLine += "$($LineStyle.SingleLine * ($headerString.Length + $extraSpacing.Length))$regularSpacing"
-            
+
             $headerTable.HeaderColumns += $headerString
         }
     }
-    
-  
+
+
     $hierarchyHeader = "Hierarchy"
     $headerTable.Indentations[$hierarchyHeader] = $headerTable.HeaderLine.Length
     $headerTable.HeaderLine += $hierarchyHeader
     $headerTable.UnderscoreLine += $LineStyle.SingleLine * $hierarchyHeader.Length
     $headerTable.HeaderColumns += $hierarchyHeader
- 
+
     return $headerTable
 }

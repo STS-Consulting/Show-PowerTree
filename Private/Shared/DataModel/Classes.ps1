@@ -5,12 +5,12 @@ class TreeConfig {
     [string]$SortBy
     [bool]$SortDescending
     [bool]$SortFolders
-    [hashtable]$ChildItemDirectoryParams
-    [hashtable]$ChildItemFileParams
+    [hashtable]$ChildItemDirectoryParameters
+    [hashtable]$ChildItemFileParameters
     [hashtable]$HeaderTable
     [bool]$ShowConnectorLines
     [bool]$ShowHiddenFiles
-    [int]$MaxDepth
+    [int]$MaximumDepth
     [hashtable]$FileSizeBounds
     [string]$OutFile
     [bool]$PruneEmptyFolders
@@ -23,7 +23,7 @@ class TreeRegistryConfig {
     [bool]$NoValues
     [string[]]$Exclude
     [string[]]$Include
-    [int]$MaxDepth
+    [int]$MaximumDepth
     [hashtable]$LineStyle
     [bool]$DisplayItemCounts
     [bool]$SortValuesByType
@@ -35,11 +35,11 @@ class TreeRegistryConfig {
 class RegistryStats {
     [int]$KeysProcessed = 0
     [int]$ValuesProcessed = 0
-    [int]$MaxDepthReached = 0
-    
+    [int]$MaximumDepthReached = 0
+
     [void] UpdateDepth([int]$depth) {
-        if ($depth -gt $this.MaxDepthReached) {
-            $this.MaxDepthReached = $depth
+        if ($depth -gt $this.MaximumDepthReached) {
+            $this.MaximumDepthReached = $depth
         }
     }
 }
@@ -47,32 +47,32 @@ class RegistryStats {
 class TreeStats {
     [long]$FilesPrinted = 0
     [long]$FoldersPrinted = 0
-    [int]$MaxDepth = 0
+    [int]$MaximumDepth = 0
     [long]$TotalSize = 0
     [System.IO.FileInfo]$LargestFile = $null
-    [string]$LargestFolder = ""
+    [string]$LargestFolder = ''
     [long]$LargestFolderSize = 0
-    
+
     [void] AddFile([System.IO.FileInfo]$file) {
         $this.FilesPrinted++
         $this.TotalSize += $file.Length
-        
+
         # Track largest file
         if ($null -eq $this.LargestFile -or $file.Length -gt $this.LargestFile.Length) {
             $this.LargestFile = $file
         }
     }
-    
+
     [void] UpdateLargestFolder([string]$folderPath, [long]$folderSize) {
         if ($folderSize -gt $this.LargestFolderSize) {
             $this.LargestFolder = $folderPath
             $this.LargestFolderSize = $folderSize
         }
     }
-    
-    [void] UpdateMaxDepth([int]$depth) {
-        if ($depth -gt $this.MaxDepth) {
-            $this.MaxDepth = $depth
+
+    [void] UpdateMaximumDepth([int]$depth) {
+        if ($depth -gt $this.MaximumDepth) {
+            $this.MaximumDepth = $depth
         }
     }
 }

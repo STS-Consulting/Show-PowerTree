@@ -1,0 +1,17 @@
+﻿.git
+.gitignore
+.github
+.gitattributes
+Tests/
+_.Tests.ps1
+.pubignore
+.vscode
+_.code-workspace
+docs/
+TestHiddenFolders/
+README.md
+LICENSE
+\*.md
+.DS_Store
+Thumbs.db
+images/

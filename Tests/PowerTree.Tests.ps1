@@ -16,8 +16,8 @@ Describe 'PowerTree Module' {
             Get-Command -Module PowerTree -Name Show-PowerTree | Should -Not -BeNullOrEmpty
         }
 
-        It 'Exports Edit-PowerTreeConfig' {
-            Get-Command -Module PowerTree -Name Edit-PowerTreeConfig | Should -Not -BeNullOrEmpty
+        It 'Exports Edit-PowerTreeConfiguration' {
+            Get-Command -Module PowerTree -Name Edit-PowerTreeConfiguration | Should -Not -BeNullOrEmpty
         }
     }
 

@@ -1,4 +1,5 @@
 function Get-SizeColor {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
         [long]$Bytes

@@ -23,7 +23,7 @@ function Show-TreeStats {
         'Files',
         'Folders',
         'Total Items',
-        'Depth',
+        'Maximum Depth',
         'Total Size',
         'Execution Time'
     )
@@ -34,7 +34,7 @@ function Show-TreeStats {
         $TreeStats.FilesPrinted,
         $TreeStats.FoldersPrinted,
         $totalItemsPrinted,
-        $TreeStats.MaxDepth,
+        $TreeStats.MaximumDepth,
         $(Get-HumanReadableSize -Bytes $TreeStats.TotalSize -Format 'Padded'),
         $formattedTime
     )
@@ -52,9 +52,9 @@ function Show-TreeStats {
     }
 
     $valuesLine = ''
-    for ($i = 0; $i -lt $headers.Count; $i++) {
-        $value = $values[$i].ToString()
-        $valuesLine += $value.PadRight($headers[$i].Length) + $spacing
+    for ($iteration = 0; $iteration -lt $headers.Count; $iteration++) {
+        $value = $values[$iteration].ToString()
+        $valuesLine += $value.PadRight($headers[$iteration].Length) + $spacing
     }
 
     $largestFilePath = if ($null -ne $TreeStats.LargestFile) { $TreeStats.LargestFile.FullName } else { 'None' }

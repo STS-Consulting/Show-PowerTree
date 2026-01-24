@@ -5,14 +5,14 @@ function Get-SettingsFromJson {
         [ValidateSet('FileSystem', 'Registry')]
         [string]$Mode,
 
-        [string[]]$ConfigPaths = (Get-ConfigPaths)
+        [string[]]$ConfigurationPaths = (Get-ConfigurationPaths)
     )
 
-    $defaultSettings = Get-DefaultConfig
+    $defaultSettings = Get-DefaultConfiguration
 
     try {
         Write-Verbose -Message 'Searching for configuration files in the following locations:'
-        foreach ($path in $ConfigPaths) {
+        foreach ($path in $ConfigurationPaths) {
             Write-Verbose -Message "  - $path"
 
             if (Test-Path $path) {
@@ -34,7 +34,7 @@ function Get-SettingsFromJson {
                 switch ($Mode) {
                     'FileSystem' {
                         $settingsHashtable += @{
-                            MaxDepth           = if ($null -ne $settings.FileSystem.MaxDepth) { $settings.FileSystem.MaxDepth } else { $defaultSettings.FileSystem.MaxDepth }
+                            MaximumDepth      = if ($null -ne $settings.FileSystem.MaximumDepth) { $settings.FileSystem.MaximumDepth } elseif ($null -ne $settings.FileSystem.MaxDepth) { $settings.FileSystem.MaxDepth } else { $defaultSettings.FileSystem.MaximumDepth }
                             ExcludeDirectories = if ($settings.FileSystem.ExcludeDirectories -is [array]) { $settings.FileSystem.ExcludeDirectories } else { $defaultSettings.FileSystem.ExcludeDirectories }
                             HumanReadableSizes = if ($null -ne $settings.FileSystem.HumanReadableSizes) { $settings.FileSystem.HumanReadableSizes } else { $defaultSettings.FileSystem.HumanReadableSizes }
                             Files              = @{
@@ -51,7 +51,7 @@ function Get-SettingsFromJson {
                     }
                     'Registry' {
                         $settingsHashtable += @{
-                            MaxDepth    = if ($null -ne $settings.Registry.MaxDepth) { $settings.Registry.MaxDepth } else { $defaultSettings.Registry.MaxDepth }
+                            MaximumDepth = if ($null -ne $settings.Registry.MaximumDepth) { $settings.Registry.MaximumDepth } elseif ($null -ne $settings.Registry.MaxDepth) { $settings.Registry.MaxDepth } else { $defaultSettings.Registry.MaximumDepth }
                             ExcludeKeys = if ($settings.Registry.ExcludeKeys -is [array]) { $settings.Registry.ExcludeKeys } else { $defaultSettings.Registry.ExcludeKeys }
                         }
                     }
@@ -62,7 +62,7 @@ function Get-SettingsFromJson {
             }
         }
 
-        Write-Verbose -Message 'Config file not found in any of the potential locations. Using default settings.'
+        Write-Verbose -Message 'Configuration file not found in any of the potential locations. Using default settings.'
         return Get-FlattenedDefaultSettings -Mode $Mode -DefaultSettings $defaultSettings
 
     } catch {
@@ -73,8 +73,11 @@ function Get-SettingsFromJson {
 }
 
 function Get-FlattenedDefaultSettings {
+    [CmdletBinding()]
     param(
+        [Parameter(Mandatory = $true)]
         [string]$Mode,
+        [Parameter(Mandatory = $true)]
         [hashtable]$DefaultSettings
     )
 
@@ -88,7 +91,7 @@ function Get-FlattenedDefaultSettings {
     switch ($Mode) {
         'FileSystem' {
             $flattened += @{
-                MaxDepth           = $DefaultSettings.FileSystem.MaxDepth
+                MaximumDepth       = $DefaultSettings.FileSystem.MaximumDepth
                 ExcludeDirectories = $DefaultSettings.FileSystem.ExcludeDirectories
                 HumanReadableSizes = $DefaultSettings.FileSystem.HumanReadableSizes
                 Files              = $DefaultSettings.FileSystem.Files
@@ -96,7 +99,7 @@ function Get-FlattenedDefaultSettings {
         }
         'Registry' {
             $flattened += @{
-                MaxDepth        = $DefaultSettings.Registry.MaxDepth
+                MaximumDepth    = $DefaultSettings.Registry.MaximumDepth
                 DisplayValues   = $DefaultSettings.Registry.DisplayValues
                 ExcludeKeys     = $DefaultSettings.Registry.ExcludeKeys
                 ValueTypes      = $DefaultSettings.Registry.ValueTypes

@@ -1,7 +1,7 @@
-function Get-ConfigPaths {
+function Get-ConfigurationPaths {
     [CmdletBinding()]
     param()
-    
+
     return @(
         "$PSScriptRoot\PowerTree.config.json",
         "$PSScriptRoot\..\PowerTree.config.json",

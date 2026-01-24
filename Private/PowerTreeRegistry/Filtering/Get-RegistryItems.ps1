@@ -15,8 +15,8 @@ function Get-RegistryItems {
     $hasValueFilters = $Include.Count -gt 0 -or $Exclude.Count -gt 0
     $hasKeyFilters = $Exclude.Count -gt 0
 
-    $regKey = Get-Item -LiteralPath $RegistryPath -ErrorAction SilentlyContinue
-    if (-not $regKey) {
+    $registryKey = Get-Item -LiteralPath $RegistryPath -ErrorAction SilentlyContinue
+    if (-not $registryKey) {
         return @()
     }
 
@@ -31,8 +31,8 @@ function Get-RegistryItems {
     }
 
     $valueItems = @()
-    if ($regKey.ValueCount -gt 0) {
-        $valueItems = Get-ProcessedRegistryValues -RegKey $regKey -RegistryTypeMap $registryTypeMap -UseRegistryDataTypes $UseRegistryDataTypes -Include $Include -Exclude $Exclude -HasValueFilters $hasValueFilters
+    if ($registryKey.ValueCount -gt 0) {
+        $valueItems = Get-ProcessedRegistryValues -RegistryKey $registryKey -RegistryTypeMap $registryTypeMap -UseRegistryDataTypes $UseRegistryDataTypes -Include $Include -Exclude $Exclude -HasValueFilters $hasValueFilters
     }
 
     $keyItems = Get-ProcessedRegistryKeys -RegistryPath $RegistryPath -Exclude $Exclude -HasKeyFilters $hasKeyFilters -DisplayItemCounts $DisplayItemCounts

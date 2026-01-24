@@ -2,19 +2,19 @@
 <helpItems schema="maml" xmlns="http://msh">
   <command:command xmlns:maml="http://schemas.microsoft.com/maml/2004/10" xmlns:command="http://schemas.microsoft.com/maml/dev/command/2004/10" xmlns:dev="http://schemas.microsoft.com/maml/dev/2004/10" xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
     <command:details>
-      <command:name>Edit-PowerTreeConfig</command:name>
+      <command:name>Edit-PowerTreeConfiguration</command:name>
       <command:verb>Edit</command:verb>
-      <command:noun>PowerTreeConfig</command:noun>
+      <command:noun>PowerTreeConfiguration</command:noun>
       <maml:description>
         <maml:para>Opens the PowerTree configuration file for editing.</maml:para>
       </maml:description>
     </command:details>
     <maml:description>
-      <maml:para>Edit-PowerTreeConfig is a utility cmdlet that manages your PowerTree and PowerTreeRegistry configuration file. It automatically locates or creates the configuration file and opens it in the appropriate editor for your operating system.</maml:para>
+      <maml:para>Edit-PowerTreeConfiguration is a utility cmdlet that manages your PowerTree and PowerTreeRegistry configuration file. It automatically locates or creates the configuration file and opens it in the appropriate editor for your operating system.</maml:para>
     </maml:description>
     <command:syntax>
       <command:syntaxItem>
-        <maml:name>Edit-PowerTreeConfig</maml:name>
+        <maml:name>Edit-PowerTreeConfiguration</maml:name>
       </command:syntaxItem>
     </command:syntax>
     <command:parameters />
@@ -22,7 +22,7 @@
     <command:returnValues />
     <maml:alertSet>
       <maml:alert>
-        <maml:para>Configuration File Location: - Windows: `$env:USERPROFILE\.PowerTree\config.json` - macOS/Linux: `$HOME/.PowerTree/config.json` Default Editor Behavior: - Windows: Opens with the system default application for JSON files - macOS: Uses the `open` command to launch the default editor - Linux: Attempts to use `xdg-open`, `nano`, `vim`, or `vi` in that order Configuration File Structure: { "FileSystem": { "MaxDepth": -1, "Files": { "IncludeExtensions": [], "ExcludeExtensions": [], "FileSizeMaximum": "-1kb", "FileSizeMinimum": "-1kb" }, "Sorting": { "By": "Name", "SortFolders": false }, "HumanReadableSizes": true, "ExcludeDirectories": [] }, "Registry": { "MaxDepth": -1, "DisplayValues": false, "ExcludeKeys": [] }, "Shared": { "LineStyle": "unicode", "ShowExecutionStats": true, "ShowConfigurations": true, "ShowConnectorLines": true, "OpenOutputFileOnFinish": true } } Configuration Options: FileSystem Section (for Show-PowerTree): - `MaxDepth`: Maximum directory depth to traverse (-1 = unlimited). Overwritten by `-Depth` parameter.</maml:para>
+        <maml:para>Configuration File Location: - Windows: `$env:USERPROFILE\.PowerTree\config.json` - macOS/Linux: `$HOME/.PowerTree/config.json` Default Editor Behavior: - Windows: Opens with the system default application for JSON files - macOS: Uses the `open` command to launch the default editor - Linux: Attempts to use `xdg-open`, `nano`, `vim`, or `vi` in that order Configuration File Structure: { "FileSystem": { "MaximumDepth": -1, "Files": { "IncludeExtensions": [], "ExcludeExtensions": [], "FileSizeMaximum": "-1kb", "FileSizeMinimum": "-1kb" }, "Sorting": { "By": "Name", "SortFolders": false }, "HumanReadableSizes": true, "ExcludeDirectories": [] }, "Registry": { "MaximumDepth": -1, "DisplayValues": false, "ExcludeKeys": [] }, "Shared": { "LineStyle": "unicode", "ShowExecutionStats": true, "ShowConfigurations": true, "ShowConnectorLines": true, "OpenOutputFileOnFinish": true } } Configuration Options: FileSystem Section (for Show-PowerTree): - `MaximumDepth`: Maximum directory depth to traverse (-1 = unlimited). Overwritten by `-Depth` parameter.</maml:para>
         <maml:para>- `Files.IncludeExtensions`: Only show files with these extensions (empty = all files). Same as `-IncludeExtensions` parameter.</maml:para>
         <maml:para>- `Files.ExcludeExtensions`: Hide files with these extensions. Same as `-ExcludeExtensions` parameter.</maml:para>
         <maml:para>- `Files.FileSizeMaximum`: Hide files larger than this size (-1kb = no limit). Overwritten by `-FileSizeMaximum` parameter.</maml:para>
@@ -30,7 +30,7 @@
         <maml:para>- `Sorting.By`: Default sort method ("Name", "Size", "Date", etc.). Overwritten by `-Sort` and `-SortBy*` parameters.</maml:para>
         <maml:para>- `Sorting.SortFolders`: Apply sorting to directories (false = folders first). Can only be changed via configuration file.</maml:para>
         <maml:para>- `HumanReadableSizes`: Show sizes as KB/MB/GB instead of raw bytes. Can only be changed via configuration file.</maml:para>
-        <maml:para>- `ExcludeDirectories`: Standard directories to always exclude. Same as `-ExcludeDirectories` parameter. Registry Section (for Show-PowerTreeRegistry): - `MaxDepth`: Maximum registry depth to traverse (-1 = unlimited). Overwritten by `-Depth` parameter.</maml:para>
+        <maml:para>- `ExcludeDirectories`: Standard directories to always exclude. Same as `-ExcludeDirectories` parameter. Registry Section (for Show-PowerTreeRegistry): - `MaximumDepth`: Maximum registry depth to traverse (-1 = unlimited). Overwritten by `-Depth` parameter.</maml:para>
         <maml:para>- `DisplayValues`: Show registry value data (can be verbose). Overwritten by `-DisplayValues` parameter.</maml:para>
         <maml:para>- `ExcludeKeys`: Registry keys to always exclude. Overwritten by `-ExcludeKeys` parameter. Shared Section (for both cmdlets): - `LineStyle`: Tree connector style ("unicode" for ├── or "ascii" for |--). Can only be changed via configuration file.</maml:para>
         <maml:para>- `ShowExecutionStats`: Display timing and file count statistics. Can only be changed via configuration file.</maml:para>
@@ -38,13 +38,13 @@
         <maml:para>- `ShowConnectorLines`: Show tree connector lines. Can only be changed via configuration file.</maml:para>
         <maml:para>- `OpenOutputFileOnFinish`: Automatically open output file when using `-OutFile`. Can only be changed via configuration file.</maml:para>
         <maml:para></maml:para>
-        <maml:para>If the configuration file doesn't exist, Edit-PowerTreeConfig will create it with sensible defaults.</maml:para>
+        <maml:para>If the configuration file doesn't exist, Edit-PowerTreeConfiguration will create it with sensible defaults.</maml:para>
       </maml:alert>
     </maml:alertSet>
     <command:examples>
       <command:example>
         <maml:title>-------------- Example 1: Open configuration file --------------</maml:title>
-        <dev:code>PS C:\&gt; Edit-PowerTreeConfig</dev:code>
+        <dev:code>PS C:\&gt; Edit-PowerTreeConfiguration</dev:code>
         <dev:remarks>
           <maml:para>Opens the PowerTree configuration file in the default editor. If no configuration file exists, creates a new one with default settings.</maml:para>
         </dev:remarks>
@@ -190,7 +190,7 @@
         <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="s, size">
           <maml:name>DisplaySize</maml:name>
           <maml:description>
-            <maml:para>Displays file and folder sizes in readable units (KB, MB, GB) instead of raw byte counts. To show exact byte counts instead, use Edit-PowerTreeConfig and set HumanReadableSizes to false.</maml:para>
+            <maml:para>Displays file and folder sizes in readable units (KB, MB, GB) instead of raw byte counts. To show exact byte counts instead, use Edit-PowerTreeConfiguration and set HumanReadableSizes to false.</maml:para>
           </maml:description>
           <dev:type>
             <maml:name>SwitchParameter</maml:name>
@@ -514,7 +514,7 @@
       <command:parameter required="false" variableLength="true" globbing="false" pipelineInput="False" position="named" aliases="s, size">
         <maml:name>DisplaySize</maml:name>
         <maml:description>
-          <maml:para>Displays file and folder sizes in readable units (KB, MB, GB) instead of raw byte counts. To show exact byte counts instead, use Edit-PowerTreeConfig and set HumanReadableSizes to false.</maml:para>
+          <maml:para>Displays file and folder sizes in readable units (KB, MB, GB) instead of raw byte counts. To show exact byte counts instead, use Edit-PowerTreeConfiguration and set HumanReadableSizes to false.</maml:para>
         </maml:description>
         <command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
         <dev:type>
@@ -774,7 +774,7 @@
     </command:returnValues>
     <maml:alertSet>
       <maml:alert>
-        <maml:para>PowerTree provides extensive customization through a JSON configuration file. Use `Edit-PowerTreeConfig` to modify default settings.</maml:para>
+        <maml:para>PowerTree provides extensive customization through a JSON configuration file. Use `Edit-PowerTreeConfiguration` to modify default settings.</maml:para>
         <maml:para>File size filters support units: b, kb, mb, gb, tb.</maml:para>
       </maml:alert>
     </maml:alertSet>
@@ -794,7 +794,7 @@ PS C:\&gt; ptree</dev:code>
 # Shorthand
 PS C:\&gt; ptree -s -ss -desc -fsmi 10MB</dev:code>
         <dev:remarks>
-          <maml:para>Displays only files larger than 10MB and sorts them from largest to smallest. This creates a "disk usage audit" view of your directory. File sizes are displayed in human-readable format (KB, MB, GB) by default. To show exact byte counts instead, use Edit-PowerTreeConfig and set HumanReadableSizes to false.</maml:para>
+          <maml:para>Displays only files larger than 10MB and sorts them from largest to smallest. This creates a "disk usage audit" view of your directory. File sizes are displayed in human-readable format (KB, MB, GB) by default. To show exact byte counts instead, use Edit-PowerTreeConfiguration and set HumanReadableSizes to false.</maml:para>
         </dev:remarks>
       </command:example>
       <command:example>
@@ -822,7 +822,7 @@ ps C:\&gt; ptree -s -o "powertree"</dev:code>
         <maml:uri>https://github.com/spaansba/PowerTree</maml:uri>
       </maml:navigationLink>
       <maml:navigationLink>
-        <maml:linkText>Edit-PowerTreeConfig</maml:linkText>
+        <maml:linkText>Edit-PowerTreeConfiguration</maml:linkText>
         <maml:uri></maml:uri>
       </maml:navigationLink>
       <maml:navigationLink>
@@ -1203,7 +1203,7 @@ ps C:\&gt; ptree -s -o "powertree"</dev:code>
         <maml:uri></maml:uri>
       </maml:navigationLink>
       <maml:navigationLink>
-        <maml:linkText>Edit-PowerTreeConfig</maml:linkText>
+        <maml:linkText>Edit-PowerTreeConfiguration</maml:linkText>
         <maml:uri></maml:uri>
       </maml:navigationLink>
     </command:relatedLinks>

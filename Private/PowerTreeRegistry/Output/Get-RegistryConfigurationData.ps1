@@ -1,48 +1,48 @@
 function Get-RegistryConfigurationData {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory=$true)]
-        [TreeRegistryConfig]$TreeRegistryConfig
+        [Parameter(Mandatory = $true)]
+        [TreeRegistryConfig]$TreeRegistryConfiguration
     )
 
-    $configData = @()
+    $configurationData = @()
 
-    $sortByText = if ($TreeRegistryConfig.SortValuesByType) { "Type" } else { "Registry Order" }
-    $direction = if ($TreeRegistryConfig.SortDescending) { "Descending" } else { "Ascending" }
-    $configData += @{ Key = "Sort By"; Value = "$sortByText $direction" }
+    $sortByText = if ($TreeRegistryConfiguration.SortValuesByType) { 'Type' } else { 'Registry Order' }
+    $direction = if ($TreeRegistryConfiguration.SortDescending) { 'Descending' } else { 'Ascending' }
+    $configurationData += @{ Key = 'Sort By'; Value = "$sortByText $direction" }
 
-    $dataTypeText = if ($TreeRegistryConfig.UseRegistryDataTypes) {
-        "REG_SZ, REG_DWORD, etc."
+    $dataTypeText = if ($TreeRegistryConfiguration.UseRegistryDataTypes) {
+        'REG_SZ, REG_DWORD, etc.'
     } else {
-        "String, DWord, etc."
+        'String, DWord, etc.'
     }
-    $configData += @{ Key = "Type Format"; Value = $dataTypeText }
-    $configData += @{ Key = "NoValues"; Value = $TreeRegistryConfig.NoValues }
-    $configData += @{ Key = "DisplayItemCounts"; Value = $TreeRegistryConfig.DisplayItemCounts }
-    $configData += @{ Key = "SortValuesByType"; Value = $TreeRegistryConfig.SortValuesByType }
+    $configurationData += @{ Key = 'Type Format'; Value = $dataTypeText }
+    $configurationData += @{ Key = 'NoValues'; Value = $TreeRegistryConfiguration.NoValues }
+    $configurationData += @{ Key = 'DisplayItemCounts'; Value = $TreeRegistryConfiguration.DisplayItemCounts }
+    $configurationData += @{ Key = 'SortValuesByType'; Value = $TreeRegistryConfiguration.SortValuesByType }
 
-    if ($TreeRegistryConfig.MaxDepth -ne -1) {
-        $configData += @{ Key = "Max Depth"; Value = $TreeRegistryConfig.MaxDepth }
+    if ($TreeRegistryConfiguration.MaximumDepth -ne -1) {
+        $configurationData += @{ Key = 'Maximum Depth'; Value = $TreeRegistryConfiguration.MaximumDepth }
     } else {
-        $configData += @{ Key = "Max Depth"; Value = "Unlimited" }
-    }
-
-    if ($TreeRegistryConfig.Include -and $TreeRegistryConfig.Include.Count -gt 0) {
-        $configData += @{ Key = "Include (Values)"; Value = ($TreeRegistryConfig.Include -join ', ') }
-    } else {
-        $configData += @{ Key = "Include (Values)"; Value = "None" }
+        $configurationData += @{ Key = 'Maximum Depth'; Value = 'Unlimited' }
     }
 
-    if ($TreeRegistryConfig.Exclude -and $TreeRegistryConfig.Exclude.Count -gt 0) {
-        $configData += @{ Key = "Exclude (Keys/Values)"; Value = ($TreeRegistryConfig.Exclude -join ', ') }
+    if ($TreeRegistryConfiguration.Include -and $TreeRegistryConfiguration.Include.Count -gt 0) {
+        $configurationData += @{ Key = 'Include (Values)'; Value = ($TreeRegistryConfiguration.Include -join ', ') }
     } else {
-        $configData += @{ Key = "Exclude (Keys/Values)"; Value = "None" }
+        $configurationData += @{ Key = 'Include (Values)'; Value = 'None' }
+    }
+
+    if ($TreeRegistryConfiguration.Exclude -and $TreeRegistryConfiguration.Exclude.Count -gt 0) {
+        $configurationData += @{ Key = 'Exclude (Keys/Values)'; Value = ($TreeRegistryConfiguration.Exclude -join ', ') }
+    } else {
+        $configurationData += @{ Key = 'Exclude (Keys/Values)'; Value = 'None' }
     }
 
 
-    $maxKeyLength = ($configData | ForEach-Object { $PSItem.Key.Length } | Measure-Object -Maximum).Maximum + 1
+    $maxKeyLength = ($configurationData | ForEach-Object { $PSItem.Key.Length } | Measure-Object -Maximum).Maximum + 1
 
-    $formattedData = $configData | ForEach-Object {
+    $formattedData = $configurationData | ForEach-Object {
         $paddedKey = $PSItem.Key.PadRight($maxKeyLength)
         "$paddedKey $($PSItem.Value)"
     }

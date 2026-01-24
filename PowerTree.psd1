@@ -2,7 +2,7 @@
 @{
     # Core module information
     RootModule           = 'PowerTree.psm1'
-    ModuleVersion        = '2601.22.0000'
+    ModuleVersion        = '2601.23.2300'
     GUID                 = 'bd5a541e-746e-438d-9b57-28f6d9df01a3'
     Author               = 'Bart Spaans'
     CompanyName          = 'Personal'
@@ -14,7 +14,7 @@
     CompatiblePSEditions = @('Desktop', 'Core')
 
     # Exports
-    FunctionsToExport    = @('Show-PowerTree', 'Edit-PowerTreeConfig', 'Show-PowerTreeRegistry')
+    FunctionsToExport    = @('Show-PowerTree', 'Edit-PowerTreeConfiguration', 'Show-PowerTreeRegistry')
     CmdletsToExport      = @()
     VariablesToExport    = @()
     AliasesToExport      = @('ptree', 'Start-PowerTree', 'PowerTree', 'Edit-PtreeConfig', 'Edit-Ptree', 'Edit-PowerTree', 'ptreer', 'PowerRegistry')
