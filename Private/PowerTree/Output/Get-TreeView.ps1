@@ -156,15 +156,12 @@ function Get-TreeView {
                 if ($null -ne $OutputBuilder) {
                     [void]$OutputBuilder.AppendLine($outputInfo.Line)
                 } else {
-                    Write-Host $before -NoNewline
-
                     if ($null -ne $outputInfo.SizeColorInfo.AnsiColor) {
-                        Write-Host "$($outputInfo.SizeColorInfo.AnsiColor)$size$($global:PSStyle.Reset)" -NoNewline
+                        Write-Information -MessageData "$before$($outputInfo.SizeColorInfo.AnsiColor)$size$($global:PSStyle.Reset)$after" -InformationAction Continue
                     } else {
-                        Write-Host $size -ForegroundColor $outputInfo.SizeColorInfo.ConsoleColor -NoNewline
+                        # Fallback: Just print the whole line without color if no ANSI, or simple concat
+                        Write-Information -MessageData "$before$size$after" -InformationAction Continue
                     }
-
-                    Write-Host $after
                 }
             } else {
                 Write-OutputLine -Line $outputInfo.Line `

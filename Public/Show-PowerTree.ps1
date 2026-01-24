@@ -203,6 +203,10 @@
         [switch]$ShowHiddenFiles,
 
         [Parameter()]
+        [Alias('forceDirs', 'HiddenFolders')]
+        [switch]$ShowHiddenFolders,
+
+        [Parameter()]
         [Alias('o', 'of')]
         [string]$OutFile
     )
@@ -271,7 +275,7 @@
                 throw "Cannot find path '$LiteralPath'"
             }
 
-            $ChildItemDirectoryParams = Build-ChildItemDirectoryParams $ShowHiddenFiles
+            $ChildItemDirectoryParams = Build-ChildItemDirectoryParams -ShowHiddenFiles $ShowHiddenFiles -ShowHiddenFolders $ShowHiddenFolders
             $ChildItemFileParams = Build-ChildItemFileParams -ShowHiddenFiles $ShowHiddenFiles `
                 -CommandLineIncludeExt $IncludeExtensions `
                 -CommandLineExcludeExt $ExcludeExtensions `

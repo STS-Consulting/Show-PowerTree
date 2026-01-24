@@ -1,16 +1,17 @@
 
 function Build-ChildItemDirectoryParams {
     param(
-        [boolean]$ShowHiddenFiles
+        [boolean]$ShowHiddenFiles,
+        [boolean]$ShowHiddenFolders
     )
 
     $dirParams = @{
-        Directory = $true
-        ErrorAction = "SilentlyContinue"
+        Directory   = $true
+        ErrorAction = 'SilentlyContinue'
     }
-    
-    if ($ShowHiddenFiles) {
-        $dirParams.Add("Force", $true)
+
+    if ($ShowHiddenFolders) {
+        $dirParams.Add('Force', $true)
     }
-    return $dirParams 
+    return $dirParams
 }

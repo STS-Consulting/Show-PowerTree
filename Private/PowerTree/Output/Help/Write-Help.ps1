@@ -1,66 +1,65 @@
 function Write-Help {
-    Write-Host ""
+    Write-Information -InformationAction Continue -MessageData ''
+    Write-Information -Information Action Continue -MessageData "$(PSStyle.Formatting.Verbose)BASIC OPTIONS:"$(PSStyle.Reset)
+    Write-Information -Information Action Continue -MessageData '  -LiteralPath, -p <LiteralPath>                    Specify path to search (default: current directory)'
+    Write-Information -Information Action Continue -MessageData '  -Verbose                            Show verbose output'
+    Write-Information -Information Action Continue -MessageData '  -ShowHiddenFiles, -force            Show hidden files and directories'
+    Write-Information -Information Action Continue -MessageData ''
 
-    Write-Host "BASIC OPTIONS:" -ForegroundColor Yellow
-    Write-Host "  -LiteralPath, -p <LiteralPath>                    Specify path to search (default: current directory)"
-    Write-Host "  -Verbose                            Show verbose output"
-    Write-Host "  -ShowHiddenFiles, -force            Show hidden files and directories"
-    Write-Host ""
+    Write-Information -Information Action Continue -MessageData "$(PSStyle.Formatting.Verbose)HELP OPTIONS:"$(PSStyle.Reset)
+    Write-Information -Information Action Continue -MessageData '  -Help, -h                           You are here :)'
+    Write-Information -Information Action Continue -MessageData '  -Version, -v                        Print current version'
+    Write-Information -Information Action Continue -MessageData '  -ModuleInfo, -i, -info              Print PowerTree information'
+    Write-Information -Information Action Continue -MessageData '  -CheckForUpdates, -check            Check for available updates'
+    Write-Information -Information Action Continue -MessageData '  -Examples, -ex, -example            Print examples'
+    Write-Information -Information Action Continue -MessageData ''
 
-    Write-Host "HELP OPTIONS:" -ForegroundColor Yellow
-    Write-Host "  -Help, -h                           You are here :)"
-    Write-Host "  -Version, -v                        Print current version"
-    Write-Host "  -ModuleInfo, -i, -info              Print PowerTree information"
-    Write-Host "  -CheckForUpdates, -check            Check for available updates"
-    Write-Host "  -Examples, -ex, -example            Print examples"
-    Write-Host ""
+    Write-Information -Information Action Continue -MessageData "$(PSStyle.Formatting.Verbose)FOLDER FILTERING"$(PSStyle.Reset)
+    Write-Information -Information Action Continue -MessageData '  -Depth -l -level <number>                   Limit display to specified number of directory levels'
+    Write-Information -Information Action Continue -MessageData '  -ExcludeDirectories, -e, -exclude           Exclude specified directory(s)'
+    Write-Information -Information Action Continue -MessageData '  -PruneEmptyFolders, -p                      Exclude empty folders from output, also excludes empty folders caused by filters'
+    Write-Information -Information Action Continue -MessageData '  -DirectoryOnly, -d                          Display only directories (no files)'
+    Write-Information -Information Action Continue -MessageData ''
 
-    Write-Host "FOLDER FILTERING"  -ForegroundColor Yellow
-    Write-Host "  -Depth -l -level <number>                   Limit display to specified number of directory levels"
-    Write-Host "  -ExcludeDirectories, -e, -exclude           Exclude specified directory(s)"
-    Write-Host "  -PruneEmptyFolders, -p                      Exclude empty folders from output, also excludes empty folders caused by filters"
-    Write-Host "  -DirectoryOnly, -d                          Display only directories (no files)"
-    Write-Host ""
+    Write-Information -Information Action Continue -MessageData "$(PSStyle.Formatting.Verbose)FILE FILTERING:"$(PSStyle.Reset)
+    Write-Information -Information Action Continue -MessageData "$(PSStyle.Formatting.Warning)   Multiple files should be comma separated"$(PSStyle.Reset)
+    Write-Information -Information Action Continue -MessageData '  -IncludeExtensions, -if                     Include only files with specified extension(s)'
+    Write-Information -Information Action Continue -MessageData '  -ExcludeExtensions, -ef                     Exclude files with specified extension(s)'
+    Write-Information -Information Action Continue -MessageData '  -FileSizeMinimum -fsmi <size format>        Filters out all sizes below this size'
+    Write-Information -Information Action Continue -MessageData '  -FileSizeMaximum -fsma <size format>        Filters out all sizes above this size'
+    Write-Information -Information Action Continue -MessageData ''
 
-    Write-Host "FILE FILTERING:" -ForegroundColor Yellow
-    Write-Host "   Multiple files should be comma separated" -ForegroundColor Cyan
-    Write-Host "  -IncludeExtensions, -if                     Include only files with specified extension(s)"
-    Write-Host "  -ExcludeExtensions, -ef                     Exclude files with specified extension(s)"
-    Write-Host "  -FileSizeMinimum -fsmi <size format>        Filters out all sizes below this size"
-    Write-Host "  -FileSizeMaximum -fsma <size format>        Filters out all sizes above this size"
-    Write-Host ""
+    Write-Information -Information Action Continue -MessageData "$(PSStyle.Formatting.Verbose)DISPLAY OPTIONS:"$(PSStyle.Reset)
+    Write-Information -Information Action Continue -MessageData '  -OutFile, -o, -of <filepath>                Save output to specified file path (defaults to .txt if no extension specified)'
+    Write-Information -Information Action Continue -MessageData '  -DisplaySize, -s, -size                     Display file sizes in human-readable format'
+    Write-Information -Information Action Continue -MessageData '  -DisplayMode, -m, -dm                       Display mode of in file/folder (d - dir, a - archive, r - Read-only, h - hidden, s - system, l - reparse point, symlink etc)'
+    Write-Information -Information Action Continue -MessageData '  -DisplayModificationDate, -dmd,             Display modification date'
+    Write-Information -Information Action Continue -MessageData '  -DisplayCreationDate, -dcd,                 Display creation date'
+    Write-Information -Information Action Continue -MessageData '  -DisplayLastAccessDate, -dla,               Display last access date'
+    Write-Information -Information Action Continue -MessageData ''
 
-    Write-Host "DISPLAY OPTIONS:" -ForegroundColor Yellow
-    Write-Host "  -OutFile, -o, -of <filepath>                Save output to specified file path (defaults to .txt if no extension specified)"
-    Write-Host "  -DisplaySize, -s, -size                     Display file sizes in human-readable format"
-    Write-Host "  -DisplayMode, -m, -dm                       Display mode of in file/folder (d - dir, a - archive, r - Read-only, h - hidden, s - system, l - reparse point, symlink etc)"
-    Write-Host "  -DisplayModificationDate, -dmd,             Display modification date"
-    Write-Host "  -DisplayCreationDate, -dcd,                 Display creation date"
-    Write-Host "  -DisplayLastAccessDate, -dla,               Display last access date"
-    Write-Host ""
+    Write-Information -Information Action Continue -MessageData "$(PSStyle.Formatting.Verbose)SORTING OPTIONS:"$(PSStyle.Reset)
+    Write-Information -Information Action Continue -MessageData "$(PSStyle.Formatting.Warning)   You can use either the consolidated -Sort parameter OR individual sort switches:"$(PSStyle.Reset)
+    Write-Information -Information Action Continue -MessageData '  -SortBySize, -ss, -Sort size                Sort by size'
+    Write-Information -Information Action Continue -MessageData '  -SortByName, -sn, -Sort name                Sort alphabetically by name (default)'
+    Write-Information -Information Action Continue -MessageData '  -SortByModificationDate, -smd, -Sort md     Sort by last modified date'
+    Write-Information -Information Action Continue -MessageData '  -SortByCreationDate, -scd, -Sort cd         Sort by creation date'
+    Write-Information -Information Action Continue -MessageData '  -SortByLastAccessDate, -sla, -Sort la       Sort by last access date'
+    Write-Information -Information Action Continue -MessageData '  -Descending, -des, -desc                    Sort in Descending order'
+    Write-Information -Information Action Continue -MessageData ''
 
-    Write-Host "SORTING OPTIONS:" -ForegroundColor Yellow
-    Write-Host "   You can use either the consolidated -Sort parameter OR individual sort switches:" -ForegroundColor Cyan
-    Write-Host "  -SortBySize, -ss, -Sort size                Sort by size"
-    Write-Host "  -SortByName, -sn, -Sort name                Sort alphabetically by name (default)"
-    Write-Host "  -SortByModificationDate, -smd, -Sort md     Sort by last modified date"
-    Write-Host "  -SortByCreationDate, -scd, -Sort cd         Sort by creation date"
-    Write-Host "  -SortByLastAccessDate, -sla, -Sort la       Sort by last access date"
-    Write-Host "  -Descending, -des, -desc                    Sort in Descending order"
-    Write-Host ""
+    Write-Information -Information Action Continue -MessageData "$(PSStyle.Formatting.Verbose)EXAMPLES:"$(PSStyle.Reset)
+    Write-Information -Information Action Continue -MessageData "$(PSStyle.Formatting.Warning)  PowerTree -Examples for more examples"$(PSStyle.Reset)
+    Write-Information -Information Action Continue -MessageData '  PowerTree                               Show all files and directories in current path'
+    Write-Information -Information Action Continue -MessageData '  PowerTree -Sort size                    Sort by size'
+    Write-Information -Information Action Continue -MessageData '  PowerTree -ss -desc                     Sort by size (Descending)'
+    Write-Information -Information Action Continue -MessageData '  PowerTree -DisplayDate md               Show modification dates for files'
+    Write-Information -Information Action Continue -MessageData '  PowerTree -e node_modules,bin           Exclude node_modules and bin directories'
+    Write-Information -Information Action Continue -MessageData '  PowerTree -if ps1,txt                   Show only PowerShell scripts and text files'
+    Write-Information -Information Action Continue -MessageData '  PowerTree -s -ss                        Show and sort by file sizes'
+    Write-Information -Information Action Continue -MessageData '  PowerTree -o C:\temp\output.txt         Save output to specified file'
+    Write-Information -Information Action Continue -MessageData ''
 
-    Write-Host "EXAMPLES:" -ForegroundColor Yellow
-    Write-Host "  PowerTree -Examples for more examples" -ForegroundColor Cyan
-    Write-Host "  PowerTree                               Show all files and directories in current path"
-    Write-Host "  PowerTree -Sort size                    Sort by size"
-    Write-Host "  PowerTree -ss -desc                     Sort by size (Descending)"
-    Write-Host "  PowerTree -DisplayDate md               Show modification dates for files"
-    Write-Host "  PowerTree -e node_modules,bin           Exclude node_modules and bin directories"
-    Write-Host "  PowerTree -if ps1,txt                   Show only PowerShell scripts and text files"
-    Write-Host "  PowerTree -s -ss                        Show and sort by file sizes"
-    Write-Host "  PowerTree -o C:\temp\output.txt         Save output to specified file"
-    Write-Host ""
-
-    Write-Host ""
+    Write-Information -Information Action Continue -MessageData ''
     Write-CheckForUpdates
 }
