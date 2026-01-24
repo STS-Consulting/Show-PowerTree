@@ -1,4 +1,4 @@
-function Write-ConfigurationToHost {
+﻿function Write-ConfigurationToHost {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
@@ -20,8 +20,7 @@ function Write-ConfigurationToHost {
         $configData = Get-TreeConfigurationData -TreeConfig $Config
         $lineStyle = '─'
     } else {
-        Write-Error 'Invalid configuration type. Expected TreeConfig or TreeRegistryConfig.'
-        return
+        Write-Error 'Invalid configuration type. Expected TreeConfig or TreeRegistryConfig.' -ErrorAction Stop
     }
 
     Write-Information -MessageData ' ' -InformationAction Continue
@@ -32,7 +31,7 @@ function Write-ConfigurationToHost {
 
         Write-Information -MessageData "$headerColor`Configuration$resetColor" -InformationAction Continue
         Write-Information -MessageData "$headerColor$($lineStyle * 13)$resetColor" -InformationAction Continue
-        Write-Verbose 'Some settings might be sourced from the .config.json file'
+        Write-Verbose -Message 'Some settings might be sourced from the .config.json file'
 
         # Display configuration data
         foreach ($configLine in $configData) {
@@ -42,7 +41,7 @@ function Write-ConfigurationToHost {
         # Fallback to plain text if PSStyle is somehow missing (though unlikely in PS 7.5+)
         Write-Information -MessageData 'Configuration' -InformationAction Continue
         Write-Information -MessageData ($lineStyle * 13) -InformationAction Continue
-        Write-Verbose 'Some settings might be sourced from the .config.json file'
+        Write-Verbose -Message 'Some settings might be sourced from the .config.json file'
 
         # Display configuration data
         foreach ($configLine in $configData) {

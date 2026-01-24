@@ -7,7 +7,7 @@ function Get-TreeRegistryView {
         [string]$TreeIndent = '',
         [bool]$IsRoot = $true,
         [int]$CurrentDepth = 0,
-        [System.Collections.Generic.List[string]]$OutputCollection = $null,
+        [Collections.Generic.List[string]]$OutputCollection = $null,
         [RegistryStats]$Stats = $null
     )
 
@@ -58,17 +58,20 @@ function Get-TreeRegistryView {
         return
     }
 
-    $allItems = Get-RegistryItems -RegistryPath $pathToUse `
-        -DisplayItemCounts $TreeRegistryConfig.DisplayItemCounts `
-        -SortValuesByType $TreeRegistryConfig.SortValuesByType `
-        -SortDescending $TreeRegistryConfig.SortDescending `
-        -UseRegistryDataTypes $TreeRegistryConfig.UseRegistryDataTypes `
-        -Exclude $TreeRegistryConfig.Exclude `
-        -Include $TreeRegistryConfig.Include
+    $registryItemsParams = @{
+        RegistryPath         = $pathToUse
+        DisplayItemCounts    = $TreeRegistryConfig.DisplayItemCounts
+        SortValuesByType     = $TreeRegistryConfig.SortValuesByType
+        SortDescending       = $TreeRegistryConfig.SortDescending
+        UseRegistryDataTypes = $TreeRegistryConfig.UseRegistryDataTypes
+        Exclude              = $TreeRegistryConfig.Exclude
+        Include              = $TreeRegistryConfig.Include
+    }
+    $allItems = Get-RegistryItems @registryItemsParams
 
     if ($null -ne $Stats) {
-        $keyCount = ($allItems | Where-Object { $_.TypeName -eq 'Key' }).Count
-        $valueCount = ($allItems | Where-Object { $_.TypeName -ne 'Key' }).Count
+        $keyCount = ($allItems | Where-Object { $PSItem.TypeName -eq 'Key' }).Count
+        $valueCount = ($allItems | Where-Object { $PSItem.TypeName -ne 'Key' }).Count
 
         $Stats.KeysProcessed += $keyCount
         $Stats.ValuesProcessed += $valueCount

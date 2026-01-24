@@ -15,7 +15,7 @@ function Edit-PowerTreeConfig {
     param()
 
     $configPaths = Get-ConfigPaths
-    $existingConfig = $configPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
+    $existingConfig = $configPaths | Where-Object { Test-Path $PSItem } | Select-Object -First 1
 
     if ($existingConfig) {
         $configPath = $existingConfig
@@ -49,8 +49,7 @@ function Edit-PowerTreeConfig {
 
             Write-Information -MessageData "$($PSStyle.Foreground.Green)Created new config file at: $configPath$($PSStyle.Reset)" -InformationAction Continue
         } catch {
-            Write-Error "Failed to create config file: $PSItem"
-            return
+            Write-Error "Failed to create config file: $PSItem" -ErrorAction Stop
         }
     } else {
         Write-Information -MessageData "$($PSStyle.Foreground.Cyan)Using existing config file: $configPath$($PSStyle.Reset)" -InformationAction Continue
@@ -60,7 +59,7 @@ function Edit-PowerTreeConfig {
         $resolvedPath = Resolve-Path $configPath -ErrorAction Stop
 
         if ($IsWindows -or $null -eq $IsWindows) {
-            Start-Process $resolvedPath
+            Start-Process -FilePath $resolvedPath
         } elseif ($IsMacOS) {
             Start-Process 'open' -ArgumentList $resolvedPath
         } elseif ($IsLinux) {
@@ -69,7 +68,7 @@ function Edit-PowerTreeConfig {
 
             foreach ($editor in $editors) {
                 try {
-                    Start-Process $editor -ArgumentList $resolvedPath -ErrorAction Stop
+                    Start-Process -FilePath $editor -ArgumentList $resolvedPath -ErrorAction Stop
                     $editorOpened = $true
                     break
                 } catch {

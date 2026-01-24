@@ -174,7 +174,7 @@
         [Parameter()]
         [ValidateScript({
                 # Validate format of lower bound size filter
-                $_ -match '^\d+(?:\.\d+)?(b|kb|mb|gb|tb)?$'
+                $PSItem -match '^\d+(?:\.\d+)?(b|kb|mb|gb|tb)?$'
             })]
         [Alias('fsmi')]
         [string]$FileSizeMinimum = '-1kb',
@@ -182,7 +182,7 @@
         [Parameter()]
         [ValidateScript({
                 # Validate format of upper bound size filter
-                $_ -match '^\d+(?:\.\d+)?(b|kb|mb|gb|tb)?$'
+                $PSItem -match '^\d+(?:\.\d+)?(b|kb|mb|gb|tb)?$'
             })]
         [Alias('fsma')]
         [string]$FileSizeMaximum = '-1kb',
@@ -235,33 +235,44 @@
     $treeConfig.Path = $LiteralPath
     $treeConfig.LineStyle = Build-TreeLineStyle -Style $jsonSettings.LineStyle
     $treeConfig.DirectoryOnly = $DirectoryOnly
-    $treeConfig.ExcludeDirectories = Build-ExcludedDirectoryParams -CommandLineExcludedDir $ExcludeDirectories `
-        -Settings $jsonSettings
-    $treeConfig.SortBy = Get-SortingMethod -SortBySize $SortBySize `
-        -SortByName $SortByName `
-        -SortByCreationDate $SortByCreationDate `
-        -SortByLastAccessDate $SortByLastAccessDate `
-        -SortByModificationDate $SortByModificationDate `
-        -DefaultSort $jsonSettings.Sorting.By `
-        -Sort $Sort
+    $excludedDirParams = @{
+        CommandLineExcludedDir = $ExcludeDirectories
+        Settings               = $jsonSettings
+    }
+    $treeConfig.ExcludeDirectories = Build-ExcludedDirectoryParams @excludedDirParams
+    $sortingParams = @{
+        SortBySize             = $SortBySize
+        SortByName             = $SortByName
+        SortByCreationDate     = $SortByCreationDate
+        SortByLastAccessDate   = $SortByLastAccessDate
+        SortByModificationDate = $SortByModificationDate
+        DefaultSort            = $jsonSettings.Sorting.By
+        Sort                   = $Sort
+    }
+    $treeConfig.SortBy = Get-SortingMethod @sortingParams
     $treeConfig.SortDescending = $Descending
     $treeConfig.SortFolders = $jsonSettings.Sorting.SortFolders
-    $treeConfig.HeaderTable = Get-HeaderTable -DisplayCreationDate $DisplayCreationDate `
-        -DisplayLastAccessDate $DisplayLastAccessDate `
-        -DisplayModificationDate $DisplayModificationDate `
-        -DisplaySize $DisplaySize `
-        -DisplayMode $DisplayMode `
-        -LineStyle $treeConfig.LineStyle
+    $headerTableParams = @{
+        DisplayCreationDate     = $DisplayCreationDate
+        DisplayLastAccessDate   = $DisplayLastAccessDate
+        DisplayModificationDate = $DisplayModificationDate
+        DisplaySize             = $DisplaySize
+        DisplayMode             = $DisplayMode
+        LineStyle               = $treeConfig.LineStyle
+    }
+    $treeConfig.HeaderTable = Get-HeaderTable @headerTableParams
 
     $treeConfig.ShowConnectorLines = $jsonSettings.ShowConnectorLines
     $treeConfig.ShowHiddenFiles = $ShowHiddenFiles
     $treeConfig.MaxDepth = if ($Depth -ne -1) { $Depth } else { $jsonSettings.MaxDepth }
-    $treeConfig.FileSizeBounds = Build-FileSizeParams -CommandLineMaxSize $FileSizeMaximum `
-        -CommandlineMinSize $FileSizeMinimum `
-        -SettingsLineMaxSize $jsonSettings.Files.FileSizeMaximum `
-        -SettingsLineMinSize $jsonSettings.Files.FileSizeMinimum
-    $treeConfig.OutFile = Add-DefaultExtension -FilePath $OutFile `
-        -IsRegistry $false
+    $fileSizeParams = @{
+        CommandLineMaxSize  = $FileSizeMaximum
+        CommandlineMinSize  = $FileSizeMinimum
+        SettingsLineMaxSize = $jsonSettings.Files.FileSizeMaximum
+        SettingsLineMinSize = $jsonSettings.Files.FileSizeMinimum
+    }
+    $treeConfig.FileSizeBounds = Build-FileSizeParams @fileSizeParams
+    $treeConfig.OutFile = Add-DefaultExtension -FilePath $OutFile -IsRegistry $false
 
     $treeConfig.PruneEmptyFolders = $PruneEmptyFolders
     $treeConfig.HumanReadableSizes = $jsonSettings.HumanReadableSizes
@@ -276,29 +287,38 @@
             }
 
             $ChildItemDirectoryParams = Build-ChildItemDirectoryParams -ShowHiddenFiles $ShowHiddenFiles -ShowHiddenFolders $ShowHiddenFolders
-            $ChildItemFileParams = Build-ChildItemFileParams -ShowHiddenFiles $ShowHiddenFiles `
-                -CommandLineIncludeExt $IncludeExtensions `
-                -CommandLineExcludeExt $ExcludeExtensions `
-                -FileSettings $jsonSettings.Files
+            $childItemFileParams = @{
+                ShowHiddenFiles       = $ShowHiddenFiles
+                CommandLineIncludeExt = $IncludeExtensions
+                CommandLineExcludeExt = $ExcludeExtensions
+                FileSettings          = $jsonSettings.Files
+            }
+            $ChildItemFileParams = Build-ChildItemFileParams @childItemFileParams
 
             if ($jsonSettings.ShowConfigurations) {
                 Write-ConfigurationToHost -Config $treeConfig
             }
 
-            Write-HeaderToOutput -HeaderTable $treeConfig.HeaderTable `
-                -OutputBuilder $outputBuilder `
-                -LineStyle $treeConfig.LineStyle
+            $headerOutputParams = @{
+                HeaderTable   = $treeConfig.HeaderTable
+                OutputBuilder = $outputBuilder
+                LineStyle     = $treeConfig.LineStyle
+            }
+            Write-HeaderToOutput @headerOutputParams
 
-            Get-TreeView -TreeConfig $treeConfig `
-                -TreeStats $treeStats `
-                -ChildItemDirectoryParams $ChildItemDirectoryParams `
-                -ChildItemFileParams $ChildItemFileParams `
-                -OutputBuilder $outputBuilder
+            $treeViewParams = @{
+                TreeConfig               = $treeConfig
+                TreeStats                = $treeStats
+                ChildItemDirectoryParams = $ChildItemDirectoryParams
+                ChildItemFileParams      = $ChildItemFileParams
+                OutputBuilder            = $outputBuilder
+            }
+            Get-TreeView @treeViewParams
 
         } catch {
-            Write-Error "Details: $($_.Exception.Message)"
-            Write-Error "Location: $($_.InvocationInfo.ScriptLineNumber), $($_.InvocationInfo.PositionMessage)"
-            Write-Verbose "Exception details: $($PSItem | Format-List * -Force | Out-String)"
+            Write-Error "Details: $($PSItem.Exception.Message)"
+            Write-Error "Location: $($PSItem.InvocationInfo.ScriptLineNumber), $($PSItem.InvocationInfo.PositionMessage)"
+            Write-Verbose -Message "Exception details: $($PSItem | Format-List * -Force | Out-String)"
         }
     }
 

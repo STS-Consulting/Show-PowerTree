@@ -114,7 +114,7 @@ function Show-PowerTreeRegistry {
 
         if ($hasOutputFile) {
             $outputBuilder = Invoke-OutputBuilderRegistry -TreeRegistryConfig $treeRegistryConfig -ShowConfigurations $jsonSettings.ShowConfigurations
-            $output = [System.Collections.Generic.List[string]]::new()
+            $output = [Collections.Generic.List[string]]::new()
             $registryStats = Get-TreeRegistryView -TreeRegistryConfig $treeRegistryConfig -OutputCollection $output
 
             foreach ($line in $output) {
@@ -153,7 +153,7 @@ function Show-PowerTreeRegistry {
         #TODO make own file:
         if ($jsonSettings.OpenOutputFileOnFinish) {
             try {
-                Write-Verbose "Opening file: $fullOutputPath "
+                Write-Verbose -Message "Opening file: $fullOutputPath "
 
                 # Use the appropriate method to open the file based on OS
                 if ($IsWindows -or $null -eq $IsWindows) {
@@ -168,8 +168,8 @@ function Show-PowerTreeRegistry {
                         Start-Process 'xdg-open' -ArgumentList $fullOutputPath
                     } catch {
                         # If xdg-open fails, try other common utilities
-                        try { Start-Process 'nano' -ArgumentList $fullOutputPath } catch {
-                            Write-Verbose 'Could not open file with xdg-open or nano'
+                        try { Start-Process -FilePath 'nano' -ArgumentList $fullOutputPath } catch {
+                            Write-Verbose -Message 'Could not open file with xdg-open or nano'
                         }
                     }
                 }

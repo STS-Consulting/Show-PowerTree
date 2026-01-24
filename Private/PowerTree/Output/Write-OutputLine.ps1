@@ -1,4 +1,5 @@
 function Write-OutputLine {
+    [CmdletBinding()]
     param (
         [string]$Line,
         [System.Text.StringBuilder]$OutputBuilder

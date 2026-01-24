@@ -1,5 +1,7 @@
 
 function Write-Examples {
+    [CmdletBinding()]
+    param()
     Write-Information -Information Action Continue -MessageData ''
     Write-Information -Information Action Continue -MessageData "$(PSStyle.Formatting.Verbose)EXAMPLES:$(PSStyle.Reset)"
     Write-Information -Information Action Continue -MessageData ''

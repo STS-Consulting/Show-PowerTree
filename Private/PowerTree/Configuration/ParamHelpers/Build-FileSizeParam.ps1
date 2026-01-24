@@ -1,18 +1,18 @@
 function Build-FileSizeParams {
     param (
-        [Parameter(Mandatory=$false)]
+        [Parameter(Mandatory = $false)]
         [AllowNull()]
         [string]$CommandLineMaxSize,
-        
-        [Parameter(Mandatory=$false)]
+
+        [Parameter(Mandatory = $false)]
         [AllowNull()]
         [string]$CommandLineMinSize,
-        
-        [Parameter(Mandatory=$false)]
+
+        [Parameter(Mandatory = $false)]
         [AllowNull()]
         [string]$SettingsLineMaxSize,
-        
-        [Parameter(Mandatory=$false)]
+
+        [Parameter(Mandatory = $false)]
         [AllowNull()]
         [string]$SettingsLineMinSize
     )
@@ -21,7 +21,7 @@ function Build-FileSizeParams {
     $cmdMinBytes = ConvertTo-Bytes -SizeString $CommandLineMinSize
     $settingsMaxBytes = ConvertTo-Bytes -SizeString $SettingsLineMaxSize
     $settingsMinBytes = ConvertTo-Bytes -SizeString $SettingsLineMinSize
-    
+
     # Track whether values come from settings
     $maxFromSettings = $cmdMaxBytes -lt 0
     $minFromSettings = $cmdMinBytes -lt 0
@@ -33,16 +33,15 @@ function Build-FileSizeParams {
     # If both max and min are non-negative, validate. Also if one of the values came from the settings add it for clarity
     if ($maxSize -ge 0 -and $minSize -ge 0 -and $maxSize -lt $minSize) {
         $errorMessage = "Error: Maximum file size cannot be smaller than minimum file size.`n"
-        $errorMessage += "  Maximum Size: $maxSize bytes" + $(if ($maxFromSettings) { " (from configuration settings)" } else { "" }) + "`n"
-        $errorMessage += "  Minimum Size: $minSize bytes" + $(if ($minFromSettings) { " (from configuration settings)" } else { "" }) + "`n"
+        $errorMessage += "  Maximum Size: $maxSize bytes" + $(if ($maxFromSettings) { ' (from configuration settings)' } else { '' }) + "`n"
+        $errorMessage += "  Minimum Size: $minSize bytes" + $(if ($minFromSettings) { ' (from configuration settings)' } else { '' }) + "`n"
 
-        Write-Host $errorMessage -ForegroundColor Red
-        exit 1
+        Write-Error $errorMessage -ErrorAction Stop
     }
 
     return @{
-        LowerBound = $minSize
-        UpperBound = $maxSize
+        LowerBound   = $minSize
+        UpperBound   = $maxSize
         ShouldFilter = ($minSize -ge 0) -or ($maxSize -ge 0)
     }
 }

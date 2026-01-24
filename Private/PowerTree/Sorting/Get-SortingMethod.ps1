@@ -1,100 +1,101 @@
-function Get-SortingMethod{
+function Get-SortingMethod {
+    [CmdletBinding()]
     param(
         [boolean]$SortBySize,
         [boolean]$SortByName,
         [boolean]$SortByModificationDate,
         [boolean]$SortByCreationDate,
         [boolean]$SortByLastAccessDate,
-        [ValidateSet("size", "name", "md", "cd", "la", "")]
+        [ValidateSet('size', 'name', 'md', 'cd', 'la', '')]
         [string]$Sort,
-        [ValidateScript({ $script:ValidSortOptions -contains $_ })]
+        [ValidateScript({ $script:ValidSortOptions -contains $PSItem })]
         [string]$DefaultSort
     )
 
     if ($Sort) {
         switch ($Sort) {
-            "size" { $SortBySize = $true }
-            "name" { $SortByName = $true }
-            "md" { $SortByModificationDate = $true }
-            "cd" { $SortByCreationDate = $true }
-            "la" { $SortByLastAccessDate = $true }
+            'size' { $SortBySize = $true }
+            'name' { $SortByName = $true }
+            'md' { $SortByModificationDate = $true }
+            'cd' { $SortByCreationDate = $true }
+            'la' { $SortByLastAccessDate = $true }
         }
     }
 
     $sortBy = $DefaultSort # Default sorting from psTree.config.json
-    if ($SortByModificationDate) { $sortBy = "Modification Date" }
-    elseif($SortByCreationDate) {$sortBy = "Creation Date"}
-    elseif($SortByLastAccessDate) {$sortBy = "Last Access Date"}
-    elseif ($SortBySize) { $sortBy = "Size" }
-    elseif ($SortByName) { $sortBy = "Name" }
-    
+    if ($SortByModificationDate) { $sortBy = 'Modification Date' }
+    elseif ($SortByCreationDate) { $sortBy = 'Creation Date' }
+    elseif ($SortByLastAccessDate) { $sortBy = 'Last Access Date' }
+    elseif ($SortBySize) { $sortBy = 'Size' }
+    elseif ($SortByName) { $sortBy = 'Name' }
+
     return $sortBy
 }
 
 # Function to sort items based on specified criteria
 function Group-Items {
+    [CmdletBinding()]
     param (
-        [Parameter(Mandatory=$false)]
+        [Parameter(Mandatory = $false)]
         [System.Object[]]$Items,
-        
-        [Parameter(Mandatory=$true)]
+
+        [Parameter(Mandatory = $true)]
         [string]$SortBy,
-        
+
         [Parameter()]
         [bool]$SortDescending = $false
     )
-    
+
     if ($null -eq $Items -or $Items.Count -eq 0) {
         return @()
     }
-    
+
     $sorted = switch ($SortBy) {
-        "Modification Date" {
+        'Modification Date' {
             $Items | Sort-Object -Property LastWriteTime
         }
-        "Creation Date" {
+        'Creation Date' {
             $Items | Sort-Object -Property CreationTime
         }
-        "Last Access Date" {
+        'Last Access Date' {
             $Items | Sort-Object -Property LastAccessTime
         }
-        "Name" {
+        'Name' {
             $Items | Sort-Object -Property Name
         }
-        "Size" {
-            $Items | Sort-Object -Property { if ($_ -is [System.IO.DirectoryInfo]) {
-                # For directories, calculate total size of contents
-                (Get-ChildItem -LiteralPath $_.FullName -Recurse -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
-            } else {
-                # For files, use file length
-                $_.Length
-            }}
+        'Size' {
+            $Items | Sort-Object -Property { if ($PSItem -is [System.IO.DirectoryInfo]) {
+                    # For directories, calculate total size of contents
+                    (Get-ChildItem -LiteralPath $PSItem.FullName -Recurse -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
+                } else {
+                    # For files, use file length
+                    $PSItem.Length
+                } }
         }
 
-        Default {
+        default {
             $Items | Sort-Object -Property Name
         }
     }
-    
+
     if ($SortDescending) {
         # When sorting in descending order, we need to be specific about the property
         switch ($SortBy) {
-            "Modification Date" { return $Items | Sort-Object -Property LastWriteTime -Descending }
-            "Creation Date" { return $Items | Sort-Object -Property CreationTime -Descending }
-            "Last Access Date" { return $Items | Sort-Object -Property LastAccessTime -Descending }
-            "Name" { return $Items | Sort-Object -Property Name -Descending }
-            "Size" { 
-                return $Items | Sort-Object -Property { 
-                    if ($_ -is [System.IO.DirectoryInfo]) {
-                        (Get-ChildItem -LiteralPath $_.FullName -Recurse -File -ErrorAction SilentlyContinue | 
-                            Measure-Object -Property Length -Sum).Sum
+            'Modification Date' { return $Items | Sort-Object -Property LastWriteTime -Descending }
+            'Creation Date' { return $Items | Sort-Object -Property CreationTime -Descending }
+            'Last Access Date' { return $Items | Sort-Object -Property LastAccessTime -Descending }
+            'Name' { return $Items | Sort-Object -Property Name -Descending }
+            'Size' {
+                return $Items | Sort-Object -Property {
+                    if ($PSItem -is [System.IO.DirectoryInfo]) {
+                        (Get-ChildItem -LiteralPath $PSItem.FullName -Recurse -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
                     } else {
-                        $_.Length
+                        $PSItem.Length
                     }
-                } -Descending 
+                } -Descending
             }
 
-            Default { return $Items | Sort-Object -Property Name -Descending }
+            default { return $Items | Sort-Object -Property Name -Descending }
         }
     } else {
         return $sorted

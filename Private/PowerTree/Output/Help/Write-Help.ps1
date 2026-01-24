@@ -1,4 +1,6 @@
 function Write-Help {
+    [CmdletBinding()]
+    param()
     Write-Information -InformationAction Continue -MessageData ''
     Write-Information -Information Action Continue -MessageData "$(PSStyle.Formatting.Verbose)BASIC OPTIONS:"$(PSStyle.Reset)
     Write-Information -Information Action Continue -MessageData '  -LiteralPath, -p <LiteralPath>                    Specify path to search (default: current directory)'

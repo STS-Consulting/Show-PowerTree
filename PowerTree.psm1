@@ -13,13 +13,13 @@ New-Alias -Name 'PowerRegistry' -Value 'Show-PowerTreeRegistry'
 # Order matters: Classes -> Constants/Enums -> Functions -> Public
 
 # 1. Classes
-$ClassesFile = Join-Path $PSScriptRoot 'Private\Shared\DataModel\Classes.ps1'
+$ClassesFile = Join-Path -Path $PSScriptRoot -ChildPath 'Private\Shared\DataModel\Classes.ps1'
 if (Test-Path $ClassesFile) {
     try {
         . $ClassesFile
-        Write-Verbose "Imported class definitions from $ClassesFile"
+        Write-Verbose -Message "Imported class definitions from $ClassesFile"
     } catch {
-        Write-Error "Failed to import class definitions from $ClassesFile`: $_"
+        Write-Error "Failed to import class definitions from $ClassesFile`: $PSItem"
     }
 } else {
     Write-Error "Critical: Classes file not found at $ClassesFile"
@@ -86,12 +86,12 @@ $PrivateFiles = @(
 foreach ($file in $PrivateFiles) {
     # Normalize path separators
     $relativePath = $file -replace '[\\/]', [System.IO.Path]::DirectorySeparatorChar
-    $fullPath = Join-Path $PSScriptRoot $relativePath
+    $fullPath = Join-Path -Path $PSScriptRoot -ChildPath $relativePath
     if (Test-Path $fullPath) {
         try {
             . $fullPath
         } catch {
-            Write-Error "Failed to import private function $file`: $_"
+            Write-Error "Failed to import private function $file`: $PSItem"
         }
     } else {
         Write-Warning "Private function file not found: $file (Expected at: $fullPath)"
@@ -108,12 +108,12 @@ $PublicFiles = @(
 foreach ($file in $PublicFiles) {
     # Normalize path separators
     $relativePath = $file -replace '[\\/]', [System.IO.Path]::DirectorySeparatorChar
-    $fullPath = Join-Path $PSScriptRoot $relativePath
+    $fullPath = Join-Path -Path $PSScriptRoot -ChildPath $relativePath
     if (Test-Path $fullPath) {
         try {
             . $fullPath
         } catch {
-            Write-Error "Failed to import public function $file`: $_"
+            Write-Error "Failed to import public function $file`: $PSItem"
         }
     } else {
         Write-Warning "Public function file not found: $file (Expected at: $fullPath)"

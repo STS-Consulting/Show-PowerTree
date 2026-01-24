@@ -1,9 +1,10 @@
 
 function Set-LastItemFlag {
+    [CmdletBinding()]
     param (
         [array]$Items
     )
-    
+
     if ($Items.Count -gt 0) {
         # Reset all IsLast flags
         foreach ($item in $Items) {
@@ -12,6 +13,6 @@ function Set-LastItemFlag {
         # Set the last item
         $Items[-1].IsLast = $true
     }
-    
+
     return $Items
 }
