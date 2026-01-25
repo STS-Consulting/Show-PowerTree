@@ -1,9 +1,9 @@
-# PowerTree
+# Show-PowerTree
 
 A modern replacement for the `tree` command that lets you explore directory structures and Windows Registry with detailed information and advanced filtering possibilities.
 
-[![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/PowerTree)](https://www.powershellgallery.com/packages/PowerTree)
-[![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/PowerTree)](https://www.powershellgallery.com/packages/PowerTree)
+[![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/Show-PowerTree)](https://www.powershellgallery.com/packages/Show-PowerTree)
+[![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/Show-PowerTree)](https://www.powershellgallery.com/packages/Show-PowerTree)
 ![License](https://img.shields.io/github/license/spaansba/PowerTree)
 ![Platform](https://img.shields.io/badge/platform-windows%20%7C%20macOS%20%7C%20linux-blue)
 ![PowerShell Version](https://img.shields.io/badge/PowerShell-7.0%2B-blue)
@@ -21,19 +21,19 @@ https://github.com/user-attachments/assets/f95b4eb9-72ce-48db-aeca-0b16e81b14bf
 
 ## What is PowerTree?
 
-PowerTree is a comprehensive tree visualization tool that provides two main capabilities:
+Show-PowerTree is a comprehensive tree visualization tool that provides two main capabilities:
 
 - **File System Explorer**: A modern alternative to the traditional `tree` command with advanced filtering, sorting, and display options
 - **Registry Explorer**: Windows Registry visualization in tree format (Windows only)
 
-Unlike standard tree commands, PowerTree offers detailed information display, multiple sorting options, filtering capabilities, and customizable configuration.
+Unlike standard tree commands, Show-PowerTree offers detailed information display, multiple sorting options, filtering capabilities, and customizable configuration.
 
 ## Installation
 
 From [PowerShell Gallery](https://www.powershellgallery.com/packages/PowerTree):
 
 ```powershell
-Install-Module PowerTree
+Install-Module Show-PowerTree
 ```
 
 # Commands
@@ -49,7 +49,7 @@ A modern replacement for the tree command that lets you explore directory struct
   <br>
 
 ```powershell
-ptree -DisplaySize -Descending -SortBySize
+Show-PowerTree -DisplaySize -Descending -SortBySize
 ```
 
   <img src="./images/Size_SortSize_Desc.JPG" alt="PowerTree with file sizes sorted by size">
@@ -60,7 +60,7 @@ ptree -DisplaySize -Descending -SortBySize
   <br>
 
 ```powershell
-ptree -DisplayAll -Descending -SortByName
+Show-PowerTree -DisplayAll -Descending -SortByName
 ```
 
   <img src="./images/All_Display_Options.JPG" alt="PowerTree with all display options">
@@ -71,7 +71,7 @@ ptree -DisplayAll -Descending -SortByName
   <br>
 
 ```powershell
-ptree -FileSizeMinimum "1kb" -DisplaySize
+Show-PowerTree -FileSizeMinimum "1kb" -DisplaySize
 ```
 
   <img src="./images/File_Size_Minimum.JPG" alt="PowerTree with file size filtering">
@@ -82,7 +82,7 @@ ptree -FileSizeMinimum "1kb" -DisplaySize
   <br>
 
 ```powershell
-ptree -DirectoryOnly -DisplaySize
+Show-PowerTree -DirectoryOnly -DisplaySize
 ```
 
   <img src="./images/Directory_Only.JPG" alt="PowerTree directory only view">
@@ -126,10 +126,10 @@ Opens the configuration file to change default settings. Set which directories t
 
 ```powershell
 # Find large files consuming disk space
-ptree -DisplaySize -SortBySize -Descending -FileSizeMinimum 100MB
+Show-PowerTree -DisplaySize -SortBySize -Descending -FileSizeMinimum 100MB
 
 # Document directory structure for compliance
-ptree -DisplayAll -OutFile system_audit.txt
+Show-PowerTree -DisplayAll -OutFile system_audit.txt
 
 # Audit installed software and versions
 Show-PowerTreeRegistry -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall" -Depth 2 -OutFile "output.txt"
@@ -139,13 +139,13 @@ Show-PowerTreeRegistry -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Un
 
 ```powershell
 # Exclude build artifacts and show only source files
-ptree -ExcludeDirectories bin,obj,node_modules -IncludeExtensions cs,js,ts
+Show-PowerTree -ExcludeDirectories bin,obj,node_modules -IncludeExtensions cs,js,ts
 
 # Check project structure and sizes
-ptree -DisplaySize -ExcludeDirectories .git,.vs -Depth 3
+Show-PowerTree -DisplaySize -ExcludeDirectories .git,.vs -Depth 3
 
 # Export project documentation
-ptree -IncludeExtensions md,txt -OutFile project_docs.txt
+Show-PowerTree -IncludeExtensions md,txt -OutFile project_docs.txt
 ```
 
 ## Documentation

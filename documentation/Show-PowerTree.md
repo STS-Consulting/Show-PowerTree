@@ -13,7 +13,7 @@ A modern replacement for the tree command with advanced filtering, sorting, and 
 
 ## SYNTAX
 
-```
+```powershell
 Show-PowerTree [[-LiteralPath] <String>] [-Depth <Int32>] [-Examples] [-PruneEmptyFolders] [-DisplayAll]
  [-DisplayMode] [-DisplaySize] [-DisplayModificationDate] [-DisplayCreationDate] [-DisplayLastAccessDate]
  [-DirectoryOnly] [-ExcludeDirectories <String[]>] [-Sort <String>] [-SortByModificationDate]
@@ -34,6 +34,8 @@ Unlike the standard `tree` command, PowerTree offers:
 - Filtering capabilities (by extension, size, directory)
 - Customizable configuration via JSON
 - Export functionality to save output to files
+- Colorization of Hidden Files and Folders
+- Colorization of OneDrive CloudOnly, Available, and Pinned files and folders
 
 ## EXAMPLES
 
@@ -224,6 +226,7 @@ Accept wildcard characters: False
 ```
 
 ### -Examples
+
 {{ Fill Examples Description }}
 
 ```yaml
@@ -335,6 +338,7 @@ Accept wildcard characters: False
 ```
 
 ### -LiteralPath
+
 {{ Fill LiteralPath Description }}
 
 ```yaml
@@ -495,6 +499,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressAction
+
 {{ Fill ProgressAction Description }}
 
 ```yaml
@@ -510,6 +515,7 @@ Accept wildcard characters: False
 ```
 
 ### CommonParameters
+
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS

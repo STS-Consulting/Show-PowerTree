@@ -7,8 +7,7 @@ _.Tests.ps1
 .pubignore
 .vscode
 _.code-workspace
-docs/
-TestHiddenFolders/
+Documents/
 README.md
 LICENSE
 \*.md

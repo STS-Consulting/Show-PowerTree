@@ -6,7 +6,7 @@ function Get-SortingMethod {
         [boolean]$SortByModificationDate,
         [boolean]$SortByCreationDate,
         [boolean]$SortByLastAccessDate,
-        [ValidateSet('size', 'name', 'md', 'cd', 'la', '')]
+        [ValidateSet('size', 'name', 'ModificationDate', 'CreationDate', 'LastAccessDate', 'md', 'cd', 'la', '')]
         [string]$Sort,
         [ValidateScript({ $script:ValidSortOptions -contains $PSItem })]
         [string]$DefaultSort
@@ -17,8 +17,11 @@ function Get-SortingMethod {
             'size' { $SortBySize = $true }
             'name' { $SortByName = $true }
             'md' { $SortByModificationDate = $true }
+            'ModificationDate' { $SortByModificationDate = $true }
             'cd' { $SortByCreationDate = $true }
+            'CreationDate' { $SortByCreationDate = $true }
             'la' { $SortByLastAccessDate = $true }
+            'LastAccessDate' { $SortByLastAccessDate = $true }
         }
     }
 

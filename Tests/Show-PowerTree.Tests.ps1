@@ -1,23 +1,23 @@
-$here = $PSScriptRoot
-$sut = (Resolve-Path "$here/../PowerTree.psd1").Path
 
-Describe 'PowerTree Module' {
+
+Describe 'Show-PowerTree Module' {
     BeforeAll {
+        $sut = Join-Path -Path $PSScriptRoot -ChildPath '..\Show-PowerTree.psd1'
         Import-Module -Name $sut -Force -ErrorAction Stop -Scope Global
     }
 
     Context 'Validation' {
         It 'Can Import Module' {
-            $module = Get-Module -Name PowerTree
+            $module = Get-Module -Name Show-PowerTree
             $module | Should -Not -BeNullOrEmpty
         }
 
         It 'Exports Show-PowerTree' {
-            Get-Command -Module PowerTree -Name Show-PowerTree | Should -Not -BeNullOrEmpty
+            Get-Command -Module Show-PowerTree -Name Show-PowerTree | Should -Not -BeNullOrEmpty
         }
 
         It 'Exports Edit-PowerTreeConfiguration' {
-            Get-Command -Module PowerTree -Name Edit-PowerTreeConfiguration | Should -Not -BeNullOrEmpty
+            Get-Command -Module Show-PowerTree -Name Edit-PowerTreeConfiguration | Should -Not -BeNullOrEmpty
         }
     }
 

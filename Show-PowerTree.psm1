@@ -1,32 +1,134 @@
-@{
-    Root       = 'c:\Users\barts\OneDrive\Bureaublad\Projects\Scripts\PowerTree\Private\Show-PowerTree\Output\Get-TreeView.ps1'
-    OutputPath = 'c:\Users\barts\OneDrive\Bureaublad\Projects\Scripts\PowerTree\out'
-    Package    = @{
-        Enabled             = $true
-        Obfuscate           = $false
-        HideConsoleWindow   = $false
-        DotNetVersion       = 'v4.6.2'
-        FileVersion         = '1.0.0'
-        FileDescription     = ''
-        ProductName         = ''
-        ProductVersion      = ''
-        Copyright           = ''
-        RequireElevation    = $false
-        ApplicationIconPath = ''
-        PackageType         = 'Console'
+# Define script-level variables
+$script:ModuleRoot = $PSScriptRoot
+New-Alias -Name 'ptree' -Value 'Show-PowerTree'
+New-Alias -Name 'PowerTree' -Value 'Show-PowerTree'
+New-Alias -Name 'Start-PowerTree' -Value 'Show-PowerTree'
+New-Alias -Name 'Edit-PtreeConfig' -Value 'Edit-PowerTreeConfiguration'
+New-Alias -Name 'Edit-Ptree' -Value 'Edit-PowerTreeConfiguration'
+New-Alias -Name 'Edit-PowerTree' -Value 'Edit-PowerTreeConfiguration'
+New-Alias -Name 'ptreer' -Value 'Show-PowerTreeRegistry'
+New-Alias -Name 'PowerRegistry' -Value 'Show-PowerTreeRegistry'
+
+# Explicitly list files to import to avoid wildcard issues
+# Order matters: Classes -> Constants/Enums -> Functions -> Public
+
+# 1. Classes
+$ClassesFile = Join-Path -Path $PSScriptRoot -ChildPath 'Private\Shared\DataModel\Classes.ps1'
+if (Test-Path $ClassesFile) {
+    try {
+        . $ClassesFile
+        Write-Verbose -Message "Imported class definitions from $ClassesFile"
+    } catch {
+        Write-Error "Failed to import class definitions from $ClassesFile`: $PSItem"
     }
-    Bundle     = @{
-        Enabled = $true
-        Modules = $true
-        # IgnoredModules = @()
+} else {
+    Write-Error "Critical: Classes file not found at $ClassesFile"
+}
+
+# 2. Private Functions (Explicit Order)
+$PrivateFiles = @(
+    # Configuration / Constants
+    'Private\Show-PowerTree\Configuration\Constants.ps1',
+    'Private\Shared\Build-TreeLineStyle.ps1',
+
+    # Helpers needed early
+    'Private\Show-PowerTree\Size\Conversion\Convert-ToBytes.ps1',
+    'Private\Show-PowerTree\Filtering\Format-FileExtensions.ps1',
+    'Private\Show-PowerTree\Size\Get-HumanReadableSize.ps1',
+    'Private\Show-PowerTree\Size\Get-SizeColor.ps1',
+    'Private\Show-PowerTree\Size\Get-FilesByFilteredSize.ps1',
+
+    # Param Helpers
+    'Private\Show-PowerTree\Configuration\ParamHelpers\Build-ChildItemDirectoryParameters.ps1',
+    'Private\Show-PowerTree\Configuration\ParamHelpers\Build-ChildItemFileParameters.ps1',
+    'Private\Show-PowerTree\Configuration\ParamHelpers\Build-ExcludeDirectoryParameters.ps1',
+    'Private\Show-PowerTree\Configuration\ParamHelpers\Build-FileSizeParameters.ps1',
+
+    # Output / Formatting
+    'Private\Show-PowerTree\Output\Build-OutputLine.ps1',
+    'Private\Show-PowerTree\Output\Get-TreeConfigurationData.ps1',
+    'Private\Show-PowerTree\Output\Get-TreeView.ps1',
+    'Private\Show-PowerTree\Output\Header\Get-HeaderTable.ps1',
+    'Private\Show-PowerTree\Output\Header\Write-HeaderOutput.ps1',
+
+    'Private\Show-PowerTree\Output\Show-TreeStats.ps1',
+    'Private\Show-PowerTree\Output\ToFile\Invoke-OutputBuilder.ps1',
+    'Private\Show-PowerTree\Output\ToFile\Write-ToFile.ps1',
+    'Private\Show-PowerTree\Output\Write-OutputLine.ps1',
+
+    # Sorting
+    'Private\Show-PowerTree\Sorting\Get-SortingMethod.ps1',
+
+    # Registry support
+    'Private\Show-PowerTreeRegistry\Configuration\ParamHelpers\Get-Path.ps1',
+    'Private\Show-PowerTreeRegistry\Filtering\Get-RegistryItems.ps1',
+    'Private\Show-PowerTreeRegistry\Filtering\Set-LastItemFlag.ps1',
+    'Private\Show-PowerTreeRegistry\Filtering\Test-FilterMatch.ps1',
+    'Private\Show-PowerTreeRegistry\Output\Get-RegistryConfigurationData.ps1',
+    'Private\Show-PowerTreeRegistry\Output\Get-TreeRegistryView.ps1',
+    'Private\Show-PowerTreeRegistry\Output\Show-RegistryStats.ps1',
+    'Private\Show-PowerTreeRegistry\Output\ToFile\Invoke-OutputBuilderRegistry.ps1',
+    'Private\Show-PowerTreeRegistry\Sorting\Invoke-RegistryItemSorting.ps1',
+
+    # Shared / Common
+    'Private\Shared\DataModel\ClassLoader.ps1',
+    'Private\Shared\Get-OneDriveStatus.ps1',
+    'Private\Shared\JsonConfiguration\Get-ConfigurationPaths.ps1',
+    'Private\Shared\JsonConfiguration\Get-DefaultConfiguration.ps1',
+    'Private\Shared\JsonConfiguration\Get-SettingsFromJson.ps1',
+    'Private\Shared\JsonConfiguration\Initialize-ConfigurationFile.ps1',
+    'Private\Shared\Output\Add-DefaultExtension.ps1',
+    'Private\Shared\Output\Convert-StatsInOutputFile.ps1',
+    'Private\Shared\Output\Format-ExecutionTime.ps1',
+    'Private\Shared\Output\Write-ConfigurationToHost.ps1'
+)
+
+foreach ($file in $PrivateFiles) {
+    # Normalize path separators
+    $relativePath = $file -replace '[\\/]', [System.IO.Path]::DirectorySeparatorChar
+    $fullPath = Join-Path -Path $PSScriptRoot -ChildPath $relativePath
+    if (Test-Path $fullPath) {
+        try {
+            . $fullPath
+        } catch {
+            Write-Error "Failed to import private function $file`: $PSItem"
+        }
+    } else {
+        Write-Warning "Private function file not found: $file (Expected at: $fullPath)"
     }
 }
+
+# 3. Public Functions
+$PublicFiles = @(
+    'Public\Edit-PowerTreeConfiguration.ps1',
+    'Public\Show-PowerTree.ps1',
+    'Public\Show-PowerTreeRegistry.ps1'
+)
+
+foreach ($file in $PublicFiles) {
+    # Normalize path separators
+    $relativePath = $file -replace '[\\/]', [System.IO.Path]::DirectorySeparatorChar
+    $fullPath = Join-Path -Path $PSScriptRoot -ChildPath $relativePath
+    if (Test-Path $fullPath) {
+        try {
+            . $fullPath
+        } catch {
+            Write-Error "Failed to import public function $file`: $PSItem"
+        }
+    } else {
+        Write-Warning "Public function file not found: $file (Expected at: $fullPath)"
+    }
+}
+
+# Export public functions
+Export-ModuleMember -Function 'Show-PowerTree', 'Edit-PowerTreeConfiguration', 'Show-PowerTreeRegistry'
+Export-ModuleMember -Function 'Show-PowerTree', 'Edit-PowerTreeConfiguration', 'Show-PowerTreeRegistry' -Alias 'ptree', 'PowerTree', 'Start-PowerTree', 'Edit-PtreeConfig', 'Edit-Ptree', 'Edit-PowerTree', 'ptreer', 'PowerRegistry'
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCD/klaznEGQhiMw
-# HlPOh5rUIcUIRkdLR0w9fnWa+ut5qKCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCyy5wlqkkv2T26
+# 8hHfxssM6PSKC2Kld5AwvdeoYi/Y2qCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -150,28 +252,28 @@
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQga9zvHFqS10RiYUAHrxoSViev4Wkf4+IMl9GJKtalSbUwDQYJKoZIhvcNAQEB
-# BQAEggEAgBqlehAS3z//vXxXcu794F9A/wKNnB7UfenmH9rMEMfr1hcOwEtOn4RP
-# T+7gK05oVqAfZZVF6sjLD/S1Z8K1XW0gtFWhrx3+u8WnirMX0BNvL7M6Wwrbbsf5
-# xiWzzRgz0Ecylu+p10sAb3cp3wF8lePd5LPjkfC/Rjof7noqqLs25AAT+ZTj09QE
-# tmEmeVG4br6mGeS/bsixgKzPvYOcGusKXfqsoc4vjO7A3EX4omyzNIlNoazv4wmp
-# r5FxAvRU/YYvkhXPSeWEiQ3Jy2DI1phqGY/3VPt09O/2wPsojIP1/k6ThmusQX6d
-# MQUPpiDargcleQBEjZzhEK2uXOjgsqGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQger0H5iYEQ3y70XIET8JaJqTjoO5wjdTGINWuAE75iJkwDQYJKoZIhvcNAQEB
+# BQAEggEAaQGBkU4BlTN/Mz43T+ufbRMKqggr2W4JKMZGgyxbrXGvVDJ54odHbHHA
+# ztG8xFlhmZt3aajo652SxDEA3bpzgT8zIgJPWD69xpGVeXU5ltJKJLjhYVsfI9mr
+# eun4IgZGO/IiIvVhADcBxG6jvBUjjC1OTalbGvtQeryjxmdMgb9Kez0SYvKzGF1X
+# r2wKIA3jOiiCeJU31xnN2ThaDDWXEBGAcCS5Fapcjymmiab3RHhfeJGKAu4oNFJ8
+# aw7tZSDmCKk+AJTs7l+mkeGJtTdqzzQpeo+kLTVjRmqtcpwmwpBjFcFbIE8cf1O9
+# bOiZTjZ+V6dmtgPGmsgNWuL0l7JYTaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjAxMjUyMTQ2NDdaMC8GCSqGSIb3DQEJBDEiBCA6mzJ2J6ryY39MCUljVfTSjF/y
-# kvyjbHyfBUV0BTgUJjANBgkqhkiG9w0BAQEFAASCAgB6o8FhYrqsyl3/Z/eZmZKy
-# U3/9EPpT0LiLDTeDmLzpFbZ7s6Q8rmDfq/cz135zUwFB1aX6yAVFsEFeP64xk2W6
-# S0EcfnVIB9/+R+6Nt8U3B4HfdTzrWIPipCEOg1Dv+LDCWLpyRueRXI2FYQW5dvv8
-# /f1HbWPh2ofXrRPqR/8wntFY/XI1LCKWm79+wy+sOko1H/pLBW3ZJDn+DfaCMBNy
-# 8GJOJp+eHHsLc/bF6KBHPu5Qws1LYGKan/8vGKotNcF+c14dMiu/O2s4q4QtzpPN
-# JwVNYOT8x95sKB3mgKlpJHN1Rpqrz9PzZikf9qRVROQtRUqztrcAKsOTHJPKF2xz
-# +fb/mO8Cil2dgh/t/XhooZnxSr3CCg58xhwFaqK1oLNqSo9EDgyIEK391TtEBL2R
-# Kg08Q+xhURkVlxB/4ilAxMau3VcUeEVcZXogNawMy4uL+XIYFZaz7jHxK1lUmnv/
-# 8C1Ul0ABJxFDw+8gcXfDzUnix+wn4LTSZ1AAdzxMDhYxEzkwluSIdlfv9lJAlX/K
-# rCiVPXmyS+PkeAwHgOaNIHfBo32qIjiq2ebf3rB79LzOaHeiunPQHzjvqZrcfpl1
-# DQHhMj15/7tCol62dWF1uBWDFvAVj9ipPSscM6fNEygFDC6SYPx1ZN5iG6WQ8A8f
-# MxnB62CS89w6OveTjSEfGg==
+# NjAxMjUyMTQ2NDhaMC8GCSqGSIb3DQEJBDEiBCD3tvf+eob7ifDTVPjjcddSl5qN
+# kPU+x/MDG1rg6fTkhjANBgkqhkiG9w0BAQEFAASCAgDH+g3CUMl3F+0yY8VzSTuf
+# yNUQ4C4D3qWCHEm1f1azB/fO8LQyok8JEmApcdOv4g5zffH0ZclBvCnZ7qEUwTcw
+# wMZucXyWT95sXUOkWFUEPnRimPN7LmrDliicOveC7g0jpiCrUCt8P2/ueJqRnMnO
+# 5ekjGOp8aF10b+eu9xM1392kLfCnJmrNEw/yR7izT/xgyPxEPFLPSCsEXW7MbJ91
+# LYgofC3sFI/u0Q1dgSwaaO+kkMdCJdl/8GcavbQuJRQrUUIM+FNT83TyqC2xvvgZ
+# cVBIMLA/B9gjcK4NOBn5s/0oVpd/LZXBwBW806A+cKx9f11dYXRcI6sw6GhiDVG4
+# nEFHkakdpK0+ALviW+fFhT3Fz0AGfiGlPtdb3zihWIBqdfMJjFTUmMBZYdfUSncV
+# j+kY5dDlJAgdexDJD8Q9w6HhbtEzW3sdO9HKuu9qLOdk1ngkS4XKvM4XhUM+BmOR
+# 1nTNdmFDh2e/XuJ/NQ8YZTcU32KcfIqawXmbHtExVEk2sNPLFs9a6YzimTPbxBBB
+# 2Xa3pOqYWP14NWqCo5IkKQ7zmeKPaRKKQBp+F8n5L/pQtvtTQH4S2fUwaKCZGaQJ
+# LQpFYKp0/HbYVRnA7+fn5TMaczoJoV9g+UmjzD7qQ/NUx5GZDDHSJATZKAxcWD1z
+# F0uHgboaamVSTGc/g5y87g==
 # SIG # End signature block

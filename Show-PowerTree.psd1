@@ -1,32 +1,40 @@
+
 @{
-    Root       = 'c:\Users\barts\OneDrive\Bureaublad\Projects\Scripts\PowerTree\Private\Show-PowerTree\Output\Get-TreeView.ps1'
-    OutputPath = 'c:\Users\barts\OneDrive\Bureaublad\Projects\Scripts\PowerTree\out'
-    Package    = @{
-        Enabled             = $true
-        Obfuscate           = $false
-        HideConsoleWindow   = $false
-        DotNetVersion       = 'v4.6.2'
-        FileVersion         = '1.0.0'
-        FileDescription     = ''
-        ProductName         = ''
-        ProductVersion      = ''
-        Copyright           = ''
-        RequireElevation    = $false
-        ApplicationIconPath = ''
-        PackageType         = 'Console'
-    }
-    Bundle     = @{
-        Enabled = $true
-        Modules = $true
-        # IgnoredModules = @()
+    # Core module information
+    RootModule           = 'Show-PowerTree.psm1'
+    ModuleVersion        = '2601.25.1515'
+    GUID                 = 'bd5a541e-746e-438d-9b57-28f6d9df01a3'
+    Author               = 'Bart Spaans'
+    CompanyName          = 'Personal'
+    Copyright            = '(c) 2025 Bart Spaans. All rights reserved.'
+    Description          = 'Advanced directory tree visualization tool with powerful filtering and display options. More information: https://github.com/spaansba/PowerTree'
+
+    # Requirements
+    PowerShellVersion    = '7.5'
+    CompatiblePSEditions = @('Desktop', 'Core')
+
+    # Exports
+    FunctionsToExport    = @('Show-PowerTree', 'Edit-PowerTreeConfiguration', 'Show-PowerTreeRegistry')
+    CmdletsToExport      = @()
+    VariablesToExport    = @()
+    AliasesToExport      = @('ptree', 'Start-PowerTree', 'PowerTree', 'Edit-PtreeConfig', 'Edit-Ptree', 'Edit-PowerTree', 'ptreer', 'PowerRegistry')
+
+    # PowerShell Gallery metadata
+    PrivateData          = @{
+        PSData = @{
+            Tags         = @('FileSystem', 'Directory', 'Tree', 'Cross-Platform', 'PowerTree', 'File-Management', 'System-Administration')
+            LicenseUri   = 'https://github.com/spaansba/PowerTree/blob/main/LICENSE'
+            ProjectUri   = 'https://github.com/spaansba/PowerTree'
+            ReleaseNotes = 'Advanced directory tree visualization with filtering, sorting, and size analysis capabilities.'
+        }
     }
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCD/klaznEGQhiMw
-# HlPOh5rUIcUIRkdLR0w9fnWa+ut5qKCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBtjj4FUUxu+ksV
+# rbyLSHPQsWk9XC317j0fjNA3vN8kuaCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -150,28 +158,28 @@
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQga9zvHFqS10RiYUAHrxoSViev4Wkf4+IMl9GJKtalSbUwDQYJKoZIhvcNAQEB
-# BQAEggEAgBqlehAS3z//vXxXcu794F9A/wKNnB7UfenmH9rMEMfr1hcOwEtOn4RP
-# T+7gK05oVqAfZZVF6sjLD/S1Z8K1XW0gtFWhrx3+u8WnirMX0BNvL7M6Wwrbbsf5
-# xiWzzRgz0Ecylu+p10sAb3cp3wF8lePd5LPjkfC/Rjof7noqqLs25AAT+ZTj09QE
-# tmEmeVG4br6mGeS/bsixgKzPvYOcGusKXfqsoc4vjO7A3EX4omyzNIlNoazv4wmp
-# r5FxAvRU/YYvkhXPSeWEiQ3Jy2DI1phqGY/3VPt09O/2wPsojIP1/k6ThmusQX6d
-# MQUPpiDargcleQBEjZzhEK2uXOjgsqGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQgXzsnpThsO9iX6BGCMhV2hUimXcNG18rTP/S3CgJXybswDQYJKoZIhvcNAQEB
+# BQAEggEAeN+mwYYKDck0X5m1uyLW4KI6BQmOHcgs5xSeJbVwTeLqHKRlHii+7zjx
+# z3edkjRjj2HuteMIeAdcrYcJgiVuUg/5q+sMPD1Mjikc4VUjhcEU2sfDrHrQ5bnR
+# nGBXvya18EbgveMqrrVHAm27rOJjF/jGiMQBCnP7emD1fFdNC/1W/OT/CuuhmBAA
+# Opf8HmJw2VJpZGHOygCuQDDkYr36qxFR4Y9K0dkko9yui9rSKekQbve4H6rx1oYV
+# idGUg5Lgbx1yHNtgzWzRtlT0phVoETGm2QYmruxldU32v92scxyyin5neji0PF7f
+# pYyXXty66HaI6AipyjhZvhbwTi+iDKGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjAxMjUyMTQ2NDdaMC8GCSqGSIb3DQEJBDEiBCA6mzJ2J6ryY39MCUljVfTSjF/y
-# kvyjbHyfBUV0BTgUJjANBgkqhkiG9w0BAQEFAASCAgB6o8FhYrqsyl3/Z/eZmZKy
-# U3/9EPpT0LiLDTeDmLzpFbZ7s6Q8rmDfq/cz135zUwFB1aX6yAVFsEFeP64xk2W6
-# S0EcfnVIB9/+R+6Nt8U3B4HfdTzrWIPipCEOg1Dv+LDCWLpyRueRXI2FYQW5dvv8
-# /f1HbWPh2ofXrRPqR/8wntFY/XI1LCKWm79+wy+sOko1H/pLBW3ZJDn+DfaCMBNy
-# 8GJOJp+eHHsLc/bF6KBHPu5Qws1LYGKan/8vGKotNcF+c14dMiu/O2s4q4QtzpPN
-# JwVNYOT8x95sKB3mgKlpJHN1Rpqrz9PzZikf9qRVROQtRUqztrcAKsOTHJPKF2xz
-# +fb/mO8Cil2dgh/t/XhooZnxSr3CCg58xhwFaqK1oLNqSo9EDgyIEK391TtEBL2R
-# Kg08Q+xhURkVlxB/4ilAxMau3VcUeEVcZXogNawMy4uL+XIYFZaz7jHxK1lUmnv/
-# 8C1Ul0ABJxFDw+8gcXfDzUnix+wn4LTSZ1AAdzxMDhYxEzkwluSIdlfv9lJAlX/K
-# rCiVPXmyS+PkeAwHgOaNIHfBo32qIjiq2ebf3rB79LzOaHeiunPQHzjvqZrcfpl1
-# DQHhMj15/7tCol62dWF1uBWDFvAVj9ipPSscM6fNEygFDC6SYPx1ZN5iG6WQ8A8f
-# MxnB62CS89w6OveTjSEfGg==
+# NjAxMjUyMTQ2NDdaMC8GCSqGSIb3DQEJBDEiBCDKQor7m4fT0Askdzpkdb69aOQr
+# kUhprCgVfk7PmErI8DANBgkqhkiG9w0BAQEFAASCAgAOthHJvotvEz7fy7tZ48bE
+# vP20xQdfU30r/go84Qg7XH89BYnR/5xPnOpnywr5F2G8a1ilSxIHOePvEfE0eT9d
+# jHCDaqJBUrBcrAXtBk/bjcRNZrZ2ACaC4Uc7KI70sG1BdOkLl9Mkv0HvotdBbzVt
+# CH/PUHjjO3d4rI9WQ5Gk8cz1p+GbQKdmikZtiLDGMMQaO/Z4B/Nby/MQUJ78EtNA
+# gpPPn4nj03og6Hivs/uHDIWmJ6fhxfz7iD4bLWEspeA4YSr1Mr8YFzmqlJHi+l44
+# 66fjQ1Qtw2I8CpidFKi2op7TXf07ixOGHQ1Wm8GK3IF+BpJYTo2icdRrpBgn/4bf
+# 113IprgB7u6Q/eIsvOXaADyv2wv+FMYR55xYWso1icmb4x1b9gLzoYfkpz3BdTHS
+# l2Hcx6vf1XfJWx0K3EzkTcHruiBiTac7ASNnLWWIYO8zXLYD5pdD7ESwgBDahAw1
+# Mc3P04XAcnbp55/1Yz9OndlHF6ECLYeTMW1XTo1CwF6q3bsrDycTmW0HBQf29Ipn
+# UJQRWnhCY9wXQ05amxyHB3k+B/RW1IF8bTl9Rnl3xjCxCr4/mqKDJltqb5W5URuF
+# rQY6LuDG7nCwgpyxnKn0PpxRKW7qr5SgwoSwKXOFrLXzcP/liJD3J8hlr/x6GBar
+# I/UK2y8T5Ip/QHuGehVVtg==
 # SIG # End signature block

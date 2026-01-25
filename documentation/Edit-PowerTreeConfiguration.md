@@ -1,6 +1,6 @@
 ---
 external help file: PowerTree-help.xml
-Module Name: PowerTree
+Module Name: Show-PowerTree
 online version: https://github.com/spaansba/PowerTree
 schema: 2.0.0
 ---

@@ -14,9 +14,6 @@
     .PARAMETER Depth
         The maximum depth of the tree to display. Defaults to -1 (no limit) or the value in the configuration file.
 
-    .PARAMETER Examples
-        Displays usage examples.
-
     .PARAMETER PruneEmptyFolders
         If set, empty folders (or folders that become empty after filtering) are not displayed.
 
@@ -27,52 +24,52 @@
         Displays the file/directory mode (attributes).
 
     .PARAMETER DisplaySize
-        Displays the size of files and directories.
+        Displays the size of Files and Directories.
 
     .PARAMETER DisplayModificationDate
-        Displays the last modification date.
+        Displays the Last Modification Date.
 
     .PARAMETER DisplayCreationDate
-        Displays the creation date.
+        Displays the Creation Date.
 
     .PARAMETER DisplayLastAccessDate
-        Displays the last access date.
+        Displays the Last Access Date.
 
     .PARAMETER DirectoryOnly
-        Displays only directories, excluding files.
+        Displays only Directories, excluding Files.
 
     .PARAMETER ExcludeDirectories
-        An array of directory names or patterns to exclude.
+        An array of Directory Names or patterns to exclude.
 
     .PARAMETER Sort
-        Specifies the sorting criteria: 'size', 'name', 'md', 'cd', 'la'.
+        Specifies the sorting criteria: 'Size', 'Name', 'ModificationDate', 'CreationDate', 'LastAccessDate'.
 
     .PARAMETER SortByModificationDate
-        Sorts items by modification date.
+        Sorts items by Last Modification Date.
 
     .PARAMETER SortByCreationDate
-        Sorts items by creation date.
+        Sorts items by Creation Date.
 
     .PARAMETER SortByLastAccessDate
-        Sorts items by last access date.
+        Sorts items by Last Access Date.
 
     .PARAMETER SortBySize
-        Sorts items by size.
+        Sorts items by Size.
 
     .PARAMETER SortByName
-        Sorts items by name.
+        Sorts items by Name.
 
     .PARAMETER Descending
         Sorts items in descending order.
 
     .PARAMETER FileSizeMinimum
-        Excludes files smaller than the specified size (e.g., '1kb', '10mb').
+        Excludes Files smaller than the specified size
 
     .PARAMETER FileSizeMaximum
-        Excludes files larger than the specified size.
+        Excludes Files larger than the specified size.
 
     .PARAMETER FileSizeFilter
-        Alias for FileSizeFilter (seems duplicate purpose, maybe legacy).
+        Alias for FileSizeFilter. # (seems duplicate purpose, maybe legacy).
 
     .PARAMETER ExcludeExtensions
         Excludes files with specified extensions.
@@ -81,18 +78,120 @@
         Includes only files with specified extensions.
 
     .PARAMETER ShowHiddenFiles
-        Forces display of hidden files and directories.
+        Forces display of Hidden Files and Directories.
 
     .PARAMETER OutFile
         Writes the output to the specified file.
 
     .EXAMPLE
-        Show-PowerTree -Path "C:\Projects" -Depth 2
-        Displays the tree structure of C:\Projects up to 2 levels deep.
+        Show-PowerTree
+
+        Show all Files and Directories in current path.
 
     .EXAMPLE
-        Show-PowerTree -DisplaySize -SortBySize -Descending
-        Displays the current directory tree showing sizes, sorted by size descending.
+        Show-PowerTree C:\Projects\MyApp
+
+        Show Files and Directories in specified path.
+
+    .EXAMPLE
+        Show-PowerTree -Depth 2
+
+        Limit display to 2 Directory levels.
+
+    .EXAMPLE
+        Show-PowerTree -PruneEmptyFolders
+
+        Remove empty folders from the tree.
+
+    .EXAMPLE
+        Show-PowerTree -DirectoryOnly
+
+        Show only directories, no files.
+
+    .EXAMPLE
+        Show-PowerTree -ExcludeDirectories node_modules,bin,obj
+
+        Exclude specified directories.
+
+    .EXAMPLE
+        Show-PowerTree -IncludeExtensions md,markdown,ipynb
+
+        Show only Markdown and Jupyter Notebook files.
+
+    .EXAMPLE
+        Show-PowerTree -ExcludeExtensions dll,exe,bin,com,bat,cmd
+
+        Exclude DLL, executable, binary Files.
+
+    .EXAMPLE
+        Show-PowerTree -ShowHiddenFiles
+
+        Show hidden Files and Directories.
+
+    .EXAMPLE
+        Show-PowerTree -FileSizeMinimum 1MB
+
+        Show only Files larger than 1MB.
+
+    .EXAMPLE
+        Show-PowerTree -FileSizeMaximum 500KB
+
+        Show only Files smaller than 500KB.
+
+    .EXAMPLE
+        Show-PowerTree -SortBySize
+
+        Sort by File Size (ascending).
+
+    .EXAMPLE
+        Show-PowerTree -SortBySize -Descending
+
+        Sort by File Size (descending).
+
+    .EXAMPLE
+        Show-PowerTree -SortByModificationDate
+
+        Sort by Last Modification Date.
+
+    .EXAMPLE
+        Show-PowerTree -DisplaySize
+
+        Display File Sizes in human-readable format.
+
+    .EXAMPLE
+        Show-PowerTree -DisplayModificationDate
+
+        Display modification dates.
+
+    .EXAMPLE
+        Show-PowerTree -OutFile tree_output.txt
+
+        Save output to tree_output.txt.
+
+    .EXAMPLE
+        Show-PowerTree -DisplaySize -SortBySize -Depth 5 -ExcludeDirectories .next,node_modules
+
+        Show file sizes sorted on file size, 5 levels deep, excluding .next and node_modules.
+
+    .EXAMPLE
+        Show-PowerTree -PruneEmptyFolders -Depth 3 -DisplaySize -SortBySize -Descending
+
+        Prune empty folders, 3 levels deep, show sizes descending.
+
+    .EXAMPLE
+        Show-PowerTree -ExcludeDirectories extensions -IncludeExtensions ps1, psm1, psd1, pssc, psrc, psc1, ps1xml, cdxml
+
+        Exclude specific dirs, show only PowerShell files.
+
+    .EXAMPLE
+        Show-PowerTree -ShowHiddenFiles -FileSizeMinimum 1MB -SortByModificationDate
+
+        Show hidden files, files larger than 1MB, sorted by modification date.
+
+    .EXAMPLE
+        Show-PowerTree -DisplaySize -DisplayMode -DisplayModificationDate
+
+        Show sizes, modes, mod dates.
     #>
     [CmdletBinding()]
     param(
@@ -102,10 +201,6 @@
         [Parameter()]
         [Alias('l', 'level')]
         [int]$Depth = -1,
-
-        [Parameter()]
-        [Alias('ex', 'example')]
-        [switch]$Examples,
 
         [Parameter()]
         [Alias('prune', 'p')]
@@ -144,7 +239,7 @@
         [string[]]$ExcludeDirectories = @(),
 
         [Parameter()]
-        [ValidateSet('size', 'name', 'md', 'cd', 'la')]
+        [ValidateSet('size', 'name', 'ModificationDate', 'CreationDate', 'LastAccessDate', 'md', 'cd', 'la')]
         [string]$Sort,
 
         [Parameter()]
@@ -211,10 +306,7 @@
         [string]$OutFile
     )
 
-    if ($Examples) {
-        Write-Examples
-        return
-    }
+
 
     if ($DisplayAll) {
         $DisplayCreationDate = $true
