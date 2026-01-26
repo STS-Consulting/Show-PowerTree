@@ -1,4 +1,4 @@
-function Get-TreeConfigurationData {
+﻿function Get-TreeConfigurationData {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]

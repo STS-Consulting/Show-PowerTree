@@ -1,4 +1,4 @@
-function Get-ConfigurationPaths {
+﻿function Get-ConfigurationPaths {
     [CmdletBinding()]
     param()
 

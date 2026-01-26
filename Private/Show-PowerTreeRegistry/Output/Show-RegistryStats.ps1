@@ -1,4 +1,4 @@
-function Show-RegistryStats {
+﻿function Show-RegistryStats {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]

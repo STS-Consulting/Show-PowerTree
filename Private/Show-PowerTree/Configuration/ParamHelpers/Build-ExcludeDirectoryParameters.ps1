@@ -1,4 +1,4 @@
-
+﻿
 function Build-ExcludedDirectoryParameters {
     [CmdletBinding()]
     param (

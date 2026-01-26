@@ -1,4 +1,4 @@
-function Get-FolderSize {
+﻿function Get-FolderSize {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, Position = 0)]

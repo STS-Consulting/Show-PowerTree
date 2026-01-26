@@ -1,4 +1,4 @@
-
+﻿
 function Write-ToFile {
     [CmdletBinding()]
     param(

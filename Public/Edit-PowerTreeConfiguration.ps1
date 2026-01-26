@@ -1,4 +1,4 @@
-function Edit-PowerTreeConfiguration {
+﻿function Edit-PowerTreeConfiguration {
     <#
     .SYNOPSIS
         Opens the PowerTree configuration file in the default editor.

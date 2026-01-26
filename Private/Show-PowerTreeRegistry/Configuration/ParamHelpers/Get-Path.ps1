@@ -1,4 +1,4 @@
-function Get-Path {
+﻿function Get-Path {
     [CmdletBinding()]
     param (
         [string]$Path

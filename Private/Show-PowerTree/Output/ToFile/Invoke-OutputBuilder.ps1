@@ -1,4 +1,4 @@
-function Invoke-OutputBuilder {
+﻿function Invoke-OutputBuilder {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]

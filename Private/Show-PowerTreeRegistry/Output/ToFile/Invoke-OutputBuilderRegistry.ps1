@@ -1,4 +1,4 @@
-function Invoke-OutputBuilderRegistry {
+﻿function Invoke-OutputBuilderRegistry {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory=$true)]

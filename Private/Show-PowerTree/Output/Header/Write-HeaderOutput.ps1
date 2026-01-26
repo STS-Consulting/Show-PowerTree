@@ -1,4 +1,4 @@
-
+﻿
 function Write-HeaderToOutput {
     [CmdletBinding()]
     param(

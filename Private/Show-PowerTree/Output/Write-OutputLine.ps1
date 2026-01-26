@@ -1,4 +1,4 @@
-function Write-OutputLine {
+﻿function Write-OutputLine {
     [CmdletBinding()]
     param (
         [string]$Line,

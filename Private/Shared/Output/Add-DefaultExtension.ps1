@@ -1,4 +1,4 @@
-
+﻿
 # Adds a default .txt extension to a file path if it doesn't already have an extension
 function Add-DefaultExtension {
     [CmdletBinding()]

@@ -1,4 +1,4 @@
-function Get-DefaultConfiguration {
+﻿function Get-DefaultConfiguration {
     [CmdletBinding()]
     param()
 

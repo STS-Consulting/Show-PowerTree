@@ -1,4 +1,4 @@
-function Show-TreeStats {
+﻿function Show-TreeStats {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]

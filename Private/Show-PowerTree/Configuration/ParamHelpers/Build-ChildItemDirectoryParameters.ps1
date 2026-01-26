@@ -1,4 +1,4 @@
-
+﻿
 function Build-ChildItemDirectoryParameters {
     [CmdletBinding()]
     param(

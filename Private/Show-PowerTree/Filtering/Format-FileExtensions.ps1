@@ -1,4 +1,4 @@
-function Format-FileExtensions {
+﻿function Format-FileExtensions {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]

@@ -1,4 +1,4 @@
-function Convert-StatsInOutputFile {
+﻿function Convert-StatsInOutputFile {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $false)]

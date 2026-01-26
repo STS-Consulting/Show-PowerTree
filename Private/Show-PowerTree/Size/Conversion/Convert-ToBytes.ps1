@@ -1,4 +1,4 @@
-function ConvertTo-Bytes {
+﻿function ConvertTo-Bytes {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]

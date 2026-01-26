@@ -1,4 +1,4 @@
-function Get-SettingsFromJson {
+﻿function Get-SettingsFromJson {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]

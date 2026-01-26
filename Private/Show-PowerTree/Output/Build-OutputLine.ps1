@@ -1,4 +1,4 @@
-
+﻿
 function Build-OutputLine {
     [CmdletBinding()]
     param(

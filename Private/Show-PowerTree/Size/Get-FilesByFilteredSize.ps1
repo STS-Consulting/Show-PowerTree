@@ -1,4 +1,4 @@
-function Get-FilesByFilteredSize {
+﻿function Get-FilesByFilteredSize {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]

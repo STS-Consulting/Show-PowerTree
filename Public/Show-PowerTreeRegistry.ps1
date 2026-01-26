@@ -1,4 +1,4 @@
-function Show-PowerTreeRegistry {
+﻿function Show-PowerTreeRegistry {
     <#
     .SYNOPSIS
         Displays a tree view of the Windows Registry.

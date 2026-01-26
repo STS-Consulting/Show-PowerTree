@@ -1,4 +1,4 @@
-class TreeConfig {
+﻿class TreeConfig {
     [string]$Path
     [bool]$DirectoryOnly
     [string[]]$ExcludeDirectories

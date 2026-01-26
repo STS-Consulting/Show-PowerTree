@@ -1,4 +1,4 @@
-function Get-RegistryConfigurationData {
+﻿function Get-RegistryConfigurationData {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]

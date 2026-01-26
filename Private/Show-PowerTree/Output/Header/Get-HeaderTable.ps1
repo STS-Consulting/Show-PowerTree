@@ -1,4 +1,4 @@
-function Get-HeaderTable {
+﻿function Get-HeaderTable {
     [CmdletBinding()]
     param(
         [bool]$DisplayCreationDate,

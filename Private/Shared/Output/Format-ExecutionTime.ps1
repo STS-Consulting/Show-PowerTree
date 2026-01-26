@@ -1,4 +1,4 @@
-function Format-ExecutionTime {
+﻿function Format-ExecutionTime {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]

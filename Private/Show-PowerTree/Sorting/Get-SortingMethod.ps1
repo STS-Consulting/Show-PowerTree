@@ -1,4 +1,4 @@
-function Get-SortingMethod {
+﻿function Get-SortingMethod {
     [CmdletBinding()]
     param(
         [boolean]$SortBySize,

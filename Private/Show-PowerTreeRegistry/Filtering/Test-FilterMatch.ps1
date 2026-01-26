@@ -1,4 +1,4 @@
-function Test-FilterMatch {
+﻿function Test-FilterMatch {
     [CmdletBinding()]
     param (
         [string]$ItemName,

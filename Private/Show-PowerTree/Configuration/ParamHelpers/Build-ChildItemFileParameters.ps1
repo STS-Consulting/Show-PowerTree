@@ -1,4 +1,4 @@
-
+﻿
 
 # Build file parameter hashtable (for some reason we cant add the path variable here)
 function Build-ChildItemFileParameters {

@@ -1,4 +1,4 @@
-function Initialize-ConfigurationFile {
+﻿function Initialize-ConfigurationFile {
     [CmdletBinding()]
     param()
 

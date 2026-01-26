@@ -1,4 +1,4 @@
-function Initialize-PowerTreeClasses {
+﻿function Initialize-PowerTreeClasses {
     [CmdletBinding()]
     param()
 

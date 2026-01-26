@@ -1,4 +1,4 @@
-function Build-FileSizeParameters {
+﻿function Build-FileSizeParameters {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $false)]

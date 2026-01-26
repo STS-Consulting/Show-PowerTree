@@ -1,4 +1,4 @@
-function Get-RegistryItems {
+﻿function Get-RegistryItems {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]

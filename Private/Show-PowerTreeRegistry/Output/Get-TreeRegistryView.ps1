@@ -1,4 +1,4 @@
-function Get-TreeRegistryView {
+﻿function Get-TreeRegistryView {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]

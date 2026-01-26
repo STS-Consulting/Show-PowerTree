@@ -1,4 +1,4 @@
-function Get-SizeColor {
+﻿function Get-SizeColor {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]

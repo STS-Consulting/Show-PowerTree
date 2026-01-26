@@ -1,4 +1,4 @@
-
+﻿
 function Invoke-RegistryItemSorting {
     [CmdletBinding()]
     param (
