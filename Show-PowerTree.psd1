@@ -1,4 +1,4 @@
-
+﻿
 @{
     # Core module information
     RootModule           = 'Show-PowerTree.psm1'
