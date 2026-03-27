@@ -16,12 +16,12 @@ function Write-HeaderToOutput {
             $headerColor = $global:PSStyle.Formatting.TableHeader
             $resetColor = $global:PSStyle.Reset
 
-            Write-Information -MessageData "$headerColor$($HeaderTable.HeaderLine)$resetColor" -InformationAction Continue
-            Write-Information -MessageData "$headerColor$($HeaderTable.UnderscoreLine)$resetColor" -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData "$headerColor$($HeaderTable.HeaderLine)$resetColor" -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData "$headerColor$($HeaderTable.UnderscoreLine)$resetColor" -InformationAction Continue
         } else {
             # Fallback for older versions or if PSStyle is not available
-            Write-Information -MessageData $HeaderTable.HeaderLine -InformationAction Continue
-            Write-Information -MessageData $HeaderTable.UnderscoreLine -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData $HeaderTable.HeaderLine -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData $HeaderTable.UnderscoreLine -InformationAction Continue
         }
     }
 }

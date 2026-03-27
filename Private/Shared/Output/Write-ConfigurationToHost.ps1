@@ -23,31 +23,31 @@
         Write-Error 'Invalid configuration type. Expected TreeConfig or TreeRegistryConfig.' -ErrorAction Stop
     }
 
-    Write-Information -MessageData ' ' -InformationAction Continue
+    Microsoft.PowerShell.Utility\Write-Information -MessageData ' ' -InformationAction Continue
     if ($null -ne $global:PSStyle -and $null -ne $global:PSStyle.Formatting -and $null -ne $global:PSStyle.Formatting.TableHeader) {
         $headerColor = $global:PSStyle.Formatting.TableHeader
         $configurationColor = $global:PSStyle.Foreground.Green
         $resetColor = $global:PSStyle.Reset
 
-        Write-Information -MessageData "$headerColor`Configuration$resetColor" -InformationAction Continue
-        Write-Information -MessageData "$headerColor$($lineStyle * 13)$resetColor" -InformationAction Continue
+        Microsoft.PowerShell.Utility\Write-Information -MessageData "$headerColor`Configuration$resetColor" -InformationAction Continue
+        Microsoft.PowerShell.Utility\Write-Information -MessageData "$headerColor$($lineStyle * 13)$resetColor" -InformationAction Continue
         Write-Verbose -Message 'Some settings might be sourced from the configuration file (.config.json)'
 
         # Display configuration data
         foreach ($configurationLine in $configurationData) {
-            Write-Information -MessageData "$configurationColor$configurationLine$resetColor" -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData "$configurationColor$configurationLine$resetColor" -InformationAction Continue
         }
     } else {
         # Fallback to plain text if PSStyle is somehow missing (though unlikely in PS 7.5+)
-        Write-Information -MessageData 'Configuration' -InformationAction Continue
-        Write-Information -MessageData ($lineStyle * 13) -InformationAction Continue
+        Microsoft.PowerShell.Utility\Write-Information -MessageData 'Configuration' -InformationAction Continue
+        Microsoft.PowerShell.Utility\Write-Information -MessageData ($lineStyle * 13) -InformationAction Continue
         Write-Verbose -Message 'Some settings might be sourced from the configuration file (.config.json)'
 
         # Display configuration data
         foreach ($configurationLine in $configurationData) {
-            Write-Information -MessageData $configurationLine -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData $configurationLine -InformationAction Continue
         }
     }
 
-    Write-Information -MessageData ' ' -InformationAction Continue
+    Microsoft.PowerShell.Utility\Write-Information -MessageData ' ' -InformationAction Continue
 }

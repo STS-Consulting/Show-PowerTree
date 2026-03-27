@@ -28,7 +28,7 @@
 
         if (-not (Test-Path -Path $configurationDirectory)) {
             New-Item -Path $configurationDirectory -ItemType Directory -Force | Out-Null
-            Write-Information -MessageData "$($PSStyle.Foreground.Cyan)Created directory: $configurationDirectory$($PSStyle.Reset)" -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData "$($PSStyle.Foreground.Cyan)Created directory: $configurationDirectory$($PSStyle.Reset)" -InformationAction Continue
         }
 
         $configurationPath = Join-Path -Path $configurationDirectory -ChildPath 'config.json'
@@ -41,18 +41,18 @@
             $configurationDirectory = Split-Path -Parent $configurationPath
             if (-not (Test-Path -Path $configurationDirectory)) {
                 New-Item -Path $configurationDirectory -ItemType Directory -Force | Out-Null
-                Write-Information -MessageData "$($PSStyle.Foreground.Cyan)Created directory: $configurationDirectory$($PSStyle.Reset)" -InformationAction Continue
+                Microsoft.PowerShell.Utility\Write-Information -MessageData "$($PSStyle.Foreground.Cyan)Created directory: $configurationDirectory$($PSStyle.Reset)" -InformationAction Continue
             }
 
             $defaultConfiguration = Get-DefaultConfiguration
             $defaultConfiguration | ConvertTo-Json -Depth 4 | Out-File -FilePath $configurationPath -Encoding utf8
 
-            Write-Information -MessageData "$($PSStyle.Foreground.Green)Created new configuration file at: $configurationPath$($PSStyle.Reset)" -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData "$($PSStyle.Foreground.Green)Created new configuration file at: $configurationPath$($PSStyle.Reset)" -InformationAction Continue
         } catch {
             Write-Error "Failed to create configuration file: $PSItem" -ErrorAction Stop
         }
     } else {
-        Write-Information -MessageData "$($PSStyle.Foreground.Cyan)Using existing configuration file: $configurationPath$($PSStyle.Reset)" -InformationAction Continue
+        Microsoft.PowerShell.Utility\Write-Information -MessageData "$($PSStyle.Foreground.Cyan)Using existing configuration file: $configurationPath$($PSStyle.Reset)" -InformationAction Continue
     }
 
     try {

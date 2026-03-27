@@ -426,9 +426,9 @@
             $fullOutputPath = $treeConfiguration.OutFile
         }
 
-        Write-Information -MessageData ' ' -InformationAction Continue
-        Write-Information -MessageData "$($PSStyle.Foreground.Cyan)Output saved to: $($fullOutputPath)$($PSStyle.Reset)" -InformationAction Continue
+        Microsoft.PowerShell.Utility\Write-Information -MessageData ' ' -InformationAction Continue
+        Microsoft.PowerShell.Utility\Write-Information -MessageData "$($PSStyle.Foreground.Cyan)Output saved to: $($fullOutputPath)$($PSStyle.Reset)" -InformationAction Continue
     }
 
-    Write-Information -MessageData ' ' -InformationAction Continue
+    Microsoft.PowerShell.Utility\Write-Information -MessageData ' ' -InformationAction Continue
 }

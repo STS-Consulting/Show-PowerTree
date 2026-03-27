@@ -86,28 +86,28 @@ Largest Folder: $largestFolderSize $($TreeStats.LargestFolder)
             $headerColor = $global:PSStyle.Formatting.TableHeader
             $resetColor = $global:PSStyle.Reset
 
-            Write-Information -MessageData ' ' -InformationAction Continue
-            Write-Information -MessageData "$headerColor$headerLine$resetColor" -InformationAction Continue
-            Write-Information -MessageData "$headerColor$underscoreLine$resetColor" -InformationAction Continue
-            Write-Information -MessageData $valuesLine -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData ' ' -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData "$headerColor$headerLine$resetColor" -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData "$headerColor$underscoreLine$resetColor" -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData $valuesLine -InformationAction Continue
 
             if ($DisplaySize) {
-                Write-Information -MessageData ' ' -InformationAction Continue
-                Write-Information -MessageData "$headerColor`Largest File:$resetColor $largestFileSize $largestFilePath" -InformationAction Continue
-                Write-Information -MessageData "$headerColor`Largest Folder:$resetColor $largestFolderSize $($TreeStats.LargestFolder)" -InformationAction Continue
+                Microsoft.PowerShell.Utility\Write-Information -MessageData ' ' -InformationAction Continue
+                Microsoft.PowerShell.Utility\Write-Information -MessageData "$headerColor`Largest File:$resetColor $largestFileSize $largestFilePath" -InformationAction Continue
+                Microsoft.PowerShell.Utility\Write-Information -MessageData "$headerColor`Largest Folder:$resetColor $largestFolderSize $($TreeStats.LargestFolder)" -InformationAction Continue
             }
         } else {
-            Write-Information -MessageData ' ' -InformationAction Continue
-            Write-Information -MessageData $headerLine -InformationAction Continue
-            Write-Information -MessageData $underscoreLine -InformationAction Continue
-            Write-Information -MessageData $valuesLine -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData ' ' -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData $headerLine -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData $underscoreLine -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData $valuesLine -InformationAction Continue
 
             if ($DisplaySize) {
-                Write-Information -MessageData ' ' -InformationAction Continue
-                # Fallback colors are tricky with Write-Information, stripping them or using default text.
+                Microsoft.PowerShell.Utility\Write-Information -MessageData ' ' -InformationAction Continue
+                # Fallback colors are tricky with Microsoft.PowerShell.Utility\Write-Information, stripping them or using default text.
                 # Assuming PSStyle is available since we mandate PS 7.5+
-                Write-Information -MessageData "Largest File: $largestFileSize $largestFilePath" -InformationAction Continue
-                Write-Information -MessageData "Largest Folder: $largestFolderSize $($TreeStats.LargestFolder)" -InformationAction Continue
+                Microsoft.PowerShell.Utility\Write-Information -MessageData "Largest File: $largestFileSize $largestFilePath" -InformationAction Continue
+                Microsoft.PowerShell.Utility\Write-Information -MessageData "Largest Folder: $largestFolderSize $($TreeStats.LargestFolder)" -InformationAction Continue
             }
         }
     }

@@ -212,7 +212,7 @@
                     }
 
                     $coloredLine += $resetColor
-                    Write-Information -MessageData $coloredLine -InformationAction Continue
+                    Microsoft.PowerShell.Utility\Write-Information -MessageData $coloredLine -InformationAction Continue
                     continue
                 }
             }
@@ -226,10 +226,10 @@
                     [void]$OutputBuilder.AppendLine($outputInfo.Line)
                 } else {
                     if ($null -ne $outputInfo.SizeColorInfo.AnsiColor) {
-                        Write-Information -MessageData "$before$($outputInfo.SizeColorInfo.AnsiColor)$size$($global:PSStyle.Reset)$after$($global:PSStyle.Reset)" -InformationAction Continue
+                        Microsoft.PowerShell.Utility\Write-Information -MessageData "$before$($outputInfo.SizeColorInfo.AnsiColor)$size$($global:PSStyle.Reset)$after$($global:PSStyle.Reset)" -InformationAction Continue
                     } else {
                         # Fallback: Just print the whole line without color if no ANSI, or simple concat
-                        Write-Information -MessageData "$before$size$after$($global:PSStyle.Reset)" -InformationAction Continue
+                        Microsoft.PowerShell.Utility\Write-Information -MessageData "$before$size$after$($global:PSStyle.Reset)" -InformationAction Continue
                     }
                 }
             } else {
@@ -291,7 +291,7 @@
                 $global:PSStyle.Foreground.BrightYellow
             }
             $resetColor = $global:PSStyle.Reset
-            Write-Information -MessageData "$beforeName$directoryColor$nameSection$resetColor$afterName$resetColor" -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData "$beforeName$directoryColor$nameSection$resetColor$afterName$resetColor" -InformationAction Continue
         } else {
             Write-OutputLine -Line $outputInfo.Line -OutputBuilder $OutputBuilder
         }
