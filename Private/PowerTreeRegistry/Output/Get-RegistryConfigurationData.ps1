@@ -6,15 +6,15 @@ function Get-RegistryConfigurationData {
     )
 
     $configData = @()
-    
+
     $sortByText = if ($TreeRegistryConfig.SortValuesByType) { "Type" } else { "Registry Order" }
     $direction = if ($TreeRegistryConfig.SortDescending) { "Descending" } else { "Ascending" }
     $configData += @{ Key = "Sort By"; Value = "$sortByText $direction" }
-    
-    $dataTypeText = if ($TreeRegistryConfig.UseRegistryDataTypes) { 
-        "REG_SZ, REG_DWORD, etc." 
-    } else { 
-        "String, DWord, etc." 
+
+    $dataTypeText = if ($TreeRegistryConfig.UseRegistryDataTypes) {
+        "REG_SZ, REG_DWORD, etc."
+    } else {
+        "String, DWord, etc."
     }
     $configData += @{ Key = "Type Format"; Value = $dataTypeText }
     $configData += @{ Key = "NoValues"; Value = $TreeRegistryConfig.NoValues }
@@ -32,20 +32,20 @@ function Get-RegistryConfigurationData {
     } else {
         $configData += @{ Key = "Include (Values)"; Value = "None" }
     }
-    
+
     if ($TreeRegistryConfig.Exclude -and $TreeRegistryConfig.Exclude.Count -gt 0) {
         $configData += @{ Key = "Exclude (Keys/Values)"; Value = ($TreeRegistryConfig.Exclude -join ', ') }
     } else {
         $configData += @{ Key = "Exclude (Keys/Values)"; Value = "None" }
     }
-    
 
-    $maxKeyLength = ($configData | ForEach-Object { $_.Key.Length } | Measure-Object -Maximum).Maximum + 1
-    
+
+    $maxKeyLength = ($configData | ForEach-Object { $PSItem.Key.Length } | Measure-Object -Maximum).Maximum + 1
+
     $formattedData = $configData | ForEach-Object {
-        $paddedKey = $_.Key.PadRight($maxKeyLength)
-        "$paddedKey $($_.Value)"
+        $paddedKey = $PSItem.Key.PadRight($maxKeyLength)
+        "$paddedKey $($PSItem.Value)"
     }
-    
+
     return $formattedData
 }

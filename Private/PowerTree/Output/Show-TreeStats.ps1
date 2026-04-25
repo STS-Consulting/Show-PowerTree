@@ -86,32 +86,28 @@ Largest Folder: $largestFolderSize $($TreeStats.LargestFolder)
             $headerColor = $global:PSStyle.Formatting.TableHeader
             $resetColor = $global:PSStyle.Reset
 
-            Write-Host ''
-            Write-Host "$headerColor$headerLine$resetColor"
-            Write-Host "$headerColor$underscoreLine$resetColor"
-            Write-Host $valuesLine
+            Write-Information -MessageData ' ' -InformationAction Continue
+            Write-Information -MessageData "$headerColor$headerLine$resetColor" -InformationAction Continue
+            Write-Information -MessageData "$headerColor$underscoreLine$resetColor" -InformationAction Continue
+            Write-Information -MessageData $valuesLine -InformationAction Continue
 
             if ($DisplaySize) {
-                Write-Host ''
-                Write-Host "$headerColor`Largest File:$resetColor" -NoNewline
-                Write-Host " $largestFileSize $largestFilePath"
-
-                Write-Host "$headerColor`Largest Folder:$resetColor" -NoNewline
-                Write-Host " $largestFolderSize $($TreeStats.LargestFolder)"
+                Write-Information -MessageData ' ' -InformationAction Continue
+                Write-Information -MessageData "$headerColor`Largest File:$resetColor $largestFileSize $largestFilePath" -InformationAction Continue
+                Write-Information -MessageData "$headerColor`Largest Folder:$resetColor $largestFolderSize $($TreeStats.LargestFolder)" -InformationAction Continue
             }
         } else {
-            Write-Host ''
-            Write-Host $headerLine -ForegroundColor Cyan
-            Write-Host $underscoreLine -ForegroundColor DarkCyan
-            Write-Host $valuesLine
+            Write-Information -MessageData ' ' -InformationAction Continue
+            Write-Information -MessageData $headerLine -InformationAction Continue
+            Write-Information -MessageData $underscoreLine -InformationAction Continue
+            Write-Information -MessageData $valuesLine -InformationAction Continue
 
             if ($DisplaySize) {
-                Write-Host ''
-                Write-Host 'Largest File:' -NoNewline -ForegroundColor Cyan
-                Write-Host " $largestFileSize $largestFilePath"
-
-                Write-Host 'Largest Folder:' -NoNewline -ForegroundColor Cyan
-                Write-Host " $largestFolderSize $($TreeStats.LargestFolder)"
+                Write-Information -MessageData ' ' -InformationAction Continue
+                # Fallback colors are tricky with Write-Information, stripping them or using default text.
+                # Assuming PSStyle is available since we mandate PS 7.5+
+                Write-Information -MessageData "Largest File: $largestFileSize $largestFilePath" -InformationAction Continue
+                Write-Information -MessageData "Largest Folder: $largestFolderSize $($TreeStats.LargestFolder)" -InformationAction Continue
             }
         }
     }

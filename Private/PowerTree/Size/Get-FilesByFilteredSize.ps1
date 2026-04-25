@@ -1,8 +1,9 @@
 function Get-FilesByFilteredSize {
+    [CmdletBinding()]
     param (
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [System.IO.FileInfo[]]$Files,
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [hashtable]$FileSizeBounds
     )
 
@@ -13,18 +14,18 @@ function Get-FilesByFilteredSize {
 
     # Filter files based on size bounds
     $filteredFiles = $Files | Where-Object {
-        $fileSizeInBytes = $_.Length
-        
+        $fileSizeInBytes = $PSItem.Length
+
         # Check lower bound
         $lowerBoundCheck = if ($FileSizeBounds.LowerBound -ge 0) {
             $fileSizeInBytes -ge $FileSizeBounds.LowerBound
         } else { $true }
-        
+
         # Check upper bound
         $upperBoundCheck = if ($FileSizeBounds.UpperBound -ge 0) {
             $fileSizeInBytes -le $FileSizeBounds.UpperBound
         } else { $true }
-        
+
         # Return true only if both conditions are met
         $lowerBoundCheck -and $upperBoundCheck
     }

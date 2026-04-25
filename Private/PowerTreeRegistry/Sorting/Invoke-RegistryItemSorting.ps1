@@ -1,28 +1,29 @@
 
 function Invoke-RegistryItemSorting {
+    [CmdletBinding()]
     param (
         [array]$ValueItems,
         [array]$KeyItems,
         [bool]$SortValuesByType,
         [bool]$SortDescending
     )
-    
+
     $allItems = @()
-    
+
     # Handle value sorting
     if ($ValueItems.Count -gt 0) {
         if (-not $SortValuesByType) {
             # Registry Editor style: (Default) first, then alphabetical
-            $defaultValue = $ValueItems | Where-Object { $_.Name -eq "(Default)" }
-            $otherValues = $ValueItems | Where-Object { $_.Name -ne "(Default)" }
-            
+            $defaultValue = $ValueItems | Where-Object { $PSItem.Name -eq '(Default)' }
+            $otherValues = $ValueItems | Where-Object { $PSItem.Name -ne '(Default)' }
+
             # Sort other values by name with descending option
             if ($SortDescending) {
                 $otherValues = $otherValues | Sort-Object Name -Descending
             } else {
                 $otherValues = $otherValues | Sort-Object Name
             }
-            
+
             # Add default first (if exists), then other values
             if ($defaultValue) {
                 $allItems += $defaultValue
@@ -33,7 +34,7 @@ function Invoke-RegistryItemSorting {
             $allItems += $ValueItems
         }
     }
-    
+
     # Handle key sorting
     if ($KeyItems.Count -gt 0) {
         if (-not $SortValuesByType) {
@@ -46,7 +47,7 @@ function Invoke-RegistryItemSorting {
         }
         $allItems += $KeyItems
     }
-    
+
     # Sort by TypeName if requested (this overrides the natural registry order)
     if ($SortValuesByType -and $allItems.Count -gt 0) {
         if ($SortDescending) {
@@ -55,6 +56,6 @@ function Invoke-RegistryItemSorting {
             $allItems = $allItems | Sort-Object TypeName
         }
     }
-    
+
     return $allItems
 }
