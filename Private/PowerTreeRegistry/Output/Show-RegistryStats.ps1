@@ -1,31 +1,31 @@
 function Show-RegistryStats {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [RegistryStats]$RegistryStats,
-        
-        [Parameter(Mandatory=$true)]
+
+        [Parameter(Mandatory = $true)]
         [System.TimeSpan]$ExecutionTime,
-        
-        [Parameter(Mandatory=$false)]
+
+        [Parameter(Mandatory = $false)]
         [hashtable]$LineStyle = @{ SingleLine = '-' },
 
-        [Parameter(Mandatory=$false)]
+        [Parameter(Mandatory = $false)]
         [System.Text.StringBuilder]$OutputBuilder = $null
     )
-    
+
     $formattedTime = Format-ExecutionTime -ExecutionTime $ExecutionTime
-    
+
     $headers = @(
-        "Keys",
-        "Values", 
-        "Total Items",
-        "Max Depth",
-        "Execution Time"
+        'Keys',
+        'Values',
+        'Total Items',
+        'Max Depth',
+        'Execution Time'
     )
-    
+
     $totalItems = $RegistryStats.KeysProcessed + $RegistryStats.ValuesProcessed
-    
+
     $values = @(
         $RegistryStats.KeysProcessed,
         $RegistryStats.ValuesProcessed,
@@ -33,42 +33,53 @@ function Show-RegistryStats {
         $RegistryStats.MaxDepthReached,
         $formattedTime
     )
-    
-    $spacing = "    "
-    
-    $headerLine = ""
+
+    $spacing = '    '
+
+    $headerLine = ''
     foreach ($header in $headers) {
         $headerLine += $header + $spacing
     }
-    
-    $underscoreLine = ""
+
+    $underscoreLine = ''
     foreach ($header in $headers) {
         $underscoreLine += ($LineStyle.SingleLine * $header.Length) + $spacing
     }
-    
-    $valuesLine = ""
+
+    $valuesLine = ''
     for ($i = 0; $i -lt $headers.Count; $i++) {
         $value = $values[$i].ToString()
         $valuesLine += $value.PadRight($headers[$i].Length) + $spacing
     }
-    
- if($OutputBuilder -ne $null){
-    # Replace the placeholder line with actual stats using StringBuilder.Replace
-    $placeholderLine = "Append the stats here later!!"
-    
-    $statsContent = @"
+
+    if ($OutputBuilder -ne $null) {
+        # Replace the placeholder line with actual stats using StringBuilder.Replace
+        $placeholderLine = 'Append the stats here later!!'
+
+        $statsContent = @"
 $headerLine
 $underscoreLine
 $valuesLine
 "@
-    
-    # Direct replacement without clearing the entire StringBuilder
-    [void]$OutputBuilder.Replace($placeholderLine, $statsContent)
-} else {
-    Write-Host ""
-    Write-Host $headerLine -ForegroundColor Cyan
-    Write-Host $underscoreLine -ForegroundColor DarkCyan
-    Write-Host $valuesLine
-    Write-Host ""
-}
+
+        # Direct replacement without clearing the entire StringBuilder
+        [void]$OutputBuilder.Replace($placeholderLine, $statsContent)
+    } else {
+        if ($null -ne $global:PSStyle -and $null -ne $global:PSStyle.Formatting -and $null -ne $global:PSStyle.Formatting.TableHeader) {
+            $headerColor = $global:PSStyle.Formatting.TableHeader
+            $resetColor = $global:PSStyle.Reset
+
+            Write-Host ''
+            Write-Host "$headerColor$headerLine$resetColor"
+            Write-Host "$headerColor$underscoreLine$resetColor"
+            Write-Host $valuesLine
+            Write-Host ''
+        } else {
+            Write-Host ''
+            Write-Host $headerLine -ForegroundColor Cyan
+            Write-Host $underscoreLine -ForegroundColor DarkCyan
+            Write-Host $valuesLine
+            Write-Host ''
+        }
+    }
 }

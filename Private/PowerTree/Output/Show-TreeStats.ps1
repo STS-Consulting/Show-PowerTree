@@ -1,76 +1,76 @@
 function Show-TreeStats {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [object]$TreeStats,
-        
-        [Parameter(Mandatory=$true)]
+
+        [Parameter(Mandatory = $true)]
         [System.TimeSpan]$ExecutionTime,
-        
-        [Parameter(Mandatory=$false)]
+
+        [Parameter(Mandatory = $false)]
         [System.Text.StringBuilder]$OutputBuilder = $null,
-        
-        [Parameter(Mandatory=$false)]
+
+        [Parameter(Mandatory = $false)]
         [hashtable]$LineStyle = @{ SingleLine = '-' },
-        
-        [Parameter(Mandatory=$false)]
+
+        [Parameter(Mandatory = $false)]
         [bool]$DisplaySize = $false
     )
-    
+
     $formattedTime = Format-ExecutionTime -ExecutionTime $ExecutionTime
-    
+
     $headers = @(
-        "Files",
-        "Folders",
-        "Total Items",
-        "Depth",
-        "Total Size",
-        "Execution Time"
+        'Files',
+        'Folders',
+        'Total Items',
+        'Depth',
+        'Total Size',
+        'Execution Time'
     )
-    
+
     $totalItemsPrinted = $TreeStats.FilesPrinted + $TreeStats.FoldersPrinted
-    
+
     $values = @(
         $TreeStats.FilesPrinted,
         $TreeStats.FoldersPrinted,
         $totalItemsPrinted,
         $TreeStats.MaxDepth,
-        $(Get-HumanReadableSize -Bytes $TreeStats.TotalSize -Format "Padded"),
+        $(Get-HumanReadableSize -Bytes $TreeStats.TotalSize -Format 'Padded'),
         $formattedTime
     )
-    
-    $spacing = "    "
-    
-    $headerLine = ""
+
+    $spacing = '    '
+
+    $headerLine = ''
     foreach ($header in $headers) {
         $headerLine += $header + $spacing
     }
-    
-    $underscoreLine = ""
+
+    $underscoreLine = ''
     foreach ($header in $headers) {
         $underscoreLine += $LineStyle.SingleLine * $header.Length + $spacing
     }
-    
-    $valuesLine = ""
+
+    $valuesLine = ''
     for ($i = 0; $i -lt $headers.Count; $i++) {
         $value = $values[$i].ToString()
         $valuesLine += $value.PadRight($headers[$i].Length) + $spacing
     }
-    
-    $largestFilePath = if ($null -ne $TreeStats.LargestFile) { $TreeStats.LargestFile.FullName } else { "None" }
-    $largestFileSize = if ($null -ne $TreeStats.LargestFile) { Get-HumanReadableSize -Bytes $TreeStats.LargestFile.Length -Format "Padded" } else { "0 B" }
-    $largestFolderSize = Get-HumanReadableSize -Bytes $TreeStats.LargestFolderSize -Format "Padded"
-    
+
+    $largestFilePath = if ($null -ne $TreeStats.LargestFile) { $TreeStats.LargestFile.FullName } else { 'None' }
+    $largestFileSize = if ($null -ne $TreeStats.LargestFile) { Get-HumanReadableSize -Bytes $TreeStats.LargestFile.Length -Format 'Padded' } else { '0 B' }
+    $largestFolderSize = Get-HumanReadableSize -Bytes $TreeStats.LargestFolderSize -Format 'Padded'
+
     if ($null -ne $OutputBuilder) {
-        $placeholderText = "Append the stats here later!!"
-        
+        $placeholderText = 'Append the stats here later!!'
+
         $statsContent = @"
 $headerLine
 $underscoreLine
 $valuesLine
 
 "@
-        
+
         if ($DisplaySize) {
             $statsContent += @"
 
@@ -79,21 +79,40 @@ Largest Folder: $largestFolderSize $($TreeStats.LargestFolder)
 
 "@
         }
-        
+
         [void]$OutputBuilder.Replace($placeholderText, $statsContent)
-    }else {
-        Write-Host ""
-        Write-Host $headerLine -ForegroundColor Cyan
-        Write-Host $underscoreLine -ForegroundColor DarkCyan
-        Write-Host $valuesLine
-        
-        if ($DisplaySize) {
-            Write-Host ""
-            Write-Host "Largest File:" -NoNewline -ForegroundColor Cyan
-            Write-Host " $largestFileSize $largestFilePath"
-            
-            Write-Host "Largest Folder:" -NoNewline -ForegroundColor Cyan
-            Write-Host " $largestFolderSize $($TreeStats.LargestFolder)"
+    } else {
+        if ($null -ne $global:PSStyle -and $null -ne $global:PSStyle.Formatting -and $null -ne $global:PSStyle.Formatting.TableHeader) {
+            $headerColor = $global:PSStyle.Formatting.TableHeader
+            $resetColor = $global:PSStyle.Reset
+
+            Write-Host ''
+            Write-Host "$headerColor$headerLine$resetColor"
+            Write-Host "$headerColor$underscoreLine$resetColor"
+            Write-Host $valuesLine
+
+            if ($DisplaySize) {
+                Write-Host ''
+                Write-Host "$headerColor`Largest File:$resetColor" -NoNewline
+                Write-Host " $largestFileSize $largestFilePath"
+
+                Write-Host "$headerColor`Largest Folder:$resetColor" -NoNewline
+                Write-Host " $largestFolderSize $($TreeStats.LargestFolder)"
+            }
+        } else {
+            Write-Host ''
+            Write-Host $headerLine -ForegroundColor Cyan
+            Write-Host $underscoreLine -ForegroundColor DarkCyan
+            Write-Host $valuesLine
+
+            if ($DisplaySize) {
+                Write-Host ''
+                Write-Host 'Largest File:' -NoNewline -ForegroundColor Cyan
+                Write-Host " $largestFileSize $largestFilePath"
+
+                Write-Host 'Largest Folder:' -NoNewline -ForegroundColor Cyan
+                Write-Host " $largestFolderSize $($TreeStats.LargestFolder)"
+            }
         }
     }
 }
