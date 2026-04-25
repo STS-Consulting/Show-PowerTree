@@ -1,41 +1,121 @@
-﻿
-function Build-TreeLineStyle {
+﻿function Get-SettingsFromJson {
     [CmdletBinding()]
-    param (
+    param(
         [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
+        [ValidateSet('FileSystem', 'Registry')]
+        [string]$Mode,
+
+        [string[]]$ConfigurationPaths = (Get-ConfigurationPaths)
     )
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
+    $defaultSettings = Get-DefaultConfiguration
+
+    try {
+        Write-Verbose -Message 'Searching for configuration files in the following locations:'
+        foreach ($path in $ConfigurationPaths) {
+            Write-Verbose -Message "  - $path"
+
+            if (Test-Path $path) {
+                $fileContent = Get-Content -Path $path -Raw -ErrorAction Stop
+                $settings = $fileContent | ConvertFrom-Json -ErrorAction Stop
+
+                Write-Verbose -Message "Settings loaded from $path"
+
+                # Base hashtable with shared settings
+                $settingsHashtable = @{
+                    ShowConnectorLines     = if ($null -ne $settings.Shared.ShowConnectorLines) { $settings.Shared.ShowConnectorLines } else { $defaultSettings.Shared.ShowConnectorLines }
+                    ShowExecutionStats     = if ($null -ne $settings.Shared.ShowExecutionStats) { $settings.Shared.ShowExecutionStats } else { $defaultSettings.Shared.ShowExecutionStats }
+                    ShowConfigurations     = if ($null -ne $settings.Shared.ShowConfigurations) { $settings.Shared.ShowConfigurations } else { $defaultSettings.Shared.ShowConfigurations }
+                    LineStyle              = if ($settings.Shared.LineStyle) { $settings.Shared.LineStyle } else { $defaultSettings.Shared.LineStyle }
+                    OpenOutputFileOnFinish = if ($null -ne $settings.Shared.OpenOutputFileOnFinish) { $settings.Shared.OpenOutputFileOnFinish } else { $defaultSettings.Shared.OpenOutputFileOnFinish }
+                }
+
+                # Add mode-specific settings
+                switch ($Mode) {
+                    'FileSystem' {
+                        $settingsHashtable += @{
+                            MaximumDepth      = if ($null -ne $settings.FileSystem.MaximumDepth) { $settings.FileSystem.MaximumDepth } elseif ($null -ne $settings.FileSystem.MaxDepth) { $settings.FileSystem.MaxDepth } else { $defaultSettings.FileSystem.MaximumDepth }
+                            ExcludeDirectories = if ($settings.FileSystem.ExcludeDirectories -is [array]) { $settings.FileSystem.ExcludeDirectories } else { $defaultSettings.FileSystem.ExcludeDirectories }
+                            HumanReadableSizes = if ($null -ne $settings.FileSystem.HumanReadableSizes) { $settings.FileSystem.HumanReadableSizes } else { $defaultSettings.FileSystem.HumanReadableSizes }
+                            Files              = @{
+                                ExcludeExtensions = if ($settings.FileSystem.Files.ExcludeExtensions -is [array]) { $settings.FileSystem.Files.ExcludeExtensions } else { $defaultSettings.FileSystem.Files.ExcludeExtensions }
+                                IncludeExtensions = if ($settings.FileSystem.Files.IncludeExtensions -is [array]) { $settings.FileSystem.Files.IncludeExtensions } else { $defaultSettings.FileSystem.Files.IncludeExtensions }
+                                FileSizeMinimum   = if ($settings.FileSystem.Files.FileSizeMinimum) { $settings.FileSystem.Files.FileSizeMinimum } else { $defaultSettings.FileSystem.Files.FileSizeMinimum }
+                                FileSizeMaximum   = if ($settings.FileSystem.Files.FileSizeMaximum) { $settings.FileSystem.Files.FileSizeMaximum } else { $defaultSettings.FileSystem.Files.FileSizeMaximum }
+                            }
+                            Sorting            = @{
+                                By          = if ($settings.FileSystem.Sorting.By) { $settings.FileSystem.Sorting.By } else { $defaultSettings.FileSystem.Sorting.By }
+                                SortFolders = if ($null -ne $settings.FileSystem.Sorting.SortFolders) { $settings.FileSystem.Sorting.SortFolders } else { $defaultSettings.FileSystem.Sorting.SortFolders }
+                            }
+                        }
+                    }
+                    'Registry' {
+                        $settingsHashtable += @{
+                            MaximumDepth = if ($null -ne $settings.Registry.MaximumDepth) { $settings.Registry.MaximumDepth } elseif ($null -ne $settings.Registry.MaxDepth) { $settings.Registry.MaxDepth } else { $defaultSettings.Registry.MaximumDepth }
+                            ExcludeKeys = if ($settings.Registry.ExcludeKeys -is [array]) { $settings.Registry.ExcludeKeys } else { $defaultSettings.Registry.ExcludeKeys }
+                        }
+                    }
+                }
+
+                Write-Verbose -Message ("Parsed $Mode Settings: " + ($settingsHashtable | ConvertTo-Json -Depth 5))
+                return $settingsHashtable
+            }
         }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
+
+        Write-Verbose -Message 'Configuration file not found in any of the potential locations. Using default settings.'
+        return Get-FlattenedDefaultSettings -Mode $Mode -DefaultSettings $defaultSettings
+
+    } catch {
+        Write-Error "Error loading settings file: $($PSItem.Exception.Message)" -ErrorAction Continue
+        Write-Verbose -Message 'Using default settings instead.'
+        return Get-FlattenedDefaultSettings -Mode $Mode -DefaultSettings $defaultSettings
+    }
+}
+
+function Get-FlattenedDefaultSettings {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Mode,
+        [Parameter(Mandatory = $true)]
+        [hashtable]$DefaultSettings
+    )
+
+    $flattened = @{
+        ShowConnectorLines = $DefaultSettings.Shared.ShowConnectorLines
+        ShowExecutionStats = $DefaultSettings.Shared.ShowExecutionStats
+        LineStyle          = $DefaultSettings.Shared.LineStyle
+        Sorting            = $DefaultSettings.FileSystem.Sorting
+    }
+
+    switch ($Mode) {
+        'FileSystem' {
+            $flattened += @{
+                MaximumDepth       = $DefaultSettings.FileSystem.MaximumDepth
+                ExcludeDirectories = $DefaultSettings.FileSystem.ExcludeDirectories
+                HumanReadableSizes = $DefaultSettings.FileSystem.HumanReadableSizes
+                Files              = $DefaultSettings.FileSystem.Files
+            }
+        }
+        'Registry' {
+            $flattened += @{
+                MaximumDepth    = $DefaultSettings.Registry.MaximumDepth
+                DisplayValues   = $DefaultSettings.Registry.DisplayValues
+                ExcludeKeys     = $DefaultSettings.Registry.ExcludeKeys
+                ValueTypes      = $DefaultSettings.Registry.ValueTypes
+                EscapeWildcards = $DefaultSettings.Registry.EscapeWildcards
+            }
         }
     }
 
-    return $lineStyles[$Style]
+    return $flattened
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDTEyul/7oDgRVX
+# eYjno0+0LPheHOGH3SnrQjTHDaBIg6CCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +239,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQg+0REHVcLMvfxRdoZirG/NT44w5OlZLfUFm1IXdS8GBIwDQYJKoZIhvcNAQEB
+# BQAEggEAPm+385rz6ebcQMRwLe4j+aDfCnIIqIy4NBLRzNCIbmj3NKHRLWjFvclc
+# D2QQPs9+Fadcl0i+p3MGi8uHCXaKClpE0xdtdCg4JPia3s03RjSoXG7JyhurW9dU
+# uqClebDoSva7LeyQ1lYiMN60mzLc7NtUJ+k+g6x35zS1kGw4YVlMrvFaspAqRHqi
+# NpYCMhr3Iy2wUpnb22HLX9UdYv4PKmdKPYQulbSxTYuqqSfgu7h4zjZjQMFDcd/l
+# Pfwqt8v5mkzg33oC1Qn3HMPSrTNXyGtzJtXFUY9FipJlwj2ytufmk3QaWcG8va6g
+# 1Bs1AZNay0HjOCSdIrLS1++jRFs3vqGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MDBaMC8GCSqGSIb3DQEJBDEiBCAO987g31W3URZuD+ItmozoceqY
+# bNtQxkSFGisQ//tnPjANBgkqhkiG9w0BAQEFAASCAgBhnmqp8SlNGjMIwrcgpvyZ
+# UH7oarXHWjftt4fS5DlaUNGflNpQ4saYU5Csr4W022zsAF1JpLK+URMfo6yVbUx0
+# uKxqURLKW6TaZZLFwumWFwEJTnLi/78+XrPKHxpDSZg7t8+W4T4lqCupQbxCCAKu
+# 1rPpv9A/Kl/PRj6MFkPNrZIgVCzboijJJ5qFauIjmN8Qqf+p18rX2VZ4IX/52HZG
+# XWNQqc7gLnFmqIrEd83WYQ+xnzGlNsEzWsLZBJirqnLAZY/41yffWCS3xnrjOltr
+# 584Adm1+NG1aqOdXIF8zUJNnmkhLMPC5KhKb60a8ntkB3XEOYk/KRTBzYzCuP5RK
+# sRvpX3nJawuQtof0b1GENBTzcVW6ZJkRmF1WEgZUBM+us6BbaZazvN4bSLy/Pl9G
+# vwsqNRuf6SK/dw3xFoiDZAbTgTfBsFyMcQLnivsnIhW5u5r99zz+0mN8gOT9/Q0T
+# A5jA5Oo75Bfbm3l92WI/I62gIdQqXBziD6gOEOBt9FFGPDd7839SFohYgFtPJf4/
+# cEkK57X8foWUw6b1Ov7eE/PW7MNO5OGorMV0yXrZNB+GD90Vmf9kT5S62lUP/Dtn
+# 6Kc+qtfz0BxNyQWFLyDAms3mYzkqsWlY4TNFwTH7MYGd0S4tr7/P4ipUwYEzzIYk
+# XA38BgwMPU05r0ynyiSxcA==
 # SIG # End signature block

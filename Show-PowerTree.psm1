@@ -1,41 +1,134 @@
-﻿
-function Build-TreeLineStyle {
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
-    )
+﻿# Define script-level variables
+$script:ModuleRoot = $PSScriptRoot
+New-Alias -Name 'ptree' -Value 'Show-PowerTree'
+New-Alias -Name 'PowerTree' -Value 'Show-PowerTree'
+New-Alias -Name 'Start-PowerTree' -Value 'Show-PowerTree'
+New-Alias -Name 'Edit-PtreeConfig' -Value 'Edit-PowerTreeConfiguration'
+New-Alias -Name 'Edit-Ptree' -Value 'Edit-PowerTreeConfiguration'
+New-Alias -Name 'Edit-PowerTree' -Value 'Edit-PowerTreeConfiguration'
+New-Alias -Name 'ptreer' -Value 'Show-PowerTreeRegistry'
+New-Alias -Name 'PowerRegistry' -Value 'Show-PowerTreeRegistry'
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
-        }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
-        }
+# Explicitly list files to import to avoid wildcard issues
+# Order matters: Classes -> Constants/Enums -> Functions -> Public
+
+# 1. Classes
+$ClassesFile = Join-Path -Path $PSScriptRoot -ChildPath 'Private\Shared\DataModel\Classes.ps1'
+if (Test-Path $ClassesFile) {
+    try {
+        . $ClassesFile
+        Write-Verbose -Message "Imported class definitions from $ClassesFile"
+    } catch {
+        Write-Error "Failed to import class definitions from $ClassesFile`: $PSItem"
     }
-
-    return $lineStyles[$Style]
+} else {
+    Write-Error "Critical: Classes file not found at $ClassesFile"
 }
+
+# 2. Private Functions (Explicit Order)
+$PrivateFiles = @(
+    # Configuration / Constants
+    'Private\Show-PowerTree\Configuration\Constants.ps1',
+    'Private\Shared\Build-TreeLineStyle.ps1',
+
+    # Helpers needed early
+    'Private\Show-PowerTree\Size\Conversion\Convert-ToBytes.ps1',
+    'Private\Show-PowerTree\Filtering\Format-FileExtensions.ps1',
+    'Private\Show-PowerTree\Size\Get-HumanReadableSize.ps1',
+    'Private\Show-PowerTree\Size\Get-SizeColor.ps1',
+    'Private\Show-PowerTree\Size\Get-FilesByFilteredSize.ps1',
+
+    # Param Helpers
+    'Private\Show-PowerTree\Configuration\ParamHelpers\Build-ChildItemDirectoryParameters.ps1',
+    'Private\Show-PowerTree\Configuration\ParamHelpers\Build-ChildItemFileParameters.ps1',
+    'Private\Show-PowerTree\Configuration\ParamHelpers\Build-ExcludeDirectoryParameters.ps1',
+    'Private\Show-PowerTree\Configuration\ParamHelpers\Build-FileSizeParameters.ps1',
+
+    # Output / Formatting
+    'Private\Show-PowerTree\Output\Build-OutputLine.ps1',
+    'Private\Show-PowerTree\Output\Get-TreeConfigurationData.ps1',
+    'Private\Show-PowerTree\Output\Get-TreeView.ps1',
+    'Private\Show-PowerTree\Output\Header\Get-HeaderTable.ps1',
+    'Private\Show-PowerTree\Output\Header\Write-HeaderOutput.ps1',
+
+    'Private\Show-PowerTree\Output\Show-TreeStats.ps1',
+    'Private\Show-PowerTree\Output\ToFile\Invoke-OutputBuilder.ps1',
+    'Private\Show-PowerTree\Output\ToFile\Write-ToFile.ps1',
+    'Private\Show-PowerTree\Output\Write-OutputLine.ps1',
+
+    # Sorting
+    'Private\Show-PowerTree\Sorting\Get-SortingMethod.ps1',
+
+    # Registry support
+    'Private\Show-PowerTreeRegistry\Configuration\ParamHelpers\Get-Path.ps1',
+    'Private\Show-PowerTreeRegistry\Filtering\Get-RegistryItems.ps1',
+    'Private\Show-PowerTreeRegistry\Filtering\Set-LastItemFlag.ps1',
+    'Private\Show-PowerTreeRegistry\Filtering\Test-FilterMatch.ps1',
+    'Private\Show-PowerTreeRegistry\Output\Get-RegistryConfigurationData.ps1',
+    'Private\Show-PowerTreeRegistry\Output\Get-TreeRegistryView.ps1',
+    'Private\Show-PowerTreeRegistry\Output\Show-RegistryStats.ps1',
+    'Private\Show-PowerTreeRegistry\Output\ToFile\Invoke-OutputBuilderRegistry.ps1',
+    'Private\Show-PowerTreeRegistry\Sorting\Invoke-RegistryItemSorting.ps1',
+
+    # Shared / Common
+    'Private\Shared\DataModel\ClassLoader.ps1',
+    'Private\Shared\Get-OneDriveStatus.ps1',
+    'Private\Shared\JsonConfiguration\Get-ConfigurationPaths.ps1',
+    'Private\Shared\JsonConfiguration\Get-DefaultConfiguration.ps1',
+    'Private\Shared\JsonConfiguration\Get-SettingsFromJson.ps1',
+    'Private\Shared\JsonConfiguration\Initialize-ConfigurationFile.ps1',
+    'Private\Shared\Output\Add-DefaultExtension.ps1',
+    'Private\Shared\Output\Convert-StatsInOutputFile.ps1',
+    'Private\Shared\Output\Format-ExecutionTime.ps1',
+    'Private\Shared\Output\Write-ConfigurationToHost.ps1'
+)
+
+foreach ($file in $PrivateFiles) {
+    # Normalize path separators
+    $relativePath = $file -replace '[\\/]', [System.IO.Path]::DirectorySeparatorChar
+    $fullPath = Join-Path -Path $PSScriptRoot -ChildPath $relativePath
+    if (Test-Path $fullPath) {
+        try {
+            . $fullPath
+        } catch {
+            Write-Error "Failed to import private function $file`: $PSItem"
+        }
+    } else {
+        Write-Warning "Private function file not found: $file (Expected at: $fullPath)"
+    }
+}
+
+# 3. Public Functions
+$PublicFiles = @(
+    'Public\Edit-PowerTreeConfiguration.ps1',
+    'Public\Show-PowerTree.ps1',
+    'Public\Show-PowerTreeRegistry.ps1'
+)
+
+foreach ($file in $PublicFiles) {
+    # Normalize path separators
+    $relativePath = $file -replace '[\\/]', [System.IO.Path]::DirectorySeparatorChar
+    $fullPath = Join-Path -Path $PSScriptRoot -ChildPath $relativePath
+    if (Test-Path $fullPath) {
+        try {
+            . $fullPath
+        } catch {
+            Write-Error "Failed to import public function $file`: $PSItem"
+        }
+    } else {
+        Write-Warning "Public function file not found: $file (Expected at: $fullPath)"
+    }
+}
+
+# Export public functions
+Export-ModuleMember -Function 'Show-PowerTree', 'Edit-PowerTreeConfiguration', 'Show-PowerTreeRegistry'
+Export-ModuleMember -Function 'Show-PowerTree', 'Edit-PowerTreeConfiguration', 'Show-PowerTreeRegistry' -Alias 'ptree', 'PowerTree', 'Start-PowerTree', 'Edit-PtreeConfig', 'Edit-Ptree', 'Edit-PowerTree', 'ptreer', 'PowerRegistry'
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAVKTHj+fm0zRVI
+# Lg3yMTc7avVJoabD2/gRvC0eABVueaCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +252,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQgAg6JpcSlbT+mOgjX8sBRunqOgstUX+ccrUh86v1wQ+UwDQYJKoZIhvcNAQEB
+# BQAEggEAPS7DYwrq/PJiYWwKzgMTDVuHIH/LTl/GtpaWajXvsI/FwmPvnlsQDVOz
+# KqOfgAEAYnp1wzXVLkEm943w8DtO6Hvy/D4/VBbvkCFShHd86QaPhxAQgmKGpDsK
+# 0Evz6oHS2H7Gsz332nN3W4N15QOCAKnE+vfqfVQbnis0VE15jJM70DaDZdHgT8iR
+# XAmrzyeCDN7debxJtNFaaLTpFccxA/LYj4cQcwVeJWqa3j9hlyX8LDNWYel8JqVx
+# mp0GlrrVzdjNp/JSfQhALjzmVorIxUWEjtOz7VJictL7sOBj4gnPXSV3Qqp7XGvH
+# z+pBA6skxEiNheGTNB29ewsbWZzOIqGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MjFaMC8GCSqGSIb3DQEJBDEiBCDtFbcIq+dTgiLdhBpk0b/7nqJg
+# gOV/QYtvV26hNJl/qjANBgkqhkiG9w0BAQEFAASCAgBWA3qqLfXrW+OAxJDO1/2q
+# dmkzUjf4owOxIay4w0mN701UmR+JuaZ0pTrR6uo2kVfA/KFV/NtGLsrovxnn0qTL
+# N7KxoJJH2MjX4nFGky03eWKh0kfd+52vFVmlokEt6M/ybDL6ubg0RRCRd/34yWH8
+# baQ9bVNAf/YcsbPlV+nSU8kkDHEWLt/bb/5pn2N2Q64ATR1B0GyD+t8lHCD9ZA5+
+# yyeY6f4S1nSAeSyTdfuQ7M5/ojN/9b7WuC0ysTEhQ3YJ3E9zDKQqKX1V2/zwuKtA
+# xsQuAT574MmnIA2ju8zFZ87rJhV1rEoSZRbIJBTJTvi9WRR7SXGJdUsz6bbXhVik
+# ecFoti6aEtOe51J9cJPiLoSfNRSnPT+oy34FNHmgCnZ3qoPavMv8JM1qHTiAb8w0
+# LtRwLN1wnVvMhsmANMa7B2OkoE7flRxFtaryNiPqLo1QmEpy98HgEf0FqG+nl22H
+# FJsOxtRkI3sw+TK4bb/IaWiTg0ZVXIFU/80Eo/8wJS5jv97KMJM55Uxn/bb7X3rM
+# cPMO4wS11/wIjxeHw1qSQp4hxUuYOhpZ0D3W6gmSnxiUKhYp+5eZmwkajiOVbBYp
+# MAQXbxiIvzzFqPiQVB2P7G1O+76GV+3ph+zYANBjl7nZT19bwBkGLvqnQIBYGKcU
+# KL5YfRerJfVuEwu0pXSb6A==
 # SIG # End signature block

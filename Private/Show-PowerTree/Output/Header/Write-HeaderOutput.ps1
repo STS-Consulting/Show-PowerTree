@@ -1,41 +1,36 @@
 ﻿
-function Build-TreeLineStyle {
+function Write-HeaderToOutput {
     [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
+    param(
+        [hashtable]$HeaderTable,
+        [System.Text.StringBuilder]$OutputBuilder,
+        [hashtable]$LineStyle
     )
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
-        }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
+    if ($null -ne $OutputBuilder) {
+        [void]$OutputBuilder.AppendLine($HeaderTable.HeaderLine)
+        [void]$OutputBuilder.AppendLine($HeaderTable.UnderscoreLine)
+    } else {
+        if ($null -ne $global:PSStyle -and $null -ne $global:PSStyle.Formatting -and $null -ne $global:PSStyle.Formatting.TableHeader) {
+            # Use PSStyle for PowerShell 7+
+            $headerColor = $global:PSStyle.Formatting.TableHeader
+            $resetColor = $global:PSStyle.Reset
+
+            Microsoft.PowerShell.Utility\Write-Information -MessageData "$headerColor$($HeaderTable.HeaderLine)$resetColor" -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData "$headerColor$($HeaderTable.UnderscoreLine)$resetColor" -InformationAction Continue
+        } else {
+            # Fallback for older versions or if PSStyle is not available
+            Microsoft.PowerShell.Utility\Write-Information -MessageData $HeaderTable.HeaderLine -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData $HeaderTable.UnderscoreLine -InformationAction Continue
         }
     }
-
-    return $lineStyles[$Style]
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCPIgIyJxg4PBHQ
+# pse2XMmaza7CkipvksOSu9gwZP+cjqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +154,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQgF3QHE8Db5SbkhMwKQ1UkHaeslw/59IUg3GMI7SQvAMgwDQYJKoZIhvcNAQEB
+# BQAEggEAxkhMKVibd+Z4O6XvR1meafrSOFmptfN6TWtGPu1LIzNGcZbuotr8JF16
+# zoqo3KtcvY2R9Y+D/cCAP5pkGNAexIoEQ8Lo2wOG4ej/d/tQhlyU62ERrb21OMSy
+# P7YWSgH3WV7sTLY33mkXv3cmDBPNsO4CV5kP/FGUv4Z4EoS6R54Xb3sRy5xfqTZM
+# XnTFlgykjqM/KMqOGu1lMyPJ9KXjDKCmQUs/kOYY3pQbifRMnFwxfO9dN81ic6Or
+# r4mSczXrTRkqlSfFogmk6WqneG9vZLWWW8wNKxMaSk3HuIfzBjzfycor/mYaeVD2
+# 3llnK3Jzf1Xt+4Rf2hRWkwY0TngcLKGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MDdaMC8GCSqGSIb3DQEJBDEiBCA6SUQcYL02jRa19uK2zHS7jjG5
+# 1Dgzcv10ieLf+Zv5gDANBgkqhkiG9w0BAQEFAASCAgCnjM5jiufyoTVrfFOCoeSM
+# 49fNlyl3z5HTx10l95LGht6Uo8mkorVpLl6ovq/CDd/QpLBrYGi0ta/8mmkqYLch
+# t/q9HrXna19Agi4LvFQgdjWi1CG4kh1c+Xze9RxPprZWi1obX0SZonx2dBqxVT5k
+# M5lYQojEG7Uf7+TqDRJTD9K60NwzVnFXRxTZIpfAurZxa7GhO28HqvbPG425yIP4
+# PQDIFDsNqn+bXPM4JzBnRL2n7j/jaYhIC/7lh150Wv/hSsCpI54GJ63mBo4LL8BW
+# hw1FgPoJFeFKMZOGh5fX8cbA9aR4dWJ1eW+SNEMtmt2U2MpUAS5elJVTo5/yjmYB
+# 8KuszR2X0FG6WV2cCyaHnknTQsuayFsFlga7yNSGbzB9JQODtHh1aDuPA+CLlHsg
+# zLFeYTEVSrP3rozaud4VUwfJMnMhayFMXkvXTqjzAYm2tOcp7tW+WGnanWAcPfDD
+# sHHK9+NEt3JthGusspFjX+Sm81g7BnQM7Z5gRBl470rO1LaEQIuhP/2F6u9oLtwJ
+# HaPZ6mrZEkDADSX6IQTF6NUtoa4NOTjeqgizzih6E3O/ZeuRP8hwA5LJ3lMewe8f
+# pPF8x1sLUSnoi1W3rhnRxJaVovPj3SJfcexE+oH/USxkZvIdMHWTv0iF49sjIWSp
+# E5tiDJA/iSdxYJhVQWBU0w==
 # SIG # End signature block

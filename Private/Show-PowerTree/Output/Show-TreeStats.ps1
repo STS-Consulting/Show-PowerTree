@@ -1,41 +1,123 @@
-﻿
-function Build-TreeLineStyle {
+﻿function Show-TreeStats {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
+        [object]$TreeStats,
+
+        [Parameter(Mandatory = $true)]
+        [System.TimeSpan]$ExecutionTime,
+
+        [Parameter(Mandatory = $false)]
+        [System.Text.StringBuilder]$OutputBuilder = $null,
+
+        [Parameter(Mandatory = $false)]
+        [hashtable]$LineStyle = @{ SingleLine = '-' },
+
+        [Parameter(Mandatory = $false)]
+        [bool]$DisplaySize = $false
     )
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
-        }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
-        }
+    $formattedTime = Format-ExecutionTime -ExecutionTime $ExecutionTime
+
+    $headers = @(
+        'Files',
+        'Folders',
+        'Total Items',
+        'Maximum Depth',
+        'Total Size',
+        'Execution Time'
+    )
+
+    $totalItemsPrinted = $TreeStats.FilesPrinted + $TreeStats.FoldersPrinted
+
+    $values = @(
+        $TreeStats.FilesPrinted,
+        $TreeStats.FoldersPrinted,
+        $totalItemsPrinted,
+        $TreeStats.MaximumDepth,
+        $(Get-HumanReadableSize -Bytes $TreeStats.TotalSize -Format 'Padded'),
+        $formattedTime
+    )
+
+    $spacing = '    '
+
+    $headerLine = ''
+    foreach ($header in $headers) {
+        $headerLine += $header + $spacing
     }
 
-    return $lineStyles[$Style]
+    $underscoreLine = ''
+    foreach ($header in $headers) {
+        $underscoreLine += $LineStyle.SingleLine * $header.Length + $spacing
+    }
+
+    $valuesLine = ''
+    for ($iteration = 0; $iteration -lt $headers.Count; $iteration++) {
+        $value = $values[$iteration].ToString()
+        $valuesLine += $value.PadRight($headers[$iteration].Length) + $spacing
+    }
+
+    $largestFilePath = if ($null -ne $TreeStats.LargestFile) { $TreeStats.LargestFile.FullName } else { 'None' }
+    $largestFileSize = if ($null -ne $TreeStats.LargestFile) { Get-HumanReadableSize -Bytes $TreeStats.LargestFile.Length -Format 'Padded' } else { '0 B' }
+    $largestFolderSize = Get-HumanReadableSize -Bytes $TreeStats.LargestFolderSize -Format 'Padded'
+
+    if ($null -ne $OutputBuilder) {
+        $placeholderText = 'Append the stats here later!!'
+
+        $statsContent = @"
+$headerLine
+$underscoreLine
+$valuesLine
+
+"@
+
+        if ($DisplaySize) {
+            $statsContent += @"
+
+Largest File: $largestFileSize $largestFilePath
+Largest Folder: $largestFolderSize $($TreeStats.LargestFolder)
+
+"@
+        }
+
+        [void]$OutputBuilder.Replace($placeholderText, $statsContent)
+    } else {
+        if ($null -ne $global:PSStyle -and $null -ne $global:PSStyle.Formatting -and $null -ne $global:PSStyle.Formatting.TableHeader) {
+            $headerColor = $global:PSStyle.Formatting.TableHeader
+            $resetColor = $global:PSStyle.Reset
+
+            Microsoft.PowerShell.Utility\Write-Information -MessageData ' ' -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData "$headerColor$headerLine$resetColor" -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData "$headerColor$underscoreLine$resetColor" -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData $valuesLine -InformationAction Continue
+
+            if ($DisplaySize) {
+                Microsoft.PowerShell.Utility\Write-Information -MessageData ' ' -InformationAction Continue
+                Microsoft.PowerShell.Utility\Write-Information -MessageData "$headerColor`Largest File:$resetColor $largestFileSize $largestFilePath" -InformationAction Continue
+                Microsoft.PowerShell.Utility\Write-Information -MessageData "$headerColor`Largest Folder:$resetColor $largestFolderSize $($TreeStats.LargestFolder)" -InformationAction Continue
+            }
+        } else {
+            Microsoft.PowerShell.Utility\Write-Information -MessageData ' ' -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData $headerLine -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData $underscoreLine -InformationAction Continue
+            Microsoft.PowerShell.Utility\Write-Information -MessageData $valuesLine -InformationAction Continue
+
+            if ($DisplaySize) {
+                Microsoft.PowerShell.Utility\Write-Information -MessageData ' ' -InformationAction Continue
+                # Fallback colors are tricky with Microsoft.PowerShell.Utility\Write-Information, stripping them or using default text.
+                # Assuming PSStyle is available since we mandate PS 7.5+
+                Microsoft.PowerShell.Utility\Write-Information -MessageData "Largest File: $largestFileSize $largestFilePath" -InformationAction Continue
+                Microsoft.PowerShell.Utility\Write-Information -MessageData "Largest Folder: $largestFolderSize $($TreeStats.LargestFolder)" -InformationAction Continue
+            }
+        }
+    }
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCB2SsILRNLhk3nU
+# vqNJn1s+Cc2SxXGZVsHAakKzEJqaA6CCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +241,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQgJL+vgQhLsa7MeOz+AUkSkrumr1EWCaqGC3vuPWgl0yswDQYJKoZIhvcNAQEB
+# BQAEggEAlwXSdUNiEWIrUUOQHquAIdVThLouTYx/PGRG+DEwi8BmUlZayKeQ6LGE
+# /xyep9ITtOi46ZnDMsH+uFdsIeF9H2Bm3DAkjcH71ZKXPqjbzCX4u8paw5JvEczW
+# bJy/Yfy+8zsSVLbfwgZNOeQTanMmahH+6db1Gw7zwxwHcKDhoBhJoj+kqNKIDpMb
+# gsE3anWt7otq90CbB05cv/6cbCPZy8Ngo9aM6AoOtO14/y512HUgHQ3GgPhG3Wn9
+# hytdcCgrmoSFSBDERlKIC82L2XB/Oh6v3C9m5GJtRhTjPXPHU633WeGgPlgMaNQT
+# 4UGL2j5f1/FWJfcfGUpM8dL+DFF/O6GCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MTBaMC8GCSqGSIb3DQEJBDEiBCCdhtF6U5RIbTfcdSAM115FXXpu
+# UgUz+5u0QsjXOXJfDTANBgkqhkiG9w0BAQEFAASCAgDEEPfWicZrZ1Wtbi76rLca
+# 0HG2O28G2Mc3hVQ11c3txnY6BUeWHOMQBN6qYo03PARPKABupwzok+YOBWZE1K8r
+# csiks/Ncw8/+lAy6l1AnPkr2SUskVpPTKk8aVW+eOW/JucGlYVJG/gBYnVfvYeir
+# taEqqGpYTnkApP+MXQWEdb8Y2l5G3wCSl4NlzI/CLNIe0Yopinoo1OyiD5vl4MH9
+# +lfSTLmVSHBRPPCIwFvb6iXwiSttT/FFUj9aUrt3FnlyoHq8DjZpI1opMrsiQJKq
+# 27Rnm7IfKPyt1ITx1U1EUkdnMCOREovI3WfgbhwJVx7AsKnZhlALSbRXcxmBIJvN
+# NcEKkCe2p6+cZi2qeSzOJJjCbBsqXZWD/PZ+mNfDt+qirJvSaeF+1mXVD0B++RgF
+# ByBEDD5smGK75jzc41VE5wnOI4JJZVmbdEfg0UNu4gsY01EVKuXcCee5PpgKUvBf
+# 9rSoyyprd5/uGHH1kvPIJI1wyd0LO9nPuxtsnKRqRutKjMuKJu+/M1O+xfKaKMIm
+# 0hh20Zk8JuzoHdigcYHt4mxO9lhEIqOv+8x90fj5x37MiAx3qR0527zEiMDrzNtz
+# sfDwT7K35CiEOc9dQSPFLiFgJeGvo2YWCrz41RPlrMb77kmWtICxHnOr+00EasMm
+# dkWrb4s3Nv7sbOvXKOGskQ==
 # SIG # End signature block

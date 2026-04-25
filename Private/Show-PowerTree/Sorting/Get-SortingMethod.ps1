@@ -1,41 +1,116 @@
-﻿
-function Build-TreeLineStyle {
+﻿function Get-SortingMethod {
     [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
+    param(
+        [boolean]$SortBySize,
+        [boolean]$SortByName,
+        [boolean]$SortByModificationDate,
+        [boolean]$SortByCreationDate,
+        [boolean]$SortByLastAccessDate,
+        [ValidateSet('size', 'name', 'ModificationDate', 'CreationDate', 'LastAccessDate', 'md', 'cd', 'la', '')]
+        [string]$Sort,
+        [ValidateScript({ $script:ValidSortOptions -contains $PSItem })]
+        [string]$DefaultSort
     )
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
-        }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
+    if ($Sort) {
+        switch ($Sort) {
+            'size' { $SortBySize = $true }
+            'name' { $SortByName = $true }
+            'md' { $SortByModificationDate = $true }
+            'ModificationDate' { $SortByModificationDate = $true }
+            'cd' { $SortByCreationDate = $true }
+            'CreationDate' { $SortByCreationDate = $true }
+            'la' { $SortByLastAccessDate = $true }
+            'LastAccessDate' { $SortByLastAccessDate = $true }
         }
     }
 
-    return $lineStyles[$Style]
+    $sortBy = $DefaultSort # Default sorting from PowerTree.config.json
+    if ($SortByModificationDate) { $sortBy = 'Modification Date' }
+    elseif ($SortByCreationDate) { $sortBy = 'Creation Date' }
+    elseif ($SortByLastAccessDate) { $sortBy = 'Last Access Date' }
+    elseif ($SortBySize) { $sortBy = 'Size' }
+    elseif ($SortByName) { $sortBy = 'Name' }
+
+    return $sortBy
+}
+
+# Function to sort items based on specified criteria
+function Group-Items {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $false)]
+        [System.Object[]]$Items,
+
+        [Parameter(Mandatory = $true)]
+        [string]$SortBy,
+
+        [Parameter()]
+        [bool]$SortDescending = $false
+    )
+
+    if ($null -eq $Items -or $Items.Count -eq 0) {
+        return @()
+    }
+
+    $sorted = switch ($SortBy) {
+        'Modification Date' {
+            $Items | Sort-Object -Property LastWriteTime
+        }
+        'Creation Date' {
+            $Items | Sort-Object -Property CreationTime
+        }
+        'Last Access Date' {
+            $Items | Sort-Object -Property LastAccessTime
+        }
+        'Name' {
+            $Items | Sort-Object -Property Name
+        }
+        'Size' {
+            $Items | Sort-Object -Property { if ($PSItem -is [System.IO.DirectoryInfo]) {
+                    # For directories, calculate total size of contents
+                    (Get-ChildItem -LiteralPath $PSItem.FullName -Recurse -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
+                } else {
+                    # For files, use file length
+                    $PSItem.Length
+                }
+            }
+        }
+
+        default {
+            $Items | Sort-Object -Property Name
+        }
+    }
+
+    if ($SortDescending) {
+        # When sorting in descending order, we need to be specific about the property
+        switch ($SortBy) {
+            'Modification Date' { return $Items | Sort-Object -Property LastWriteTime -Descending }
+            'Creation Date' { return $Items | Sort-Object -Property CreationTime -Descending }
+            'Last Access Date' { return $Items | Sort-Object -Property LastAccessTime -Descending }
+            'Name' { return $Items | Sort-Object -Property Name -Descending }
+            'Size' {
+                return $Items | Sort-Object -Property {
+                    if ($PSItem -is [System.IO.DirectoryInfo]) {
+                        (Get-ChildItem -LiteralPath $PSItem.FullName -Recurse -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
+                    } else {
+                        $PSItem.Length
+                    }
+                } -Descending
+            }
+
+            default { return $Items | Sort-Object -Property Name -Descending }
+        }
+    } else {
+        return $sorted
+    }
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCANPZ1cx3soBJtn
+# U68QoAFjJdAXqaTELlWtGl0pWmAByKCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +234,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQg/UkWaHBVd4YZqAm4EdN6pPfiRDJysRNHqrdxQFg8JMowDQYJKoZIhvcNAQEB
+# BQAEggEAAYc0XUvcvpvDSNd8Rajxrea4Un8TBnWdyQVn9H1LOW3Sq7z1rpEagcGg
+# nONdrgZ7sFUGoJp9Bv+vZq9+9CjaiAIuHW33ovylz1e5JK2qkpjGiEUIi2L2ByPa
+# w5+nSmQ8bbBwdNpW/3ILBrHCDOmJU7pMlxQxJcxC5Pc6YWz05qmTiTKHvwZfLkVe
+# 1A3T1nU14ZOWVOOcYgDi4oxUWZ48/bNMoPAzs8l9Tisa+9yPEPD6riXtw9AxccB5
+# uBx6mZGL7om7qevC6BuTz22xNkD75ehUjl5T5YfwaCJZvbE0Nc3ykufgSHktevl4
+# CVMqXP0fCa2jnx0FEUF9GgATTDMHX6GCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MTNaMC8GCSqGSIb3DQEJBDEiBCBXZWWl/WY1Rver1P3tTeVbpMLn
+# 3l6T1GgGobAarOPHdzANBgkqhkiG9w0BAQEFAASCAgCKaZqsLMEkdy9ridv3Z53e
+# 9C61k3PjeQohsFlyk58jAOsYuV2iPpNa8+TxRer8BhSPXMisU67o620tJ6cA9cL5
+# S+1e75K9X6Z9Pbkrh0cwbFUFaxCxn0T/GHFs34awtni/g+axhHcC3Z1Q6AWbwH8y
+# Y3pFGcQYmsQ1aH5SMtFaYJ+6MMD+A9m3CUmo80tQyghGjvAVBwhcx8y1LSbmWEbp
+# molxFVloq7PqNqw5VU77NfSaC/pzsM/eyUskUnOxlT0YDaO7nBmklsXT2F3dqG7I
+# zeCkfNjNdILL9xQrZ2PMQXgymiqKAsoButk7hZp7p1NAdw0XIqLNE19Qj7VHrPS4
+# JGG4U3S8Rb+RpZ/EHjANYgTYi7hPGpQ9L1s2BSs/xfFJA00Cq8L20ZVXNZrUAkQM
+# lp6n3XTnBGgXHEYzARodx1ZIgDkAOrq0a+qnEaQSjb762QR4NyUL/3mJsezjRPnz
+# ulwrJGsnQTmREcGc18teo6TbxAULBjQlPO9ITEBGsu+nMF3fHT09047UYNagBc7z
+# sUUEUZQV8OlH4tgm+SUH2S5lQhxJwIPlPy5cHDJnMAOF9bTXTThxPy7EFw12zUx9
+# xtg10BKnW2IcVkFBeM4OnlSy2Ef28Dy4Do+1X3t9nMsNa9zvqsEUhXfEmt38oqom
+# oJarhu/uEwkSd4eqePQFjA==
 # SIG # End signature block

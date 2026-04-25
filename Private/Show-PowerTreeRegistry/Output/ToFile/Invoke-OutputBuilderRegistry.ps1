@@ -1,41 +1,45 @@
-﻿
-function Build-TreeLineStyle {
+﻿function Invoke-OutputBuilderRegistry {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
+        [Parameter(Mandatory=$true)]
+        [TreeRegistryConfig]$TreeRegistryConfiguration,
+        [bool]$ShowExecutionStats = $true,
+        [bool]$ShowConfigurations = $true
     )
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
+    $outputBuilder = New-Object System.Text.StringBuilder
+
+    [void]$outputBuilder.AppendLine("# PowerTreeRegistry Output")
+    [void]$outputBuilder.AppendLine("# Generated: $(Get-Date)")
+    [void]$outputBuilder.AppendLine("# Registry Path: $($TreeRegistryConfiguration.Path)")
+    [void]$outputBuilder.AppendLine("")
+
+    if($ShowConfigurations){
+        [void]$outputBuilder.AppendLine("Configuration:")
+        [void]$outputBuilder.AppendLine(($TreeRegistryConfiguration.LineStyle.SingleLine * 13))
+        $configurationData = Get-RegistryConfigurationData -TreeRegistryConfiguration $TreeRegistryConfiguration
+        foreach ($configurationLine in $configurationData) {
+            [void]$outputBuilder.AppendLine($configurationLine)
         }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
-        }
+        [void]$outputBuilder.AppendLine("")
     }
 
-    return $lineStyles[$Style]
+    # Add placeholder for execution stats if needed
+    if ($ShowExecutionStats) {
+        [void]$outputBuilder.AppendLine("Execution Stats:")
+        [void]$outputBuilder.AppendLine(($TreeRegistryConfiguration.LineStyle.SingleLine * 15))
+        [void]$outputBuilder.AppendLine("Append the stats here later!!")
+        [void]$outputBuilder.AppendLine("")
+    }
+
+    return $outputBuilder
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCoTueHvNCBScY6
+# 5JWOx1lSDOLF6XBEeJorqGzS8wA4DqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +163,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQgvVJboxmpDsAKl44P+ZS/jolnXoQgMANE9C8QceWXHggwDQYJKoZIhvcNAQEB
+# BQAEggEAQCOa/wN9OJ4YRcEWsXeIIQYUUa8DzWKsnsIJ4G79lfeuOeZXPk5KdcYE
+# BVg+h6WCPhLk7jHwiHSLtH47QzplFeCHVoECUNMHgfYLzgCd+55mgQlUfJHQJpij
+# QWAEbA337+/M0jOR23rkoUoGW1d7eLiMZZFDhiMGSnpayCu/zL4Y6/1Bktu/WNyc
+# 4y9VnjW0Gvhx+KIesp4YmoDHf9PusGD9HnaDy5n2Jfui7j7lNLpe1jKf0Hx3M9ak
+# fCFZcFO17DzIdVe7cDIU/cKI7igvO8imDN6UpOS9CP7bvzGig0wxDviZnc9rKTB7
+# dTN+lDYLurW9qmRqqDbtercyswwlaqGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MTZaMC8GCSqGSIb3DQEJBDEiBCB+0BH62A33dt+ZTdGtYT9bQ44Y
+# U7oUF4R9T9ZLZ3g4LDANBgkqhkiG9w0BAQEFAASCAgBFn+fcOxsUqtBMyfu1SIcA
+# Mcnv/SvTa7Wxc+MCrvewFWk90jWyPbrrCi2UkV/Q5t/AhDr968YyhDTBSiTIST5S
+# BdR0cSp6ujV5C0SttAl3w57geFLWfBVoG7SHz6Yndj+WsggrNLgfbmPZo/jy6bDx
+# wUIeKf9aRnN3AS4RxQgCjfAXhxs67DP+PAJ4c1J+GkNLxCBGZ7WZ3w9OHBGN57Kp
+# EjWKVV1+TK+5dctOU71KcdHdoTYPkzBQW04hwO3Ths+u0dwuswQdlpRnJlGMjpHH
+# tKIz/+SbcEfSrHBucUuvJUOWJ6DTfEh6GgB1xcBazN1/3cUIKixNLbJXITRP1qFO
+# XPHMmqN7Yw+4AXH4UoXxmtWhpx7FX2ph2uRQuANYV6/HQjZpEFMdMX4D/IbLnRkc
+# ZP+IOu4fBic61FN1UEMtPlzDojXn8evM177xMaLjFgitn8LluX8p1P32aoXKhqPR
+# q2EjR8kG0IC2U4CHLsZoNuLAwytL7foLxquAYm9NQVfUfYR2AiplunOBYkXXYMf+
+# crHUDh5xEXFSAxDmhrmz8bpp1wp38sSPJhH3RqV1IT7GhGD9+iMoKEL1vsUy6/cV
+# 8AxbZxpyIe/lZvYKfaMvvxpwfzVY2DrfU1aBJYiguD/OM+bk+Nw1bErT6bnQgBOM
+# yRmdnVPV9exgin7IK17rlA==
 # SIG # End signature block

@@ -1,41 +1,80 @@
-﻿
-function Build-TreeLineStyle {
+﻿function Get-HeaderTable {
     [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
+    param(
+        [bool]$DisplayCreationDate,
+        [bool]$DisplayLastAccessDate,
+        [bool]$DisplayModificationDate,
+        [bool]$DisplaySize,
+        [bool]$DisplayMode,
+        [hashtable]$LineStyle
     )
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
+    $headerTable = @{
+        Indentations = @{}
+        HeaderLine = ""
+        UnderscoreLine = ""
+        HeaderColumns = @()
+    }
+    $regularSpacing = "   "
+
+    $headerConfigs = @(
+        @{
+            Condition = $DisplayMode
+            HeaderString = "Mode"
+            ExtraSpacing = "  "
+        },
+        @{
+            Condition = $DisplayCreationDate
+            HeaderString = "Creation Date"
+            ExtraSpacing = " " * ("Modification Date".Length - "Creation Date".Length)
+        },
+        @{
+            Condition = $DisplayLastAccessDate
+            HeaderString = "Last Access Date"
+            ExtraSpacing = " " * ("Modification Date".Length - "Last Access Date".Length)
+        },
+        @{
+            Condition = $DisplayModificationDate
+            HeaderString = "Modification Date"
+            ExtraSpacing = ""
+        },
+        @{
+            Condition = $DisplaySize
+            HeaderString = "Size"
+            ExtraSpacing = "      "
         }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
+    )
+
+    # Add headers based on display flags
+    foreach ($configuration in $headerConfigs) {
+        if ($configuration.Condition) {
+            $headerString = $configuration.HeaderString
+            $extraSpacing = $configuration.ExtraSpacing
+
+            $headerTable.Indentations[$headerString] = $headerTable.HeaderLine.Length
+
+            $headerTable.HeaderLine += "$headerString$regularSpacing$extraSpacing"
+            $headerTable.UnderscoreLine += "$($LineStyle.SingleLine * ($headerString.Length + $extraSpacing.Length))$regularSpacing"
+
+            $headerTable.HeaderColumns += $headerString
         }
     }
 
-    return $lineStyles[$Style]
+
+    $hierarchyHeader = "Hierarchy"
+    $headerTable.Indentations[$hierarchyHeader] = $headerTable.HeaderLine.Length
+    $headerTable.HeaderLine += $hierarchyHeader
+    $headerTable.UnderscoreLine += $LineStyle.SingleLine * $hierarchyHeader.Length
+    $headerTable.HeaderColumns += $hierarchyHeader
+
+    return $headerTable
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDZzOY/EFkYOASX
+# nrihH3AgdyrJFX1mrV+RP4vy1T5jWqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +198,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQgfsYXlAbyMlSfG1czyHuV0M2CEWv+7wOD+4ygVe2qWtkwDQYJKoZIhvcNAQEB
+# BQAEggEAMZUYGAqpzqaRiMZTxBmnnYG5z7lI//QLooYuME+CLELtoPoG5LDHhes2
+# aWF2aeP5M8HjnmOOfaEZO9UyujsbRNrTmKcF/lUcAhPxkTmA2SCP+E9+WN5vs2NJ
+# ivLYixmSE0YmbMgco46AEpnP6C3DV+G8qb3pRGbVAMvx4VeejPhD+NDl+KsMWOSt
+# dPQYhfAzscrNF2dTvTj3lNA6wFRPXbPBr8uDF4msU+VCE9UgQwNSq4AWf9M2qybt
+# nawkmmqiz1Cr942vw7v1P36JjYt0lOKhsnwZI7OysuApQ5+A+RbTDWuKJzJPjcx5
+# iQTs+m9Gn/rCIPF69XatCcU8Er1HX6GCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MDdaMC8GCSqGSIb3DQEJBDEiBCBTQLXl7fgvroZT0pneMwAShhy9
+# elV1dSWP27ie+CSZSTANBgkqhkiG9w0BAQEFAASCAgAxzukDUfiWQEjhxMv7/eRb
+# mq8QkJoF5JNlyoYcoJiuExAeuxvXmiJqr0PtmD6lEEPXqafUFbZ0Gj+gNweu5c/B
+# 81e4n3Qg8XoZJRcNIQpK1S1633G4wTtLgH9D6DH6J7AQpRYlz+rnCnyz5io3p5c+
+# NzHEuBViUQFWsWUHUz7tyO65yRRC7o4mGnaujQEaZopu0zFG2WKvIrlM2Dssrme1
+# ma24KdkmZSTggamZj6rEBTqo6VLXZaM8K/pQuKpRSYMOkYt1Z3gzYOwYfP/H/o8Q
+# 8vGVKwzJcrnlUWtSPSejKWPYp0YvBzRrTNx/FTAWKeUVytAYT1C5MPsA9atgRbWg
+# +pCR247ejB/OwsVUll2Pbythuq6XHeiqwgi7fF8zsUuKaJ9CEz+PzuaRbMcEWqk1
+# OYjZ2yRggEn5VoCuT0Ij1L6UdEIP3kEtOQlafYRK3cj0fzLmoAyA8qifIcrafSfN
+# D3pkD+ETKq+8qnRkfxPIAdOBD0vHIBJ6+x/iY9bnFAS0r8XJM20C2QrQLro5Ulr6
+# KUzR8a2OLwKZR/s6Or1QfEZ2aVi7hSyAUerPAzQbEApcAClvgLPzEWlot16PK7X2
+# noQ2D5LFJ5kvDYTtq5Q2KoBIn6Scpkj+K8GkJ2RHBLN5TG/HBN1L7d2OUGVGkh1V
+# yqo65FMc6yrwtGr/yq3QMw==
 # SIG # End signature block

@@ -1,41 +1,60 @@
-﻿
-function Build-TreeLineStyle {
+﻿function Get-RegistryConfigurationData {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
+        [TreeRegistryConfig]$TreeRegistryConfiguration
     )
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
-        }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
-        }
+    $configurationData = @()
+
+    $sortByText = if ($TreeRegistryConfiguration.SortValuesByType) { 'Type' } else { 'Registry Order' }
+    $direction = if ($TreeRegistryConfiguration.SortDescending) { 'Descending' } else { 'Ascending' }
+    $configurationData += @{ Key = 'Sort By'; Value = "$sortByText $direction" }
+
+    $dataTypeText = if ($TreeRegistryConfiguration.UseRegistryDataTypes) {
+        'REG_SZ, REG_DWORD, etc.'
+    } else {
+        'String, DWord, etc.'
+    }
+    $configurationData += @{ Key = 'Type Format'; Value = $dataTypeText }
+    $configurationData += @{ Key = 'NoValues'; Value = $TreeRegistryConfiguration.NoValues }
+    $configurationData += @{ Key = 'DisplayItemCounts'; Value = $TreeRegistryConfiguration.DisplayItemCounts }
+    $configurationData += @{ Key = 'SortValuesByType'; Value = $TreeRegistryConfiguration.SortValuesByType }
+
+    if ($TreeRegistryConfiguration.MaximumDepth -ne -1) {
+        $configurationData += @{ Key = 'Maximum Depth'; Value = $TreeRegistryConfiguration.MaximumDepth }
+    } else {
+        $configurationData += @{ Key = 'Maximum Depth'; Value = 'Unlimited' }
     }
 
-    return $lineStyles[$Style]
+    if ($TreeRegistryConfiguration.Include -and $TreeRegistryConfiguration.Include.Count -gt 0) {
+        $configurationData += @{ Key = 'Include (Values)'; Value = ($TreeRegistryConfiguration.Include -join ', ') }
+    } else {
+        $configurationData += @{ Key = 'Include (Values)'; Value = 'None' }
+    }
+
+    if ($TreeRegistryConfiguration.Exclude -and $TreeRegistryConfiguration.Exclude.Count -gt 0) {
+        $configurationData += @{ Key = 'Exclude (Keys/Values)'; Value = ($TreeRegistryConfiguration.Exclude -join ', ') }
+    } else {
+        $configurationData += @{ Key = 'Exclude (Keys/Values)'; Value = 'None' }
+    }
+
+
+    $maxKeyLength = ($configurationData | ForEach-Object { $PSItem.Key.Length } | Measure-Object -Maximum).Maximum + 1
+
+    $formattedData = $configurationData | ForEach-Object {
+        $paddedKey = $PSItem.Key.PadRight($maxKeyLength)
+        "$paddedKey $($PSItem.Value)"
+    }
+
+    return $formattedData
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAEUo9O4db+ayre
+# rnrBKmbOhrI9cpK9aNlHJ1YdqgCvZ6CCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +178,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQgJtLTanZ/PbDw3/9uJccOxwbLHmElz1PoyWaM4/DScT0wDQYJKoZIhvcNAQEB
+# BQAEggEAV4Bmj57WZH9cO3zu1ZmJ8EDq+p+4roh/bG8ohOKbdDfeOK5nGxFgUjzO
+# jU4u0jaIzSM6pk8yHeLehCSx55Fj8rS1kFpDxB3r0NQlkPtu5vB0sBXgN7GMu9Iv
+# t+U0tMc4VnsGU9VrCcjxfFnLaK2slZNMOtZ43Xl+4LtrFpABfcf25SkvblJbrJU+
+# a0iDdtVNN/9bui7iHKSyIL9twxkLPsyZWvovWrW/cAKeS3mkXvhlH+HH5kDRLv/1
+# IVgxVbSzWZ5AdMeYT6YAN855RTMBINHb2E6yFbgyX8ihMh2AIeHtPltWqxB+6m2u
+# 83TyU8iiurJ1BT1Cdksxa9rm80QvbKGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MTdaMC8GCSqGSIb3DQEJBDEiBCAECulSqDlfbKxoK5aMzc3xLr7Z
+# /R0B20fi/kVoRYBt0zANBgkqhkiG9w0BAQEFAASCAgC7p2pfEj7yraXELNN674VA
+# S6QT1Yyd873ojcbW/wDgb/g1DoyRsRrIos9n6lTaDFEoUnr5fJilRLc0hmHdEiVY
+# gtjoKpRBvRa9ct3a20C+6LAcCDsV9zkgfVHRoPDfNoFd0nSJM6T4Iu1lvlki/enm
+# QTzDiYN2wxugVPyj7MU745tY/jiAyYLB6sL0ZqObAzrIkk26Umk7aRvKeNxozRVD
+# kNBh/RYHtYiIZ1Tvz3TDDay5vHZ92KU0OabcsU+3xXXW6OgKYYHy6KRp8lyOJZyh
+# 7gsbCPAIq7cCbxTYjb3bxCSFvws0X7+10YVLM8tE+7E15ykRFDQs3n8bLKHmNvaJ
+# /ZHy/HOwzKQxnNpUpMd89lBZ3vximlC3QM2+2W4wUbAFmyQ5l8lHdAXpT/Lr4E4s
+# 6SJbx4ZHUDqn1c+Rql94LZ11PEubHV+U2JKHiGIgxgtWXSiPsu3qOXkiVRzLp1pO
+# JUeojkg39rsR2oEzRP6jeLwi9q9aGAfY9jHMJTDkoUiXn35f5KW5oMcljOvO1l2l
+# nxWcmass6IT1D3JLBti757nFZ2S0tiyRIfnN+NE0ClK1QE4rzolBh/tOGSiw4ckF
+# ZLr8wCZUifz3lZ4xfmDl2lneagbB6934DshnM4lDGpy//vPtfAq8SS8zLTetJCqT
+# sHDYWcr4wDHify35M+u8EA==
 # SIG # End signature block

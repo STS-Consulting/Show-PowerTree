@@ -1,41 +1,70 @@
 ﻿
-function Build-TreeLineStyle {
+function Invoke-RegistryItemSorting {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
+        [array]$ValueItems,
+        [array]$KeyItems,
+        [bool]$SortValuesByType,
+        [bool]$SortDescending
     )
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
-        }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
+    $allItems = @()
+
+    # Handle value sorting
+    if ($ValueItems.Count -gt 0) {
+        if (-not $SortValuesByType) {
+            # Registry Editor style: (Default) first, then alphabetical
+            $defaultValue = $ValueItems | Where-Object { $PSItem.Name -eq '(Default)' }
+            $otherValues = $ValueItems | Where-Object { $PSItem.Name -ne '(Default)' }
+
+            # Sort other values by name with descending option
+            if ($SortDescending) {
+                $otherValues = $otherValues | Sort-Object Name -Descending
+            } else {
+                $otherValues = $otherValues | Sort-Object Name
+            }
+
+            # Add default first (if exists), then other values
+            if ($defaultValue) {
+                $allItems += $defaultValue
+            }
+            $allItems += $otherValues
+        } else {
+            # When sorting by type, add all values for later sorting
+            $allItems += $ValueItems
         }
     }
 
-    return $lineStyles[$Style]
+    # Handle key sorting
+    if ($KeyItems.Count -gt 0) {
+        if (-not $SortValuesByType) {
+            # Sort child keys by name with descending option
+            if ($SortDescending) {
+                $KeyItems = $KeyItems | Sort-Object Name -Descending
+            } else {
+                $KeyItems = $KeyItems | Sort-Object Name
+            }
+        }
+        $allItems += $KeyItems
+    }
+
+    # Sort by TypeName if requested (this overrides the natural registry order)
+    if ($SortValuesByType -and $allItems.Count -gt 0) {
+        if ($SortDescending) {
+            $allItems = $allItems | Sort-Object TypeName -Descending
+        } else {
+            $allItems = $allItems | Sort-Object TypeName
+        }
+    }
+
+    return $allItems
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCEa0ybl/FBwUyv
+# b8ivuseifYypsxsvmQBAbqZuO8GJe6CCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +188,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQgYpyJdjok1feehlrPtUt2usSokMMeQtWmR6fyPo+O9DAwDQYJKoZIhvcNAQEB
+# BQAEggEAS3KJbt68LP09gPepvkx2ELRyyGWQVWFjXqD301c7L/YiwD21217pcJfE
+# 8GDhbmrIVBjiGAJVtPA1vvXw3Pu3vJd+mRTa5eKlr4+FXoQDyzfQOo+Yb9ax/uzD
+# 4aS39i9bCvy9TBvvZzVqVIQbHCKQvaTm38VM6lpFmchtQUyz6Hyd+F4Oc9T0OwVa
+# PWkPLRn+/cAlK595Ztb4sIbmhuRMcQI7tJV6sEh2V8+bDLF7zTo8JS3gjok/iNCq
+# q/4q/MsaNuTapvvi+m7A2Dzp7ADXhYpwOxBTs6vw6OIvg/aJdTLfRvIsBv+EJ8Gm
+# PVPGNNxkLQ2pEIK9gpc9pjqt+5X1mqGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MThaMC8GCSqGSIb3DQEJBDEiBCDh7GVqr2o/FnEK3eBfKMt3sxVY
+# TxfI0pLvzHNOFKnqFzANBgkqhkiG9w0BAQEFAASCAgCfo5xqc0mhGKbKfpEtbrnJ
+# s14AI2444d1iblNzCPDBK+Ku+/UyVfiRG7WJBjiIuB7SIfBujaU88EWsYKMdl39g
+# 1/gy/FQ3Eh85y2oisdcDEw0jinNJO75XzPNgH5kSvXb3u8qY3HC+MCc0GMnn2P7A
+# ppImAGJOxuG98LXAhmiQfYurDrRKXfEpJDUOjkQqzClXeMhoCoZcInik4KgBAPU5
+# 6k6pYxYnT8laDtnBbAoSlh04fZr+n0j2lcfzdhci6pNV8HbEwL3X6MNCUn/yFEmX
+# TIQU4iEDACKy258lejpGktNy8JyKAkSeOucreCHhUsONb7kXHh6DTEgLkfcJudA7
+# kW1AEpsDkvjfwjpllpzMgOt9g0JQdga079z7UOEJa2Ht6P/UjUfIpxkwTGbD3kue
+# dGkKzRCo4a036RyhPkyTDstQCciiFTOxmsWUjpVN/6j4RmcYar9up4Pq9Sl118uV
+# gslxyCT4s0T5ce3hJ8JiFxq7XUGhraeMYAS5MZIZyzrvOu9mnRP7n+jaFBU0Dn1G
+# z3uVKBNA+URKDt45KLQQzE8kJD8PECw/azxGquN3vrZrKKqgoCJQ9jKjrtP08j/p
+# jzQrQIQTbinxw0bIq4FulvldRex08Ar5hZUXBZWAPKkzWn4+gAvq8CAtx8gr8ePB
+# ln3JJ5sAtsa4J2eeJTItbQ==
 # SIG # End signature block

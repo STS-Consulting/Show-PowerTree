@@ -1,41 +1,143 @@
 ﻿
-function Build-TreeLineStyle {
+function Build-OutputLine {
     [CmdletBinding()]
-    param (
+    param(
         [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
+        [hashtable]$HeaderTable,
+
+        [Parameter(Mandatory = $true)]
+        [System.IO.FileSystemInfo]$Item,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TreePrefix,
+
+        [Parameter(Mandatory = $true)]
+        [bool]$HumanReadableSizes
     )
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
-        }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
+    $directorySize = 0
+    $namePosition = -1
+    $nameLength = 0
+
+    $outputLine = ' ' * $HeaderTable.HeaderLine.Length
+
+    # Process each column and place content at the correct position
+    foreach ($column in $HeaderTable.HeaderColumns) {
+        if ($column -eq 'Hierarchy') {
+            # Handle hierarchy column separately (it contains the tree structure and filename)
+            $hierarchyPosition = $HeaderTable.Indentations[$column]
+            $content = "$TreePrefix$($Item.Name)"
+
+            $namePosition = $hierarchyPosition + $TreePrefix.Length
+            $nameLength = $Item.Name.Length
+
+            # Replace characters at the hierarchy position with the content
+            if ($hierarchyPosition -lt $outputLine.Length) {
+                $outputLine = $outputLine.Remove($hierarchyPosition)
+            } else {
+                $outputLine = $outputLine.PadRight($hierarchyPosition)
+            }
+            $outputLine = $outputLine + $content
+        } else {
+            $columnPosition = $HeaderTable.Indentations[$column]
+            $content = ''
+
+
+            switch ($column) {
+                'Mode' {
+                    $content = $Item.Mode.ToString()
+                }
+                'Creation Date' {
+                    $content = $Item.CreationTime.ToString('yyyy-MM-dd HH:mm')
+                }
+                'Modification Date' {
+                    $content = $Item.LastWriteTime.ToString('yyyy-MM-dd HH:mm')
+                }
+                'Last Access Date' {
+                    $content = $Item.LastAccessTime.ToString('yyyy-MM-dd HH:mm')
+                }
+                # for folders get the the size of all folders recursively
+                # for files get the size of the file
+                'Size' {
+                    if ($Item -is [System.IO.FileInfo]) {
+                        if ($HumanReadableSizes) {
+                            $content = Get-HumanReadableSize -Bytes $Item.Length -Format 'Padded'
+                        } else {
+                            $content = $Item.Length
+                        }
+                        # Set to zero for files
+                        $directorySize = 0
+                    } else {
+                        # Calculate directory size
+                        $directorySize = (Get-ChildItem -LiteralPath $Item.FullName -Recurse -File -ErrorAction SilentlyContinue |
+                                Measure-Object -Property Length -Sum).Sum
+                        if ($HumanReadableSizes) {
+                            $content = Get-HumanReadableSize -Bytes $directorySize -Format 'Padded'
+                        } else {
+                            $content = $directorySize
+                        }
+                    }
+                }
+            }
+
+            # Replace characters at the column position with the content
+            if ($columnPosition -lt $outputLine.Length) {
+                # Calculate how many characters we can safely replace
+                $replaceLength = [Math]::Min($content.Length, [Math]::Max(0, $outputLine.Length - $columnPosition))
+
+                if ($replaceLength -gt 0) {
+                    $outputLine = $outputLine.Remove($columnPosition, $replaceLength)
+                }
+
+                # Make sure we have enough space before using Substring
+                if ($columnPosition -lt $outputLine.Length) {
+                    $remainingLength = [Math]::Max(0, $outputLine.Length - ($columnPosition + $content.Length))
+                    if ($remainingLength -gt 0) {
+                        $outputLine = $outputLine.Substring(0, $columnPosition) + $content + $outputLine.Substring($columnPosition + $content.Length)
+                    } else {
+                        $outputLine = $outputLine.Substring(0, $columnPosition) + $content
+                    }
+                } else {
+                    $outputLine = $outputLine.PadRight($columnPosition) + $content
+                }
+            } else {
+                $outputLine = $outputLine.PadRight($columnPosition) + $content
+            }
         }
     }
 
-    return $lineStyles[$Style]
+    return @{
+        Line          = $outputLine
+        SizeColorInfo = if (($Item -is [System.IO.FileInfo]) -and ($HeaderTable.HeaderColumns -contains 'Size')) {
+            Get-SizeColor -Bytes $Item.Length
+        } else {
+            $null
+        }
+        SizePosition  = if ($HeaderTable.HeaderColumns -contains 'Size') {
+            $HeaderTable.Indentations['Size']
+        } else {
+            -1
+        }
+        SizeLength    = if (($Item -is [System.IO.FileInfo]) -and ($HeaderTable.HeaderColumns -contains 'Size')) {
+            (Get-HumanReadableSize -Bytes $Item.Length -Format 'Padded').Length
+        } else {
+            0
+        }
+        DirectorySize = if ($Item -isnot [System.IO.FileInfo]) {
+            $directorySize
+        } else {
+            0
+        }
+        NamePosition  = $namePosition
+        NameLength    = $nameLength
+    }
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAUGac7vhZXE6jG
+# yNdcrkdkgViyVDYK1sH5VX6Os0g8j6CCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +261,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQgFJsNJPoYUT4aLhA+ni7Gje1CWt1R5jCUcDnaEvxU7jowDQYJKoZIhvcNAQEB
+# BQAEggEAee4/SXlWbGqmK91OUOuNTFDZGyChlnl8dJA+mbKu7sNxyaUJWhHBZnGB
+# Ksi54+JOeY9Al1qjNZ2n4vb4CofUS+BmrEKpClFzBYyIgGeFr7JyazPJkfRNC9X7
+# Aes0ORGBUZpH+c4PPqxHqr6DHU8NdbNM/3uRVmOdrKVjq1LLsbodNXBx0+mx8lx3
+# t1gXnDhByVGWScH1OfsSiaZgeWytnZw8Z1Odhh8nQw1175XDg+LU8rLBx1nae2uT
+# kHZ3QUALr0H/e/nBezLTak+lT35qT3GIM50z9lMGqqOxk9BgvA/Ast+H2H1u26YX
+# O3X17LTrJK+38gx8pSgrSe+7KzCcGqGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MDlaMC8GCSqGSIb3DQEJBDEiBCBDTkRa7pKxHmqhOPXJuiVB6K2Q
+# w9ImArDXOj/EjCJeWjANBgkqhkiG9w0BAQEFAASCAgBt7sBkhkMhFXebmkcoKiRf
+# 8t8dw7Xfq02lqmTXDKKqw+IXAuaCoZMER4fPXrdORfG2Qi2JNGm2cVOzMimTDPKY
+# CQyYHt+O55k+gEM055Aocw1flQn3PKKdf7RuI/yO2oK7qFhZJ2UkIJeQDMxVC0kD
+# M8XcQoLIvfohFlpUoMnhlCO9tVCX+Y5JBOYHQM9OIcfLcRUM9ypWqrX17ECCB87R
+# L5sb3zBT/RLDSYJyzs4vEol8+0kFYOJ/tlufEb8Stg/aSIItpgrvi2Aon/whU4HK
+# gxz2w37oTsDNJdOyx9zvbwAffiFUS6g2aLkGBrjAOuWBHUXj/Bw0Q7dRG7jLQ9Jz
+# asWNAe/Dt5+5J5Bvn85AihDNmIhtfmKRsqCLP+V0Mcl5NlC7xfbZJhAscBugp95N
+# mrS8VARuJyCE5G8x73+p86unIMhTVyfUDUvUf0walj/ZXKmUcYyGQqpDYrsodNNW
+# uKV5nXItfqx0wW7j7AIuYJB428KJ8jlH94zy2L/laxjjUQYDL6gx93qj7Y8UBgzK
+# oGFltJ8hnfftfn/bAXN/4u+fdk2cLdtaGRV6LQ77IN2TXDhl6xCinsXh7vo2An8D
+# DYVPKcropmDwEO8SAnqseBUzAadFN0sVfCRtQ4INopozb7UdbTN9jt8wBEJ8Fkuc
+# uChlAgt2qQU02tKxni4fdg==
 # SIG # End signature block

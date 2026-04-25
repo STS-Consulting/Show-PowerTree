@@ -1,41 +1,57 @@
-﻿
-function Build-TreeLineStyle {
+﻿function Build-FileSizeParameters {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
-    )
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [string]$CommandLineMaximumSize,
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
-        }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
-        }
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [string]$CommandLineMinimumSize,
+
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [string]$SettingsLineMaximumSize,
+
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [string]$SettingsLineMinimumSize
+    )
+    # Convert string values to bytes
+    $commandMaximumBytes = ConvertTo-Bytes -SizeString $CommandLineMaximumSize
+    $commandMinimumBytes = ConvertTo-Bytes -SizeString $CommandLineMinimumSize
+    $settingsMaximumBytes = ConvertTo-Bytes -SizeString $SettingsLineMaximumSize
+    $settingsMinimumBytes = ConvertTo-Bytes -SizeString $SettingsLineMinimumSize
+
+    # Track whether values come from settings
+    $maximumFromSettings = $commandMaximumBytes -lt 0
+    $minimumFromSettings = $commandMinimumBytes -lt 0
+
+    # Prefer command line values if provided
+    $maximumSize = if ($commandMaximumBytes -ge 0) { $commandMaximumBytes } else { $settingsMaximumBytes }
+    $minimumSize = if ($commandMinimumBytes -ge 0) { $commandMinimumBytes } else { $settingsMinimumBytes }
+
+    # If both maximum and minimum are non-negative, validate. Also if one of the values came from the settings add it for clarity
+    if ($maximumSize -ge 0 -and $minimumSize -ge 0 -and $maximumSize -lt $minimumSize) {
+        $errorMessage = "Error: Maximum file size cannot be smaller than minimum file size.`n"
+        $errorMessage += "  Maximum Size: $maximumSize bytes" + $(if ($maximumFromSettings) { ' (from configuration settings)' } else { '' }) + "`n"
+        $errorMessage += "  Minimum Size: $minimumSize bytes" + $(if ($minimumFromSettings) { ' (from configuration settings)' } else { '' }) + "`n"
+
+        Write-Error $errorMessage -ErrorAction Stop
     }
 
-    return $lineStyles[$Style]
+    return @{
+        LowerBound   = $minimumSize
+        UpperBound   = $maximumSize
+        ShouldFilter = ($minimumSize -ge 0) -or ($maximumSize -ge 0)
+    }
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDU9qdhfJZOU66n
+# r22vID9GAk9UKlO3Z2tUna+uSVoOM6CCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +175,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQgn9xN2/vCfxRhjmztnIQ8+3bxRjuzC6eVnoVj3q/65TcwDQYJKoZIhvcNAQEB
+# BQAEggEAS3tEi6+UI+b9w686VcOnhnrxeJfqMD+BOtnPV0TKWcHQCsnU0HwRY/5V
+# Fu79wAc9GG3bs8vATU+fMhn9RuOccC/B9EJHIDt6HGuK4FkvWoiaCa3U/rWr8A9w
+# gt8uBkE0Nl5R0zMNVDIbxVSGYfyXwN6NA1hGpZNOOSe4IezS9IqTLIYg2fy2Hwel
+# ruGhrEYV4h/ooNw2MrevHBSAljeFiVXwDJU3vpitPV0OwaffT7FIM8TFJ5mn3+uf
+# g7sGFaCC1soBn86HQgD9DTDOr8t8gc3DhtGUnUPPr8ULN9zdB5UfE1V5Zu/lGy1K
+# uVAmLj+cLr5DCIKUZU4Gd2MYFMb236GCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MDVaMC8GCSqGSIb3DQEJBDEiBCDu0ruce8MaJVqGg11e6pwrUBxg
+# UupAHp0tKPbnkhy6uzANBgkqhkiG9w0BAQEFAASCAgA4iQ1fgn7rKJbWyKQbxfy4
+# yiXMoWWoSs71h5LHPKh/Z0dXEXZPkdGv6eLkgtsDUqXCN7U0jXd4VKITg23Hsa19
+# bNG8QdIc2e/xd2NOgKFIsMyMQj2V797sJXV7NqQ8e4fPjYXL9k5b0B2uDxd1kSCN
+# m1IwVcY3bN15lztbSdE8+kEDqm6SXDhL8T670GCPGHfftQ8rqwqbSeHXqeJskJN/
+# OvEDMaGKjlPmZfyd9WHPk/hf4RVT668KkOK7SwE6pshBvppyM2VySALAVBUpg5ik
+# sfG+CNEOGPelWvjMTLhx52xHv2swaXhX1DI0XBnwaf0LxVDrf+ieE9LNZEESKUEp
+# 8nY7h2HLp9CCfDZoUqS/3O3ey0a4GtFDCyzj2amMIMIc3fKy6NnrTzjVUHcqG06Q
+# RXw1XPM2bkDqJf1LNY+UJQK/2iUm1vI5rA4UVGc6vPPwg19V7xLeNxWLw9pj2Rde
+# OAQT8B6T7Jf5OZU9UXr/0Yj6l2xHOuGPFCPF7UaeQlBPjuEmGe7lWfGzkhR4hF4N
+# +YUY39Px6ZUKjfIlz+o9IbfQD9zGMyNLf7VU6nfEheHJXJeqNyRkSR/0/q7fbiyC
+# JbjHk6+fq4Os70AWEA40hxGa7LgI3URzpvavyWiMlXdF/Jp79nJGINOOPzoZwAWg
+# TqvCtY06J2LaGMpzt4IAsg==
 # SIG # End signature block

@@ -1,41 +1,41 @@
-﻿
-function Build-TreeLineStyle {
+﻿function Get-SizeColor {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
+        [long]$Bytes
     )
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
-        }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
-        }
+    $result = @{
+        ConsoleColor = 'Green'
+        AnsiColor    = $null
     }
 
-    return $lineStyles[$Style]
+    if ($null -ne $global:PSStyle) {
+        $result.AnsiColor = $global:PSStyle.Foreground.Green
+    }
+
+    if ($Bytes -ge 100MB) {
+        $result.ConsoleColor = 'Red'
+        if ($null -ne $global:PSStyle) { $result.AnsiColor = $global:PSStyle.Foreground.Red }
+    } elseif ($Bytes -ge 10MB) {
+        $result.ConsoleColor = 'DarkYellow'
+        if ($null -ne $global:PSStyle) { $result.AnsiColor = $global:PSStyle.Foreground.Yellow }
+    } elseif ($Bytes -ge 1MB) {
+        $result.ConsoleColor = 'Blue'
+        if ($null -ne $global:PSStyle) { $result.AnsiColor = $global:PSStyle.Foreground.Blue }
+    } elseif ($Bytes -ge 100KB) {
+        $result.ConsoleColor = 'Cyan'
+        if ($null -ne $global:PSStyle) { $result.AnsiColor = $global:PSStyle.Foreground.Cyan }
+    }
+
+    return [PSCustomObject]$result
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDXSuMzD8dWQc2b
+# pTVRTq6oPD7nMXU5qJbZ2sQjq+RPdqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +159,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQgDOE0hyhxNwCdVpZ+buQgBCkDyiLdF+8P5DSIsPvVjIswDQYJKoZIhvcNAQEB
+# BQAEggEArYd3Vf1L9L7kj0a0zJsRxjkrh3/7bumi3zuDN5hNayQOPf6F6f0+ZV9+
+# 9XP0V5x1ISqFGSYP3oKsqvN5B1tlpS88Fcoti9paHS5NGlMpli+49MrwSDJjWBmb
+# X4+WBJrBhfVE+I6dxKXlhz08qr7cmp3I2Evtudu/OZ7VeMyTy65MnZxgjdwlJwS/
+# pCJ24sQNbrmeabn1wO8+jF6Fz9LS1YIBqPSIfmAG429DZstpkahnrgrphUqdoL4c
+# fBhGw2/AXTub2Qz1gVyKWamBWhH/pgeXWupfQMqs4l2j+Q/7qIMzoAzE7k/Y0S7T
+# CbwD/FCfHs2URchkSpP8lBOudYj8jqGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MTNaMC8GCSqGSIb3DQEJBDEiBCCFR9hfene9ErO2dTSPUnrouZNj
+# nDuNQ2JPXUxkzpZEHjANBgkqhkiG9w0BAQEFAASCAgAbKQQY8qFJLmJZuJCtxqTt
+# q1WPuGHmVWvyvj6x/N7UcgtHRYLrOq9yLDc9P9RP/0bhf0ZRb9WeCkiyJAb4G1KC
+# Sru8d4pWzVbojiUUvY53gHuQj9/E43AXdVSZnr2YtQWrJmL0IRg4ltBsFybLjYgC
+# UyiHSF3xuJFcUqX9IAHpxwGuj89GjeRnj3MKgvVQCMCY+Eu3CiAyiuw9WbGy/ldT
+# OFf44LXHq+th5JrYxqGJtAYVUhNPhwRtyBeNEARu+VK70tYUpEoBQjMTQCPeQkjp
+# L5sysGVy0oGSWkgC8/FDqpieeSMNhrXhNLNxGeP8RiG7clJ9Qlpw8xL1r96/S6vu
+# 5xK+ZcdzYbZA0EJbrMjY6+kVXzHdZ5Aa3RDk//9+WgEkUHouI5rpuKwczQxMOC56
+# gpIeT7LR1YTtFqr5P7LjbmEArq5HAB6khD4bO5ys38qyZJS/qhAUmrYTm+Ki5YuN
+# TKewOSswXcXCUX1jKgWH/KYIO7jbmrRrUYGbHzd6FE2nan9+4GAjN4hV9HwSkojv
+# GNoeHHptx0Cy+2fNi8ZYPJU5gxETrgqkAFkBpIsFdfNNY3ZcClJcBd5zPlrlPBmE
+# dnCztM2IcIawsKxeXVGIPn2+d/yDOtaxkAQG4CFdf/bBTpDBEh9YM7E+jLpTKJzi
+# Qo/pncM07s4QmiDfD/Cl1g==
 # SIG # End signature block

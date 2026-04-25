@@ -1,41 +1,95 @@
-﻿
-function Build-TreeLineStyle {
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
-    )
+﻿function Edit-PowerTreeConfiguration {
+    <#
+    .SYNOPSIS
+        Opens the PowerTree configuration file in the default editor.
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
+    .DESCRIPTION
+        The Edit-PowerTreeConfiguration cmdlet (alias 'Edit-PowerTree', 'Edit-Ptree') finds or creates the
+        'config.json' configuration file for PowerTree and opens it. If the file does not exist, it creates a default one.
+
+    .EXAMPLE
+        Edit-PowerTreeConfiguration
+        Opens the local or user-profile configuration file (config.json).
+    #>
+    [CmdletBinding()]
+    param()
+
+    $configurationPaths = Get-ConfigurationPaths
+    $existingConfiguration = $configurationPaths | Where-Object { Test-Path $PSItem } | Select-Object -First 1
+
+    if ($existingConfiguration) {
+        $configurationPath = $existingConfiguration
+    } else {
+        if ($IsWindows -or $null -eq $IsWindows) {
+            $configurationDirectory = Join-Path -Path $env:USERPROFILE -ChildPath '.PowerTree'
+        } else {
+            $configurationDirectory = Join-Path -Path $env:HOME -ChildPath '.PowerTree'
         }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
+
+        if (-not (Test-Path -Path $configurationDirectory)) {
+            New-Item -Path $configurationDirectory -ItemType Directory -Force | Out-Null
+            Microsoft.PowerShell.Utility\Write-Information -MessageData "$($PSStyle.Foreground.Cyan)Created directory: $configurationDirectory$($PSStyle.Reset)" -InformationAction Continue
         }
+
+        $configurationPath = Join-Path -Path $configurationDirectory -ChildPath 'config.json'
     }
 
-    return $lineStyles[$Style]
+    $configurationExists = Test-Path -Path $configurationPath
+
+    if (-not $configurationExists) {
+        try {
+            $configurationDirectory = Split-Path -Parent $configurationPath
+            if (-not (Test-Path -Path $configurationDirectory)) {
+                New-Item -Path $configurationDirectory -ItemType Directory -Force | Out-Null
+                Microsoft.PowerShell.Utility\Write-Information -MessageData "$($PSStyle.Foreground.Cyan)Created directory: $configurationDirectory$($PSStyle.Reset)" -InformationAction Continue
+            }
+
+            $defaultConfiguration = Get-DefaultConfiguration
+            $defaultConfiguration | ConvertTo-Json -Depth 4 | Out-File -FilePath $configurationPath -Encoding utf8
+
+            Microsoft.PowerShell.Utility\Write-Information -MessageData "$($PSStyle.Foreground.Green)Created new configuration file at: $configurationPath$($PSStyle.Reset)" -InformationAction Continue
+        } catch {
+            Write-Error "Failed to create configuration file: $PSItem" -ErrorAction Stop
+        }
+    } else {
+        Microsoft.PowerShell.Utility\Write-Information -MessageData "$($PSStyle.Foreground.Cyan)Using existing configuration file: $configurationPath$($PSStyle.Reset)" -InformationAction Continue
+    }
+
+    try {
+        $resolvedPath = Resolve-Path $configurationPath -ErrorAction Stop
+
+        if ($IsWindows -or $null -eq $IsWindows) {
+            Start-Process -FilePath $resolvedPath
+        } elseif ($IsMacOS) {
+            Start-Process 'open' -ArgumentList $resolvedPath
+        } elseif ($IsLinux) {
+            $editors = @('xdg-open', 'nano', 'vim', 'vi')
+            $editorOpened = $false
+
+            foreach ($editor in $editors) {
+                try {
+                    Start-Process -FilePath $editor -ArgumentList $resolvedPath -ErrorAction Stop
+                    $editorOpened = $true
+                    break
+                } catch {
+                    continue
+                }
+            }
+
+            if (-not $editorOpened) {
+                Write-Warning "Could not open editor. Please manually edit: $resolvedPath"
+            }
+        }
+    } catch {
+        Write-Warning "Could not open file: $PSItem"
+    }
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCB4aOKMN/t3amhZ
+# b1TJcNAdD6mjgeQDDTzAdyFExkGeq6CCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +213,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQgPaxpqrXchGSiKRFDVRlodGhSnByKUGiFSCbrR1FXukwwDQYJKoZIhvcNAQEB
+# BQAEggEAw1UnoIeflNC6dhcHlr9mATagLOOsqb+IC8Vx0mrLMCOs0B12lHZneIUL
+# 9vT85/5eevQD4pe40ZfTGBqRSJ+7z2hre0xudaAbJwumQPknLe04zSuGK3Ln4hRn
+# v/PepsIk3IZ4bDFAkdYC8/sAoIbmn9gmdxlaAOoRICVf5opaZ1T0efyw8xc8+6zU
+# Dv93Mb/6+1LfytRLHksd4ZqAl8lo+hJ5nwgU5leBHS/nA5N0TmLqSOKL6B09Xgyj
+# onVGcySnR38XZa9luXFkYrQ8y40n57ZRXPJb1Be5JV3FgKlgNUE2W5VApqSawIiN
+# nMG6aXcYT9+dhD+q0qHKSmHNSmbStaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MTlaMC8GCSqGSIb3DQEJBDEiBCCUxIkorkE/gzW7A+1a6hXcHhSa
+# blC+4yEa1Sh+EoN5LTANBgkqhkiG9w0BAQEFAASCAgB7KmXA+2V/vKPjaWo2ksWY
+# xsKP4TxRuyqBDuhv/nkhTpw3TAveDt+gcvk4RywvTJQzfk+wqhQTWxn2hMIhLs90
+# DYpJZvh7EqJuusxh12R7JsnDORYVtlyCA8stJ7YK0imbBASgWBlR/2dNfNpYIt2Q
+# e/gPEPE1YfJkOJq4v4l80qnUdRwDD/LDLUF7KgLV3i5HPi6b//+FqVe50Q7jnuXZ
+# MV32nCSC0BcW1nsMJCGXdpf3uLRLZ4cpS3zbuQisXI1iCcDtD1JWF1CojX88HaNt
+# V+EJkvqZns3TQr7XkeANP1kPnX4GZDgW8IPSqIEuIvVoIzd2+oqdljPO/S5auQqZ
+# 2EeTHs9KIz9FyEFiPsYq0nI2xLPk0UjgGPqdUoMfXyaMx1MTA7dgrv+vVHgsoM0o
+# kD01PdWJQLXjIQeVl7SVrZr9GOSIiYPAFX3bOfGdqbKhG5tGaHl1oViYvjMKod62
+# vbwZkXUUKfl/n9CIasbBWrPmyWX5qLguRSNWmIWzXH5lp+pytA4bW342SqZOsL3t
+# F4vwM2ukiCLdFshfI4LEOxJOZX8Bds3H9XAnK30xg85fuTH6dD+imC7hySQVKH4v
+# MYzNEdGe4kq7kGNIuSwVdo2ddLuVzyW7wps7iRGcRGgQaScFttd95c5+ylhE24XM
+# 4oHiCDP14DajRylgVCYb/w==
 # SIG # End signature block

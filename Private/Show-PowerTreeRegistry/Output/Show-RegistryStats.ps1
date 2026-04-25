@@ -1,41 +1,94 @@
-﻿
-function Build-TreeLineStyle {
+﻿function Show-RegistryStats {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
+        [RegistryStats]$RegistryStats,
+
+        [Parameter(Mandatory = $true)]
+        [System.TimeSpan]$ExecutionTime,
+
+        [Parameter(Mandatory = $false)]
+        [hashtable]$LineStyle = @{ SingleLine = '-' },
+
+        [Parameter(Mandatory = $false)]
+        [System.Text.StringBuilder]$OutputBuilder = $null
     )
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
-        }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
-        }
+    $formattedTime = Format-ExecutionTime -ExecutionTime $ExecutionTime
+
+    $headers = @(
+        'Keys',
+        'Values',
+        'Total Items',
+        'Maximum Depth',
+        'Execution Time'
+    )
+
+    $totalItems = $RegistryStats.KeysProcessed + $RegistryStats.ValuesProcessed
+
+    $values = @(
+        $RegistryStats.KeysProcessed,
+        $RegistryStats.ValuesProcessed,
+        $totalItems,
+        $RegistryStats.MaximumDepthReached,
+        $formattedTime
+    )
+
+    $spacing = '    '
+
+    $headerLine = ''
+    foreach ($header in $headers) {
+        $headerLine += $header + $spacing
     }
 
-    return $lineStyles[$Style]
+    $underscoreLine = ''
+    foreach ($header in $headers) {
+        $underscoreLine += ($LineStyle.SingleLine * $header.Length) + $spacing
+    }
+
+    $valuesLine = ''
+    for ($iteration = 0; $iteration -lt $headers.Count; $iteration++) {
+        $value = $values[$iteration].ToString()
+        $valuesLine += $value.PadRight($headers[$iteration].Length) + $spacing
+    }
+
+    if ($OutputBuilder -ne $null) {
+        # Replace the placeholder line with actual stats using StringBuilder.Replace
+        $placeholderLine = 'Append the stats here later!!'
+
+        $statsContent = @"
+$headerLine
+$underscoreLine
+$valuesLine
+"@
+
+        # Direct replacement without clearing the entire StringBuilder
+        [void]$OutputBuilder.Replace($placeholderLine, $statsContent)
+    } else {
+        if ($null -ne $global:PSStyle -and $null -ne $global:PSStyle.Formatting -and $null -ne $global:PSStyle.Formatting.TableHeader) {
+            $headerColor = $global:PSStyle.Formatting.TableHeader
+            $resetColor = $global:PSStyle.Reset
+
+            Write-Host ''
+            Write-Host "$headerColor$headerLine$resetColor"
+            Write-Host "$headerColor$underscoreLine$resetColor"
+            Write-Host $valuesLine
+            Write-Host ''
+        } else {
+            Write-Host ''
+            Write-Host $headerLine -ForegroundColor Cyan
+            Write-Host $underscoreLine -ForegroundColor DarkCyan
+            Write-Host $valuesLine
+            Write-Host ''
+        }
+    }
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDsvHTCrMMtOtDD
+# l26WfcohXXxJG4UgHDt1Ab9yBWRIbaCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +212,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQgH/mCXEXS2bG/TfV81ReP2apB26SlTRnUVxe3AyNX9g8wDQYJKoZIhvcNAQEB
+# BQAEggEAoWew2PVVI+6xLuytw894SifL9T/s6va15WUaE3wnhMmCtlxGMFxjXjBz
+# hRlnLUTQ03WgRf6Ld3Fj+YpKsNlsK6aytYLdaLdhGV81exMwUQF0glP/KZUNA1c4
+# wHTlBURRKRNbvM6N/SgR9+aAS6mOgmJ2BgIXxwpJ4FRrvqjGj8R5WWK8D0f7oMUx
+# qOsV3Ra/K7uAN6tBR44bdiVrYWMj0KqofdrAhC3c1NnlL/XwtsJZy/4WK5jCnF54
+# 8Uza/wHRM0S/GefFA3OtLqj+m+DoeT7ye4wFDmg20E69AB3x1hvXiRarkrxV2HJj
+# ecQpzrgTIQSXD2YFKOfE7MNwBGLdzaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MThaMC8GCSqGSIb3DQEJBDEiBCB6ZU+HJ5VyUhN4rV9AUIr/eJyB
+# qSpzwj5MeCEiaMO2ETANBgkqhkiG9w0BAQEFAASCAgBlaTU8fNt/vfFejdxiT5Zh
+# W9Kv4R1rLhYE2vPKoAmdf3uk3xKQ8mNe65V9Kj/d85DNBlGLdIrSssTSf91pjMQG
+# 5bVE+eTjiau9hkBI7DUlUvf9vY826NNAkp17QT9aM5kjtJTiQdqJz0AEoaV0XtPB
+# MdRPbbWJTDsp1Sct7igHn3dNNz85pSfS8bGScXN48GpPf6dgaCgC2+HBZY7hUigw
+# 5tYdGzvd8idsg/jKc1VlXZ7KH/MQPWiP5jDkTDwX+5M68VxN0W7k5DfDo9l5VpGe
+# nM2181cb1sPjT1rk8tetb9xGXuEdSNQ9n/rPAqmxeVJedy0Eof4KgMaAIqEki+UM
+# 57Q/maPlF7Swk56FGrDzKNNTFw4YsiJ3vCSeXEI49ef9DYdhZP+qzbD5UdcGFiTp
+# o70xL5VjvJwCnIlj0ok2vxnrvXlTJr4lU+vVvuzgFykcoHo1QIJk0WAMMxQzLN0H
+# 1mUpnSq03Pt0HBVAi+m/5AWAwXHdtzHl7m0uUPL7nnjQ5EPAX8kwUezahHiqmUmS
+# AOAMiRWp7FNSajmc0b30Rxwl0sTH5XcqVeFpgQrjxHxXu47I9hNb0Y8Sh03wMv8k
+# l07sMFefj2nnyqZSMQwb0Qn7Su/0H40bayyS2kYL58OKleiI9Fq4IpVsLocNR1hD
+# JbNodOBJ/tj6QdWkZ9Yvdw==
 # SIG # End signature block

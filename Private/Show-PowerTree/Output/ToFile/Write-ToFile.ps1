@@ -1,41 +1,89 @@
 ﻿
-function Build-TreeLineStyle {
+function Write-ToFile {
     [CmdletBinding()]
-    param (
+    param(
         [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
+        [string]$FilePath,
+
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [string]$Content,
+
+        [Parameter(Mandatory = $true)]
+        [bool]$OpenOutputFileOnFinish
     )
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
-        }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
+    begin {
+        try {
+            # Ensure the directory exists
+            $directory = Split-Path -Path $FilePath -Parent
+            if (-not [string]::IsNullOrEmpty($directory) -and -not (Test-Path -Path $directory)) {
+                New-Item -Path $directory -ItemType Directory -Force | Out-Null
+                Write-Verbose -Message "Created directory: $directory"
+            }
+
+            # Create or clear the file
+            if (Test-Path -Path $FilePath) {
+                Clear-Content -Path $FilePath
+                Write-Verbose -Message "Cleared existing file: $FilePath"
+            } else {
+                New-Item -Path $FilePath -ItemType File -Force | Out-Null
+                Write-Verbose -Message "Created new file: $FilePath"
+            }
+        } catch {
+            Write-Error "Failed to initialize output file: $PSItem"
+            throw
         }
     }
 
-    return $lineStyles[$Style]
+    process {
+        try {
+            $Content | Add-Content -Path $FilePath
+        } catch {
+            Write-Error "Failed to write to output file: $PSItem"
+            throw
+        }
+    }
+
+    end {
+        Write-Verbose -Message "Successfully wrote output to $FilePath"
+
+        # Open the file after writing if requested
+        if ($OpenOutputFileOnFinish) {
+            try {
+                # Try to resolve the path to handle relative paths
+                $resolvedPath = Resolve-Path $FilePath -ErrorAction Stop
+                Write-Verbose -Message "Opening file: $resolvedPath"
+
+                # Use the appropriate method to open the file based on OS
+                if ($IsWindows -or $null -eq $IsWindows) {
+                    # On Windows or PowerShell 5.1 where $IsWindows is not defined
+                    Start-Process $resolvedPath
+                } elseif ($IsMacOS) {
+                    # On macOS
+                    Start-Process 'open' -ArgumentList $resolvedPath
+                } elseif ($IsLinux) {
+                    # On Linux, try xdg-open first
+                    try {
+                        Start-Process 'xdg-open' -ArgumentList $resolvedPath
+                    } catch {
+                        # If xdg-open fails, try other common utilities
+                        try { Start-Process 'nano' -ArgumentList $resolvedPath } catch {
+                            Write-Verbose -Message 'Could not open file with xdg-open or nano'
+                        }
+                    }
+                }
+            } catch {
+                Write-Warning "Could not open file after writing: $PSItem"
+            }
+        }
+    }
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCYcbi1y7rrA2B7
+# 0rg0NrBGh0K5leVi7bp55GftmbLn7KCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +207,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQgy61AixY6wiK6ubUSKg/HSCYEcJSQyzuOPHmZRnkWpVEwDQYJKoZIhvcNAQEB
+# BQAEggEAvjudPJfVTulmWYxwZ8jN+iUXPl89kY4lylVxMeo8VFY7y72zXX44JCbb
+# 7rgHVNM5pLUKdtL/t5ehadgJNabikz1ufcgEQu4kbhxIu+RhXE9wJqNyeZ9cw8Df
+# YI/m0UIBBYhS//CfmqpMYiXWXZucNH7nR7p6bSiUYts6gmyKPpUroTleQwH+1S5c
+# oApCZqtt59JwWAnKxXEVR6cnujQh+ZW+PMrJjqx8Zv9rHp9j0h151nEewFHlULKe
+# jJ9asx8k4Xi31nPxKYfYp8+lEKCwy5UWu4kOfcIBKih7xkUYFYXO2cnnwK6z5NVe
+# 2YfgjZQYV3bzwNvpT2Tpwr4l8LhmCaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MDhaMC8GCSqGSIb3DQEJBDEiBCAD3iT7TrSOk6jYN/gXAvaeFxkK
+# sz4e7VNsgsyBrEFEUzANBgkqhkiG9w0BAQEFAASCAgBmJx0lFeZBhN5g7Vv1VCd2
+# 2ZgxmnydVKL132ckhwfLyjCiUCzu8w9lvuoDiQ876ijQclV4I1II3aQ4ihlzm1G8
+# LNG8/ZiNd2IsPGqqxIlYM4CKsU7+JvPQB1E7MLDmQV7MQxPlNyQzH0dPob85L9Jh
+# sqzd7pZa/nxCrLKctUXdE1i6MI/bVOP0KUdhT5465J1O7UkQeSvQrAJUnIg4Ol8h
+# QI2lRDimnf/RxNFSE7rBPcosOSQ+3BmYRxGGS6flEhswir5E+csyYiBFFDk4KfKd
+# 3H7orSelqGxKaytakHc3s3TbiNU5m6A2/dWOelzAWc/uB4higwdiS5l7RaXA+zkc
+# ND3XCWHGSic1qU8OjZWwQEyEcHDWZA6Alqs2+e1SO+lYmixvSoC4DdUlz5P/L5dc
+# VaZv3NAGJJVjlsaqZwX6Lt0siaZeD0ADAmbniDz9VpYsJPMI6ms6+VSwrcaZvTD6
+# YNIyWg+di/5got9xuwKWMAIUeYoIlc7rXCNVNLrlXeF0XWEE3fbNN1b7te7HVFcM
+# WyRJ+cF2HJsHzhZT7L1ha4bAV0h8t9O5jI7hdy8iqJ5VV0ckfZRiygHkVHKXqo/e
+# mbQ8GkoiyfdQNaGDWXzFM384+YxQPso6+Xp3Nj/n696NTvztCcOe+Fjt6JrATsf5
+# BjyltVO1m6vsGHehUvPhfw==
 # SIG # End signature block

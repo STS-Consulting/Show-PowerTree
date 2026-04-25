@@ -1,41 +1,40 @@
 ﻿
-function Build-TreeLineStyle {
+function Get-HumanReadableSize {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
+        [long]$Bytes,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Compact', 'Padded')]
+        [string]$Format = 'Padded'
     )
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
-        }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
-        }
+    $sizes = @(' B', 'KB', 'MB', 'GB', 'TB')
+    $order = 0
+    $value = $Bytes
+
+    while ($value -ge 1024 -and $order -lt 4) {
+        $order++
+        $value /= 1024.0
     }
 
-    return $lineStyles[$Style]
+    $formattedValue = '{0:0.##}' -f $value
+
+    if ($Format -eq 'Compact') {
+        return "$formattedValue$($sizes[$order])"
+    }
+    # Pad the formatted value to ensure consistent width
+    $paddedValue = $formattedValue.PadRight(7)
+    $result = "$paddedValue$($sizes[$order].PadRight(3))"
+    return $result
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAxuLHW1PGdhBl0
+# VaesxLg1CQufrFAYAXPwgFh+CJ6ABaCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +158,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQgMC794xtUkYn1CpS4/C1DRnClLwCaOnuilGLux3qWaoYwDQYJKoZIhvcNAQEB
+# BQAEggEAqODXSkmjWW7VTYYYsaNFTJS9FSjFYhQ9jOsmpQi5Ah8j40Bg9K+ey0BX
+# +WaCm2ocVaxug8+g8OHqwBIsxMiQKAZ9P8zKdN64Y9oflCkIVijG8tElwRXeiAnN
+# qDkit7EHrD1iEzxZIsUfKBEYVv5i5SkJrWC4j9PbRSxU5iK4ShJ0iPZ/WkQG7dMd
+# ikIuPPX7yIj3A3AJTF0aCgS3GVYNkO7PRsWeH+UCSwUENZKdW/pkKuY58wVWoy6R
+# Xu684wio89PuNaXNKbttvrJJQXpro4aJ5gT2aPhVcApYrzbNLHiAxR76EfvrqNUW
+# l1G+tsIo52N5wQrURdg0bowMzCad5qGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MTJaMC8GCSqGSIb3DQEJBDEiBCBs9fwdMedrcdNaMzB/urINYay1
+# 0K+1UXjDNnLOttymMDANBgkqhkiG9w0BAQEFAASCAgBPeSYcDL9eNbSlFJgK7zY5
+# GI9htA6MAhx8/BARiqFeHm4bUGJkaUzb1av9B8KV9Ek0XjohEbRWVtmbiLCe29tz
+# LNj9p5l4sobGt3blk2PZLnWKO1s8nWK0jqJwUV97hHMkvULMkh+2mJZu7mXbqxRz
+# ULWW57RGIEAkDpGMAYgesusADImdMMZJXP35nl8oJ0Wlc+HZzzD6MpW/4tkff4WV
+# bnjKnuZwdGebNUjAmHWDaQ2fXcaCKkWr7egbHteTNFPjhO4DR0zfG723rBPPka4Q
+# pk55hPm4cA8jOdNsrIXHMcpGZUH1gFFznpxhEgEsgPBMgwlRSyocwMNmI25cU+Uz
+# WnpSC6uPDcdF4bsplpfLYKsXxRdZsJzb0/wgKhmiygQr07MRXWPYc/y0wyA6prnX
+# dShShd0kCnK1jB5Wv4ZAo0/UOjb/1SZpxgkuAMrPia5ncHKIr86QJT8HSncLMh3y
+# lN9GeC0P0CrdxJoLg+OXpCss0vpYa7N3ZyPTLC/NsMReTsG1uIshC0beEwEEvgNK
+# w8oGOCuNiigpSe8sRWC4EBNeEyCebLEqpNiOF7Yf6vOjUH3AwNKTxFYR0SDSk/33
+# jQ/wZuBoxoHzSh8fE3ryyfRyJRrgWVSP2V9IOL1ziE2VyFRu6VRJuUss27jB3zOg
+# yHXTfNBKdP2JtjcJQJ74aQ==
 # SIG # End signature block

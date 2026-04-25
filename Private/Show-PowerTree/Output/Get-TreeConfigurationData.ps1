@@ -1,41 +1,105 @@
-﻿
-function Build-TreeLineStyle {
+﻿function Get-TreeConfigurationData {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
+        [PSCustomObject]$TreeConfiguration
     )
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
-        }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
+    $configurationLines = @()
+
+    # Sort configuration
+    $sortByText = if ([string]::IsNullOrEmpty($TreeConfiguration.SortBy)) { 'Name' } else { $TreeConfiguration.SortBy }
+    $direction = if ($TreeConfiguration.SortDescending) { 'Descending' } else { 'Ascending' }
+    $configurationLines += 'Sort By'.PadRight(22) + " $sortByText $direction"
+
+    # Display columns
+    $displayColumns = @()
+    foreach ($column in $TreeConfiguration.HeaderTable.HeaderColumns) {
+        if ($column -ne 'Hierarchy') {
+            $displayColumns += $column
         }
     }
+    $displayText = if ($displayColumns.Count -gt 0) { $displayColumns -join ', ' } else { 'Hierarchy Only' }
+    $configurationLines += 'Display Columns'.PadRight(22) + " $displayText"
 
-    return $lineStyles[$Style]
+    # Human readable sizes
+    $humanReadableText = if ($TreeConfiguration.HumanReadableSize -ne $true) { 'False' } else { 'True' }
+    $configurationLines += 'Human Readable Sizes'.PadRight(22) + " $humanReadableText"
+
+    # Directory only
+    $configurationLines += 'Directory Only'.PadRight(22) + " $($TreeConfiguration.DirectoryOnly.ToString())"
+
+    # Show hidden files
+    $configurationLines += 'Show Hidden Files'.PadRight(22) + " $($TreeConfiguration.ShowHiddenFiles.ToString())"
+
+    # Prune empty folders
+    $configurationLines += 'Prune Empty Folders'.PadRight(22) + " $($TreeConfiguration.PruneEmptyFolders.ToString())"
+
+    # Maximum depth
+    $maximumDepthText = if ($TreeConfiguration.MaximumDepth -eq -1) { 'Unlimited' } else { $TreeConfiguration.MaximumDepth.ToString() }
+    $configurationLines += 'Maximum Depth'.PadRight(22) + " $maximumDepthText"
+
+    # Excluded directories
+    $excludedDirectoriesText = if ($TreeConfiguration.ExcludeDirectories -and $TreeConfiguration.ExcludeDirectories.Count -gt 0) {
+        $TreeConfiguration.ExcludeDirectories -join ', '
+    } else {
+        'None'
+    }
+    $configurationLines += 'Excluded Directories'.PadRight(22) + " $excludedDirectoriesText"
+
+    # File extension filtering
+    $includeExtensions = @()
+    $excludeExtensions = @()
+
+    if ($TreeConfiguration.ChildItemFileParameters -and $TreeConfiguration.ChildItemFileParameters.ContainsKey('Include')) {
+        $includeExtensions = $TreeConfiguration.ChildItemFileParameters['Include']
+    }
+
+    if ($TreeConfiguration.ChildItemFileParameters -and $TreeConfiguration.ChildItemFileParameters.ContainsKey('Exclude')) {
+        $excludeExtensions = $TreeConfiguration.ChildItemFileParameters['Exclude']
+    }
+
+    $includeText = if ($includeExtensions.Count -gt 0) { $includeExtensions -join ', ' } else { 'None' }
+    $excludeText = if ($excludeExtensions.Count -gt 0) { $excludeExtensions -join ', ' } else { 'None' }
+
+    $configurationLines += 'Include File Types'.PadRight(22) + " $includeText"
+    $configurationLines += 'Exclude File Types'.PadRight(22) + " $excludeText"
+
+    # File size bounds
+    if ($TreeConfiguration.FileSizeBounds) {
+        $lowerBound = $TreeConfiguration.FileSizeBounds.LowerBound
+        $upperBound = $TreeConfiguration.FileSizeBounds.UpperBound
+        $humanReadableLowerBound = if ($lowerBound -ge 0) { Get-HumanReadableSize -Bytes $lowerBound -Format 'Compact' } else { $null }
+        $humanReadableUpperBound = if ($upperBound -ge 0) { Get-HumanReadableSize -Bytes $upperBound -Format 'Compact' } else { $null }
+
+        $sizeFilterText = switch ($true) {
+            (($lowerBound -ge 0) -and ($upperBound -ge 0)) {
+                "Between $humanReadableLowerBound and $humanReadableUpperBound"
+            }
+            (($lowerBound -ge 0) -and ($upperBound -lt 0)) {
+                "Minimum $humanReadableLowerBound"
+            }
+            (($lowerBound -lt 0) -and ($upperBound -ge 0)) {
+                "Maximum $humanReadableUpperBound"
+            }
+            default { 'None' }
+        }
+
+        $configurationLines += 'File Size Filter'.PadRight(22) + " $sizeFilterText"
+    } else {
+        $configurationLines += 'File Size Filter'.PadRight(22) + ' None'
+    }
+
+    $configurationLines += ''
+
+    return $configurationLines
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAeXGb4PM4aBWZb
+# DOhqJPNV7qbF9ak4LYlJIkKrzAv6M6CCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +223,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQgJVdw4npDGoAYhhpQzygrOqw0uXjbID2H0IFO0K25iiUwDQYJKoZIhvcNAQEB
+# BQAEggEAX82NbYknPR1a7seiW1ALmzLj+NVdR9CwHi6yy98jN4j2hS/1yCe3nepY
+# uqc/TJUp/ISWO4szWliXVu+FXhI92ZMX5TeyTU+RkkiR/haSwcXhdHr+sp+FOpMx
+# T0iTSa+zqjPlKXztjxBeKKEZv4rpqfYFMtkpPvx5Rh67v7TNQXqvbUERvhL/cING
+# ytaYGf8neDOWfpVJqW7vIvZ6tfbg7GjaAKEcRciBKGn0D/f80JoHr03AHb2WTunL
+# 1XywBIX+OBxSeRrQuphHaoVl4gI8KSr9XNoTRGsh+AADN7gr4pZq8nhSyMkv4Mzc
+# qDjgajKSWuNVRGwsSO0SVBtb71y8TqGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MDlaMC8GCSqGSIb3DQEJBDEiBCAVviL4VxLcFFD3T+fevHmin84P
+# nX5iPRF+atXIIgKetzANBgkqhkiG9w0BAQEFAASCAgArUOXpNOAb2PSIIbS2hzhx
+# PbM5RJbph/8HV/ZGnJMP4J01jIIam6jBv2pe9qw0iTT+/gUZDDUl0wTYMMQ4bXhv
+# 2dui/miaqHNY/5Lut8wWL179xevDjKpPflI6Xb88FR3Smm/CW0XVLkQ1NXUHSTtg
+# D6PWd1sV61lBEyveax6vGGPlH3vpuYcw5qie+vYqUPnp72GGJyRX3FcOIEB6iU3O
+# 7WJLFzOOLgn/zJCNXgYi1ZJGER204UwraGx7aYyzAxdJjDrhErptqQd4iVBmPkM0
+# QNoreF4ynN82tXBC5Em3VB8HpaipGqc8/QIdBulTlXd9yA0ezAmoIjDyOMXzmHCB
+# tRJSkdDItUEWz0Eygzfmbci0Va65+zVSKQfvb/nUJiWlPYWxq+4iyxthUlXXi9dE
+# ET92ZKkHkjgbZ542Pw+BMNOyaGOzl37ciYNQ7M6W2wMT82j9BvVuWWRiCAKlyD7J
+# xIGCRQ5AWnUWOL5eS0uxBGy0Vg7WUN7RB+CdzwCS/0aKN+B6CniDkji98sosb48f
+# JJiiYp42o34t1jvjtBg9fOyMshPhba5RH4sbpWLzgHqDmi6Za/kRLFj6g/E1J4K9
+# ooO8uuKU6MG2nzQ7M7K64ZyQLWpJMBTjtAwv+pg3eQfGATBW+Vy49W1WVzh9mX7B
+# 2MMlLr2PwWCxpWh2k7pg6A==
 # SIG # End signature block

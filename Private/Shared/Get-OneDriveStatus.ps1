@@ -1,41 +1,57 @@
-﻿
-function Build-TreeLineStyle {
+﻿function Get-OneDriveStatus {
+    <#
+    .SYNOPSIS
+        Determines if a file or folder is OneDrive and its sync state.
+
+    .DESCRIPTION
+        Checks file attributes to determine if an item is OneDrive-managed and returns its sync state:
+        - OnlineOnly: File exists only in cloud (sparse file attribute or ~Placeholder indicator)
+        - LocallyAvailable: File is locally available but may be syncing
+        - AlwaysAvailable: File is fully synced/pinned locally
+        - NotOneDrive: File is not OneDrive-managed
+
+    .PARAMETER Item
+        The FileSystemInfo object to check.
+
+    .OUTPUTS
+        String representing the OneDrive status: 'OnlineOnly', 'LocallyAvailable', 'AlwaysAvailable', or 'NotOneDrive'
+    #>
     [CmdletBinding()]
-    param (
+    param(
         [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
+        [System.IO.FileSystemInfo]$Item
     )
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
-        }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
-        }
+    # First, check if this is in a OneDrive path
+    $itemPath = $Item.FullName
+    $isInOneDrive = $itemPath -match '([\\\/]OneDrive|OneDrive\s*[-–]\s*)'
+
+    if (-not $isInOneDrive) {
+        return 'NotOneDrive'
     }
 
-    return $lineStyles[$Style]
+    # Item is in OneDrive. Now determine sync state.
+    # Cloud-filtered files/folders have the ReparsePoint attribute (0x400)
+    $isReparsePoint = ($Item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0
+
+    # Check for sparse file attribute (0x10000) - indicates Online-Only (cloud-only)
+    $isSparse = ($Item.Attributes -band 0x10000) -ne 0
+
+    if ($isSparse) {
+        return 'OnlineOnly'
+    }
+
+    # For OneDrive files/folders without sparse attribute,
+    # if reparse point is set, it's part of cloud filter
+    # Default to LocallyAvailable for items in OneDrive
+    return 'LocallyAvailable'
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDLV+f+7PQp0VAs
+# xwqQcPtKik5GYOdmijpOUE2ZenXYEqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +175,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQgFjEmXyzEN7fhCay2HDDkAU3qqLtDM7QqXK/l4iH3zxowDQYJKoZIhvcNAQEB
+# BQAEggEAfXfxdJALSGdz+SDio0KNodRl3awrym95GYeKNKi3TyFXWEHxhK4s+GDd
+# DbMZ4AK/V6nZ65nxXnusCq3DaFgGRHrsgNGHuzwrtQQM829pFnS2/QEmwC/MrohC
+# 6GTsb29hbIcR8qx6WpDrFcUzDpYZbFeTNjboV59txgrp32ceGDJ54ZcG+WQpcaSF
+# tpVjVDvGTEoSsK//jmWyWZLJ7zbnFIt8ykw233kYdyk9bRQIzMvxXmY4CVaQJGea
+# eil07lnq00KuvWF5gvj15Le+/0xV8Prs4aSSl/1TUa6VDG5Tax17aHzVuaOZpufw
+# B/P939jOrlUcLZxwt1/YG8aOkpXx+KGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCBQTzZrRjLPUODYAB4C/uOjjZSw
+# Ka/XqGrE5x+ubY6PsjANBgkqhkiG9w0BAQEFAASCAgAYpCWcQ8Dng3WXmx8zZ05O
+# 1T3QBP4lRYE999ZMNmaoapNGNuZINaZba3k9GKlySN4pi9y08muzN62CVlwWAn7R
+# efeB6pxpUfnWeNelaJm9iiEGPhttQWZLCOxQmdrpY6z6N35vATKvHqvv36gvgapY
+# wjnOOb6anQQDyHlJ920eZxS2MrZZW5wU0oOESQYfMsglfmcyBxSVdITkETpOv7dd
+# T5lTfjyvEjlsKICj43XuginPLCCdbNQMT+nnoos7D8Vjl0zg4uo0kBCE9Dy3mkeQ
+# 938s6jkcHRDDvO8XG0ledzcFn5swjMtV0nyEqKVXIJ8FNzt8q4nUF9elYgTGIyvZ
+# 5xhxUgEtBFaXtWkmisSbk4pRJyjpGS4i083aVHh42zQw1jRu7s+TIYnFjv34VpeA
+# LOTgd0uGcOylLsccZjzN9cz3Q7/Y/2JL1dXcqLT9QRopBq8oW2wlcgXRczRaJDEy
+# KwSowIUCuc2KXtMBnrSGZyTiivEVNvpQCsIXiDcPtRi2dbmX9LA3Qe0J4IKlbyO0
+# pdv6hBccBUS98O4yXXd1OwD4lTgfGX4JVeQcjVVkA773K4xk4Xlp5P18JFJU3RUx
+# RjU62btrvrD085wmRL1i65Win8BBb7saq1vE/vfDbXtz5kjz+ucNFADH4eBaQ16a
+# Aa0kE56nwPY8c/I54PZepQ==
 # SIG # End signature block

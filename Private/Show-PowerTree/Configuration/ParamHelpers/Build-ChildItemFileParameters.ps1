@@ -1,41 +1,68 @@
 ﻿
-function Build-TreeLineStyle {
+
+# Build file parameter hashtable (for some reason we cant add the path variable here)
+function Build-ChildItemFileParameters {
     [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
+    param(
+        [Parameter(Mandatory = $false)]
+        [bool]$ShowHiddenFiles,
+        [Parameter(Mandatory = $false)]
+        [string[]]$CommandLineIncludeExtension = @(),
+        [Parameter(Mandatory = $false)]
+        [string[]]$CommandLineExcludeExtension = @(),
+        [Parameter(Mandatory = $false)]
+        [hashtable]$FileSettings
     )
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
-        }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
-        }
+    $fileParameters = @{
+        File        = $true
+        ErrorAction = 'SilentlyContinue'
     }
 
-    return $lineStyles[$Style]
+    if ($ShowHiddenFiles) {
+        $fileParameters.Add('Force', $true)
+    }
+
+    $includeExtensions = @()
+    $excludeExtensions = @()
+
+    # For Include Extensions - check if command line parameters are provided
+    if ($CommandLineIncludeExtension -and $CommandLineIncludeExtension.Count -gt 0) {
+        # Command-line parameters take precedence
+        $includeExtensions = $CommandLineIncludeExtension
+    } elseif ($FileSettings -and $FileSettings.IncludeExtensions -and $FileSettings.IncludeExtensions.Count -gt 0) {
+        # Fall back to configuration file FileSettings if available
+        $includeExtensions = $FileSettings.IncludeExtensions
+    }
+
+    # For Exclude Extensions - check if command line parameters are provided
+    if ($CommandLineExcludeExtension -and $CommandLineExcludeExtension.Count -gt 0) {
+        $excludeExtensions = $CommandLineExcludeExtension
+    } elseif ($FileSettings -and $FileSettings.ExcludeExtensions -and $FileSettings.ExcludeExtensions.Count -gt 0) {
+        $excludeExtensions = $FileSettings.ExcludeExtensions
+    }
+
+    # Format the extensions for PowerShell commands
+    $normalizedIncludeExtension = Format-FileExtensions -Extensions $includeExtensions
+    $normalizedExcludeExtension = Format-FileExtensions -Extensions $excludeExtensions
+
+    # Add to parameters if not empty
+    if ($normalizedIncludeExtension -and $normalizedIncludeExtension.Count -gt 0) {
+        $fileParameters.Add('Include', $normalizedIncludeExtension)
+    }
+
+    if ($normalizedExcludeExtension -and $normalizedExcludeExtension.Count -gt 0) {
+        $fileParameters.Add('Exclude', $normalizedExcludeExtension)
+    }
+
+    return $fileParameters
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAToMjsBnh+VVF2
+# jGEnSNS+Aoa+zIdLDX41bQnr19FgZaCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +186,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQgrBPr0V4HWjqsl7a1D4roQ1ybHMCr0hxjwyP5swYv4YUwDQYJKoZIhvcNAQEB
+# BQAEggEAmdASlUn/VRlr6cRD+TqRMKIBJCGO9AOcA5kKYf/3cC8mWVO73JZwfGyq
+# z30k9lpAww7oqJeeHsnbYZUDBwI9hnven/I/YIqoKuDhR+R0z9bLAFj44lQXdUTd
+# oWMxQ884AX2eeuAqlqnehHZocjiJeohdVxhGaXD20wd2bXzH623ITfFiMAxNpuhv
+# 0339fOLVgnqJYuAbwNuu+buk34reRbr9CwfN4sJRtV0MhWpv1jismcONdAis2xMS
+# C/cRhnhYaPXQdqPwvunoWnOdJzs7f9agzTfUSU8BDRiQMyyJk1EcBm7r4CZpM6LK
+# t4ZgEXiK43Gjw3K9VNylg55u0TSBaaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MDRaMC8GCSqGSIb3DQEJBDEiBCDqQ8YYzKdajlq801EDTmHjJlDZ
+# PZnT8UnRYvysQydDzTANBgkqhkiG9w0BAQEFAASCAgAYgv0QXhguO2fYmmwYIPjd
+# iMcaLL2TqDIgUVOKmQTcH1f2djAN3RzE/DVocs0Y2oNXbjcbgFYTOJELUEy28+f7
+# 9JELDqhmFxNMSPcDpK2ddNTzt7K9DPCL6+AKnYpLoKxID8tqqbUTxJfRWdG0vSDJ
+# BMD3Y1EZoq+QqhYIHGjexWmrNozWl+q3/WU17LbX0Axe1uNLqSaIBGUNP/cznbti
+# yw9WV0de1IK7+Bb6dVKExEtjpPz81Cn5kOmpxP5aGawQfjdwuGRsgQ142aQcESHY
+# e1tfE3EbF4YI07MXJsS9YVOh5y/dAAiNBl7K7F8lZDVclNqD6W6zm1Ok8qnIbTPJ
+# JPMj5BI5ZtoLIF20xtj9ADrH65FAP39geDN3cSYx/b6ZNWD0wOttRqil8oKWy/Ol
+# qOfC3Oxm+g/G1fcSP7bS/0jURA6xVGvbaZv0a8mJ6jv0b7XYU0cwp5wPzh8LX90Z
+# 8OdhFlY36kDjqMUcmZzuwcKvfQB4I9of9cCaFz9uNE02MWGmj10p30jn3YwhWbZ4
+# v4typFeocS+2gBdRpzsK52w3i+P+qUAQg8OVZVCRuNP19povsCg99uAIZLNFiYqk
+# cfv/4rLppU1AXhr/jdPoxzzFh6ixGgx2ItjDRCwasibvWjnCaBlyYbYANhQU5w+e
+# MIZywP0BBlKwQoqQot9HKA==
 # SIG # End signature block

@@ -1,41 +1,61 @@
 ﻿
-function Build-TreeLineStyle {
+function Get-ProcessedRegistryKeys {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
+        [string]$RegistryPath,
+        [Parameter(Mandatory = $false)]
+        [string[]]$Exclude,
+        [Parameter(Mandatory = $false)]
+        [bool]$HasKeyFilters,
+        [Parameter(Mandatory = $false)]
+        [bool]$DisplayItemCounts
     )
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
-        }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
-        }
+    $childKeys = Get-ChildItem -LiteralPath $RegistryPath -Name -ErrorAction SilentlyContinue
+    if (-not $childKeys) {
+        return @()
     }
 
-    return $lineStyles[$Style]
+    # Apply exclude filters to child keys only if needed
+    if ($HasKeyFilters) {
+        $filteredChildKeys = @()
+        foreach ($key in $childKeys) {
+            if (-not (Test-FilterMatch -ItemName $key -Patterns $Exclude)) {
+                $filteredChildKeys += $key
+            }
+        }
+    } else {
+        $filteredChildKeys = $childKeys
+    }
+
+    $keyItems = @()
+    foreach ($key in $filteredChildKeys) {
+        $keyPath = Join-Path $RegistryPath $key
+        $keyItem = [PSCustomObject]@{
+            TypeName = 'Key'
+            Name     = $key
+            Path     = $keyPath
+            IsLast   = $false
+        }
+
+        # Only calculate counts if needed
+        if ($DisplayItemCounts) {
+            $keyItem | Add-Member -NotePropertyName 'ValueCount' -NotePropertyValue $(if ((Get-Item -LiteralPath $keyPath -ErrorAction SilentlyContinue)) { (Get-Item -LiteralPath $keyPath).ValueCount } else { 0 })
+            $keyItem | Add-Member -NotePropertyName 'SubKeyCount' -NotePropertyValue $((Get-ChildItem -LiteralPath $keyPath -ErrorAction SilentlyContinue | Measure-Object).Count)
+        }
+
+        $keyItems += $keyItem
+    }
+
+    return $keyItems
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCB5Jj/3CK8YJgvz
+# b/uoHzDiNc2O0lSufKcL/8URgi8gO6CCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +179,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQgMwKmtGDqUO4sJrKY6nWohh8EPWQrU73V5GipHKfGIMMwDQYJKoZIhvcNAQEB
+# BQAEggEAKu6SYDu3ne0tHoQU9Bmb/V9so4Ow188poAmsH+wuA8SpoVDQhmoNj3Hc
+# GYOU1BIsaXobgv/LrdW7jzDqvqRwNbCIec9SCRhze34tEhW8kESCOoBKROsYdKJf
+# IsgbhGmZv/D7YP0IhNvcVVUA0/YBTi76+v0ecEV4trNjXsjeaSE3l0stFott+8IE
+# o7Xjyks4EgqWMWL4+r+hU8+uOXd/K5ubDwfBfDopscLK36xAeJnUnT4h+sp6+52r
+# DqYyJ5lJcLWFlno4qu8XGpXPx25lmK4B0NcWJcJHmJN9W7UTbF4BgBsNk7jsv4r2
+# 3IinwqxvAO2+iD47VY+QbfGQbyQYNqGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MTRaMC8GCSqGSIb3DQEJBDEiBCBIyXRDXL+x8q2mjCCS4KR7HLka
+# O4OqN+2dCfSC+J0vpDANBgkqhkiG9w0BAQEFAASCAgAjw4D/vTJNABT5w856PjbJ
+# SrL48q6z8L3zo+cYDWQvuhCBd6khHK3jRrnLSOuQjDSDxs2+pQpWtPHxcNnUSUEM
+# 8xPBPpSDwAB3fGzb9Z95HKYQywgXH+qflKTyDVhJnTIGR8KvhW/xs83qesOZzhwR
+# OA6dAR6tGfZxZk5yLakB8MzG5n6COmWTrDUmLpa4HLnrOANggDhv62gxjEIQW3Z1
+# 2j/B60vslWlh5AC3P+sv6eyBY713MHEhooRu3LAS4GRJqqoMyC0tyzIUY5/9Lb0O
+# WEUn84C0IZlrlnNebrFjz/ZUEZk1LG1WspKdh4iq4fKIowckziNmH+yT+odzQl8y
+# FKk7iALXRC1DiBwxiALDilXM4cGkswQIEgiXsb7sPxPtE0+9H/+G2M7EXgSVERWy
+# RW28kxWxqUYyUgUkdOUWAmYtZ3LAbL2/Lgquh0rfh8CByy1XFPYc7kDAQ3kK0v0A
+# lyZQamkpX+xC4GslWLnhzKLIgnr9VQTX9hY7lv/XnbA1952CRDtDNVp8AGjkDVdx
+# YJPdVqNac4ufCSLZAXuz+UxTKNAkzfLMFIlyp2iyynuIxqENqVs7Bo2bcEqDky3r
+# LEWpMu21aKYfpZQLZeep+gbuq3UJHhPi38hq2u+VGMvvRignmkEPAE5foQjf+bwN
+# 6cBh0vrstojSaFv4A2YeBA==
 # SIG # End signature block

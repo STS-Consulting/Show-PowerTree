@@ -1,41 +1,169 @@
-﻿
-function Build-TreeLineStyle {
+﻿function Get-TreeRegistryView {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
+        [TreeRegistryConfig]$TreeRegistryConfiguration,
+        [Parameter(Mandatory = $false)]
+        [string]$CurrentPath = $TreeRegistryConfiguration.Path,
+        [Parameter(Mandatory = $false)]
+        [bool]$EscapeWildcards = $false,
+        [Parameter(Mandatory = $false)]
+        [string]$TreeIndent = '',
+        [Parameter(Mandatory = $false)]
+        [bool]$IsRoot = $true,
+        [Parameter(Mandatory = $false)]
+        [int]$CurrentDepth = 0,
+        [Parameter(Mandatory = $false)]
+        [Collections.Generic.List[string]]$OutputCollection = $null,
+        [Parameter(Mandatory = $false)]
+        [RegistryStats]$Stats = $null
     )
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
-        }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
+    if ($IsRoot -and $null -eq $Stats) {
+        $Stats = [RegistryStats]::new()
+    }
+
+    if ($null -ne $Stats) {
+        $Stats.UpdateDepth($CurrentDepth)
+    }
+
+    # Only escape if we're in a recursive call
+    $pathToUse = if ($EscapeWildcards) {
+        $CurrentPath -replace '\*', '[*]' -replace '\?', '[?]'
+    } else {
+        $CurrentPath
+    }
+
+    $collectingOutput = $null -ne $OutputCollection
+
+    if ($IsRoot) {
+        if ($collectingOutput) {
+            $OutputCollection.Add('Type         Hierarchy')
+            $OutputCollection.Add($TreeRegistryConfiguration.lineStyle.RegistryHeaderSeparator)
+            $keyName = Split-Path $CurrentPath -Leaf
+            $OutputCollection.Add("Key          $TreeIndent$keyName")
+        } else {
+            if ($null -ne $global:PSStyle -and $null -ne $global:PSStyle.Formatting -and $null -ne $global:PSStyle.Formatting.TableHeader) {
+                $headerColor = $global:PSStyle.Formatting.TableHeader
+                $resetColor = $global:PSStyle.Reset
+                Write-Host "$headerColor`Type         Hierarchy$resetColor"
+                Write-Host "$TreeRegistryConfiguration.lineStyle.RegistryHeaderSeparator"
+                $keyName = Split-Path $CurrentPath -Leaf
+                Write-Host "Key          $TreeIndent$keyName"
+            } else {
+                Write-Host 'Type         Hierarchy' -ForegroundColor Magenta
+                Write-Host $TreeRegistryConfiguration.lineStyle.RegistryHeaderSeparator
+                $keyName = Split-Path $CurrentPath -Leaf
+                Write-Host "Key          $TreeIndent$keyName"
+            }
         }
     }
 
-    return $lineStyles[$Style]
+    if ($TreeRegistryConfiguration.MaximumDepth -ne -1 -and $CurrentDepth -ge $TreeRegistryConfiguration.MaximumDepth) {
+        if ($IsRoot) {
+            return $Stats
+        }
+        return
+    }
+
+    $registryItemsParameters = @{
+        RegistryPath         = $pathToUse
+        DisplayItemCounts    = $TreeRegistryConfiguration.DisplayItemCounts
+        SortValuesByType     = $TreeRegistryConfiguration.SortValuesByType
+        SortDescending       = $TreeRegistryConfiguration.SortDescending
+        UseRegistryDataTypes = $TreeRegistryConfiguration.UseRegistryDataTypes
+        Exclude              = $TreeRegistryConfiguration.Exclude
+        Include              = $TreeRegistryConfiguration.Include
+    }
+    $allItems = Get-RegistryItems @registryItemsParameters
+
+    if ($null -ne $Stats) {
+        $keyCount = ($allItems | Where-Object { $PSItem.TypeName -eq 'Key' }).Count
+        $valueCount = ($allItems | Where-Object { $PSItem.TypeName -ne 'Key' }).Count
+
+        $Stats.KeysProcessed += $keyCount
+        $Stats.ValuesProcessed += $valueCount
+    }
+
+    foreach ($item in $allItems) {
+        if ($item.isLast) {
+            $itemPrefix = "$TreeIndent$($TreeRegistryConfiguration.lineStyle.LastBranch)"
+            $newTreeIndent = "$TreeIndent$($TreeRegistryConfiguration.lineStyle.Space)"
+        } else {
+            $itemPrefix = "$TreeIndent$($TreeRegistryConfiguration.lineStyle.Branch)"
+            $newTreeIndent = "$TreeIndent$($TreeRegistryConfiguration.lineStyle.VerticalLine)"
+        }
+
+        if ($item.TypeName -eq 'Key') {
+            # Count information is for when DisplayItemCounts is true
+            $countInformation = ''
+            if ($TreeRegistryConfiguration.DisplayItemCounts) {
+                $countInformation = " ($($item.SubKeyCount) keys, $($item.ValueCount) values)"
+            }
+
+            if ($collectingOutput) {
+                $OutputCollection.Add("$($item.TypeName.PadRight(12)) $itemPrefix$($item.Name)$countInformation")
+            } else {
+                Write-Host "$($item.TypeName.PadRight(12)) $itemPrefix$($item.Name)" -NoNewline
+
+                if ($null -ne $global:PSStyle -and $null -ne $global:PSStyle.Formatting) {
+                    # Use FormatAccent or Verbose for metadata like counts
+                    $countColor = if ($null -ne $global:PSStyle.Formatting.FormatAccent) { $global:PSStyle.Formatting.FormatAccent } else { $global:PSStyle.Formatting.Verbose }
+                    $resetColor = $global:PSStyle.Reset
+                    Write-Host "$countColor$countInformation$resetColor"
+                } else {
+                    Write-Host $countInformation -ForegroundColor DarkCyan
+                }
+            }
+
+            Get-TreeRegistryView -TreeRegistryConfiguration $TreeRegistryConfiguration -CurrentPath $item.Path -EscapeWildcards $true -TreeIndent $newTreeIndent -IsRoot $false -CurrentDepth ($CurrentDepth + 1) -OutputCollection $OutputCollection -Stats $Stats
+
+        } else {
+            # Writing the subkey
+            if ($collectingOutput) {
+                if (-not $TreeRegistryConfiguration.NoValues) {
+                    $OutputCollection.Add("$($item.TypeName.PadRight(12)) $itemPrefix$($item.Name) = $($item.Value)")
+                } else {
+                    $OutputCollection.Add("$($item.TypeName.PadRight(12)) $itemPrefix$($item.Name)")
+                }
+            } else {
+                Write-Host "$($item.TypeName.PadRight(12)) $itemPrefix" -NoNewline
+
+                if ($null -ne $global:PSStyle -and $null -ne $global:PSStyle.Foreground) {
+                    $nameColor = $global:PSStyle.Foreground.BrightBlack
+                    $valueColor = $global:PSStyle.Foreground.Yellow
+                    $resetColor = $global:PSStyle.Reset
+
+                    Write-Host "$nameColor$($item.Name)$resetColor" -NoNewline
+                    if (-not $TreeRegistryConfiguration.NoValues) {
+                        Write-Host ' = ' -NoNewline
+                        Write-Host "$valueColor$($item.Value)$resetColor"
+                    } else {
+                        Write-Host ''
+                    }
+                } else {
+                    Write-Host $item.Name -ForegroundColor DarkGray -NoNewline
+                    if (-not $TreeRegistryConfiguration.NoValues) {
+                        Write-Host ' = ' -NoNewline
+                        Write-Host $item.Value -ForegroundColor Yellow
+                    } else {
+                        Write-Host ''
+                    }
+                }
+            }
+        }
+    }
+
+    if ($IsRoot) {
+        return $Stats
+    }
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAF188MNlQSCUH1
+# UYvCtMfzzHG67pVrxle8WkiJLdKl3qCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +287,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQgyCC8rFQl2QV6zs0pnqUEcXvyJa/FtNK0JjbXOMRLnmIwDQYJKoZIhvcNAQEB
+# BQAEggEAC3aSFOv4lhbd608V2INvKqmG+aiH0iiOcbbZazi43hQyBokvBVXEZ4VB
+# fNcHoJgu8unQsR61wOvCh6STBPtXabSz5JyGYAod5FAIyLpIbvY393wornlk250t
+# ++Iq3bRnZqaJKk/UfjCO5G2eNm4tCOq3MY9zHEzvwEE92dHGAX/lVgMhcHjuEbnb
+# 7DvDd2RYaN5qBGJq7UVnAN/KImCBqId+rOixusYlCl7QbKDIJ2/5MbKJu3cah7gF
+# 7uK0LWlN/rr5+WTVgMapiCB14cRreHGXKhVCWPLxKr98tDLYP6FFkvo7f6lh9YTu
+# aqW7zYJn4aVnd2wlHMK0DBF3euYEOaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MTdaMC8GCSqGSIb3DQEJBDEiBCDOMvmCw9ue2wM4WSdPG4rjUnsj
+# GGMqmuzBBVcH/5JJDjANBgkqhkiG9w0BAQEFAASCAgCPIM7fRKXK5bxBW2wiaR1/
+# NjbJc/v5wqNxErm5lsr5hz7C6bO/zpa0W85WDcslmUxhCVx7jIqqCp8QyhHobKrA
+# dGGZ/VKaYIEqWMorqslyX9LRNe0RsDg9F4f9DVp3wy8/1pZpAR8taWeCXBVF8pJa
+# QxiqdTn+N14ccSmBcOKwNBVp6srizGopd0Tcy+d0l6/BAG3SFzNZofXQ11sqS98V
+# ghdw20NdJLPo+g7C0Gx+UjLl/QsTBUJjCuORbY5ysOrxWTzdS5D9L/86CIgcMgmF
+# ujqOcyPpDIdxdddJA6DIb4jPhbMCG8wnq+Y6uTtIyUN+NosCpi0WTN+/cXKDcFmK
+# UUrvvH6hMVzIl3ggcfEZVjpp04QA1wKtauThCT0xnajuf7oBIkmEITNGPeqwE5aY
+# ZvBTvvuaeT47BUnTUvgqGXJ3wZML6O/Gzy0ACLLL/DLSMj/xh/PiKhg3nPrt+Stz
+# kYHGkkoa2XQNNSA6+RGsOp/1sRlLflsgzShs+4g4HPgYlm3SXr6WoWUruZfaxNmF
+# 2JnZszWZWAy99BKGvcZCFDySyd6bmU6HWfe6HfmXesvWRR/ryeErH6BBA3ptlH2i
+# YbxE6POoCQgqRNUH6m60iaN32VLYmlEmghPtASBp+HQUuLzBkeORxT8f5ehmg6yo
+# sp8HJ5DsKH2JN36O7/YAeQ==
 # SIG # End signature block

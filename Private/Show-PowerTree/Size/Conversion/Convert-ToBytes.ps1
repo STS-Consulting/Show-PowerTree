@@ -1,41 +1,59 @@
-﻿
-function Build-TreeLineStyle {
+﻿function ConvertTo-Bytes {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [AllowEmptyString()]
+        [string]$SizeString = '-1'
     )
 
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
-        }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
-        }
+    if ($null -eq $SizeString -or $SizeString -eq '') {
+        return -1
     }
 
-    return $lineStyles[$Style]
+    # Check for special case of negative values with units (like "-1kb") - these are used for default/inactive values
+    if ($SizeString -match '^-\d+\s*(b|kb|mb|gb|tb)$') {
+        return -1
+    }
+
+    # Check for special case of just a negative number (like -1)
+    if ($SizeString -match '^-\d+$') {
+        return [long]$SizeString
+    }
+
+    # Normalize any decimal separator to a period first
+    $normalizedSizeString = $SizeString -replace '[,;]', '.'
+
+    # Try to match a pattern for size with unit
+    # Format is a number (possibly with decimal) followed by an optional unit (b, kb, mb, gb, tb)
+    if ($normalizedSizeString -match '^\s*(\d+(?:\.\d+)?)\s*(b|kb|mb|gb|tb)?\s*$') {
+        $value = [double]$Matches[1]
+
+        # Default unit is bytes
+        $unit = if ($Matches.Count -gt 2 -and $Matches[2]) { $Matches[2].ToLower() } else { 'b' }
+
+        # Calculate size in bytes based on unit
+        switch ($unit) {
+            'b' { $value = $value }
+            'kb' { $value = $value * 1KB }
+            'mb' { $value = $value * 1MB }
+            'gb' { $value = $value * 1GB }
+            'tb' { $value = $value * 1TB }
+        }
+
+        return [long]$value
+    }
+
+    # If no match, return -1 (invalid format)
+    Write-Warning "Invalid size format: '$SizeString'. Expected format is a number followed by optional unit (B, KB, MB, GB, TB)."
+    return -1
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDr1eiX7BnLYd/D
+# QqKuK2UKFSYwoaMYp/5J0pZLgZupFqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +177,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQgwMRBfi7bgM0cRGx7zn8uhuYTp97TW/XgaBxD8ejsNA8wDQYJKoZIhvcNAQEB
+# BQAEggEAI2D2vzy6R9t1evpL1V0u6hHq01GmzudD9nQoi8ZBIsC0GUy1ZJMFR89Z
+# tHhhn5JnKxPQJpOXuXZeNJIwB1Fwtj//BJHTfB2qdxmU2Q2Ht8LDCmKjTLQoU8ep
+# 5xruVD8PDQV/+Bv/aIXDUlxCT5R60P2CYq3HQypHGaCIteDxnUcx6GPYeMTOTJSX
+# 8VLjqjx+Xac8SPcrFYub0UOvmBip61iba0oMwiGFS7q9/s6AuCjYcXM0mpw23F0k
+# s8c+obj54em8v6veydqWYlDZe/+EcmNzbFRZh7nGA09w+04I8UvYL0HKf3IimdPR
+# yovLPpNXotAdB08YC2VkbyUPFH3zhKGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU4MTFaMC8GCSqGSIb3DQEJBDEiBCB+dZpqrA8WI/xE7WvBAQlGRpfy
+# DUouCwtmC8x8VwFHMzANBgkqhkiG9w0BAQEFAASCAgAqW2vdsaM019pMJSyK7++N
+# EnJoPiRjD79uYgM8Z7hgWwJCdw8uNiXE5+jEgkBmN77FmeeurzohITjQHhOpsEtk
+# 0Cq/g6OGYg3gJU2XaFuDKHdHtpHuXvcKDvJihnQUms2frOnwT0eqH2srldfiNAeF
+# 2ZHTx3QqifqEdaYc2K+mq5U+Hig+Z2cRaMxTHK1+0BFQRmX9ZHiveMMEiRR9vbRZ
+# gbys54BjVcDqKs9eBHAmdPXShLuINHDriyImfKDSofVvr2iEh1vDxZa0CE5RWJPt
+# JO9LRuFyN0UDCDnQpkt8Dfx03syukGJh+8NQNzLTriKzsMxzq50K4ORDIucBwGTE
+# kAFnUtkTRhzvukDJj2cGsldC0x8kvlwGZcE0sECtxEnFakrv7Whg4/E5K2SPU40k
+# xD9DOKWuZrGfm/YyBR8MthG5n2J2/Pd5L22/FWdy3M/iPUYWKDUAAORDqSAX3kgx
+# 2OqMWnT8sMnXu16gvZEc8DkOZVeX1c9hgd61FOy16/PdOVyTWlBv3fT+QPm+B5iC
+# rr4M1sDqxCFKxPRHcVwodny+gdOoj5K6h3kG6BvKXlQ41Codp9h0d3TDsFva15bz
+# lvJzeDzHbPNaG1Xa9JmiFg4JeyduUZ7jK3lCPk3LvpKa4l16vZd1xgi+TxYZAWuT
+# t8cngeC+15lfowhMtwR28g==
 # SIG # End signature block

@@ -1,41 +1,22 @@
-﻿
-function Build-TreeLineStyle {
+﻿function Get-ConfigurationPaths {
     [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('ASCII', 'Unicode')]
-        [string]$Style
+    param()
+
+    return @(
+        "$PSScriptRoot\PowerTree.config.json",
+        "$PSScriptRoot\..\PowerTree.config.json",
+        "$PSScriptRoot\..\..\PowerTree.config.json",
+        "$env:USERPROFILE\.PowerTree\PowerTree.config.json",
+        "$env:USERPROFILE\.Settings\PowerTree\PowerTree.config.json",
+        "$env:HOME\.PowerTree\PowerTree.config.json"
     )
-
-    $lineStyles = @{
-        ASCII   = @{
-            Branch                  = '+----'
-            VerticalLine            = '|   '
-            LastBranch              = '\----'
-            Vertical                = '|'
-            Space                   = '    '
-            SingleLine              = '-'
-            RegistryHeaderSeparator = '----         ---------'
-        }
-        Unicode = @{
-            Branch                  = '├───'
-            VerticalLine            = '│   '
-            LastBranch              = '└───'
-            Vertical                = '│'
-            Space                   = '    '
-            SingleLine              = '─'
-            RegistryHeaderSeparator = '────         ─────────'
-        }
-    }
-
-    return $lineStyles[$Style]
 }
 
 # SIG # Begin signature block
 # MIIcLAYJKoZIhvcNAQcCoIIcHTCCHBkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRc345ML5BbwjN
-# J/BugWoWDPP5d5q0EaXGFUJPAz3/iqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBq503CGMVpSJ6k
+# o9IZ2eAkvswVOyRgjBR4yPpBv3tzOqCCFmYwggMoMIICEKADAgECAhBSDm+iYBGr
 # iEa7joroOpM5MA0GCSqGSIb3DQEBCwUAMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjUwNjAeFw0yNTA2MjQwNDE1MDJaFw0yNjA2MjQw
 # NDM1MDJaMCwxKjAoBgNVBAMMIUF1dGhlbnRpY29kZSBDb2RlU2lnbmluZ0NlcnQg
@@ -159,28 +140,28 @@ function Build-TreeLineStyle {
 # bmdDZXJ0IDI1MDYCEFIOb6JgEauIRruOiug6kzkwDQYJYIZIAWUDBAIBBQCggYQw
 # GAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGC
 # NwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQx
-# IgQgeOhE99lXiOe1kJqVCRzA+OvdmvVaDNsidYbxE7ecDYEwDQYJKoZIhvcNAQEB
-# BQAEggEAf8zr0wPeoljwBcRax6JodZ+WUO5diyEKydD5UQVAholc4f8+up4AFC5p
-# EThG15o1vgVGOt/Z5v8rIpqPjJdrLNUSnZpmKacDDRL1Hu0aMd9aIxvOSA4Uiphi
-# aDowCpylKM0flAbvUB0WlHyXP4cRkWK89Eu+THRRnYS1fwHswJpjChF4jncaUyTy
-# K5dY5PD+3kfQzEDC9jmZMrkJdoCV4KE71PG4coGEk9cFhVHkKnkYFJYkH0gFhmpp
-# hKv9lXv6jzD6oUL1+CBFoAUZRdUhO7W4PsuaklaWP6wNwlCLtUzEKfsO/nDV0tEY
-# C3MPhmHIwi9/YHfBpWOt7Oes+gGMvaGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
+# IgQg4U/F9UJkck+B8CwBtZhcS8Uhscjzra8MgsvJu8Mx6p8wDQYJKoZIhvcNAQEB
+# BQAEggEAk86Y8wddbYkXGyfAkOa8hOTNf8ed7z62wudJfvK2+KQBf3yhmXppNECd
+# +SejD6nyAv6IEK4qdkH0x4CN+Y2ImhPdw5S8VaG6Pe27vmdn1FwSiX7WpZ83yMlO
+# X/NAiOdPxvwlqK0EBbkM1tzKn3xMsRMrwR9Jtj4Ofc3eZj3XakryiE8sugJAlb3D
+# q3v5h7k4RpruqZEvl7+UFP6eG0qCZUZDpDEdhsDAGtMgeRw3B6cB5tKIrVU6An9K
+# m0YjRQ6bObmx0f616v+Xo7oveUQeeYRUPrvHk7qOi3KkJBXN/TjW8esnc16IulBC
+# Qg1lH8WHIPAV9JVik9YbcdXefY0BeKGCAyYwggMiBgkqhkiG9w0BCQYxggMTMIID
 # DwIBATB9MGkxCzAJBgNVBAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFB
 # MD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5
 # NiBTSEEyNTYgMjAyNSBDQTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIB
 # BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0y
-# NjA0MTQwMTU4MDNaMC8GCSqGSIb3DQEJBDEiBCDK4RKdt9hxhFewV/hZ3JbWqBhe
-# Z8eLme6WeNxIqEDUpzANBgkqhkiG9w0BAQEFAASCAgC2zE281nndgSqlzK3RVXJ8
-# IG13uATq17xGS1ByU+xQMXMLjzDbhzXpdZukGRB9A269yriQMym9II967VIMw1Zj
-# IeZzsK4/jLILYpb+dKYqNpd4/xYS3AReO+1AggByPNwjeZEev837CeKKvoDHDlyy
-# yUylk82EAhYG56VdaHz2bMJ9CpKT/dPnnDFFS9uHxY09iXaDe8meeG5nhQ39+mDo
-# AvqkykSkKDkL6TlICL7pB6FvLVRchA0SIAroC9sDvYDnPI14IGqnXCNP9vuRrSH4
-# gdZ6q2I7mn4wSvhTxZfV7eM11IJsPGz2eJP3DXTjH23CqfwTWY1nhPVyRi8nhA80
-# WVs05WUUrDDkKiCbot564xdBgN16m6IwZi9or5sAZVCUYuV4V1cb6g6KnxFrUfqX
-# 4FcuBe7Qn0xgbUAhHgwPWTuxjlnvybfxFuJmX/hbVke3MFWGTpO/8CdBkB246YQk
-# mU3wtQ8LY03FRjInqzmOO3CsBLdcvyEwn3YMlyrshBdw9v+eSy2iZpGwzEwY4gFw
-# F+xVm9sui3sEj/h/ykzEnbSoxN7sHQ65dMBrHT4YzppvexVYzAUj2Qs+GgCmWUlJ
-# nJcRqv6WY6gPguiYKha+0H+d1VfaghrAM792LtYuTIs80FZEFN9WCR5du3m7eZWH
-# +4eMtiWAUtL4iM7jQSWmFQ==
+# NjA0MTQwMTU3NTlaMC8GCSqGSIb3DQEJBDEiBCAGeNmN9seuqcXA6Lk6c0gW52r6
+# 4KvH5Xb/Jcqz6QehkDANBgkqhkiG9w0BAQEFAASCAgAdE0opEeX0PWOoXhThIi9L
+# t0lAPU6z6rVfPQU9lHNZV4gfEnqyQwHub+DGcbS3tjuibAyzmPXLkA9r/G38cwm8
+# Scfqe4l70PnnTk1A6e2ShGFaWXyTh9LgRmR58d9zH8hbmjCdXooRe70+GTVg0jTK
+# cnWXpAjFfkl47N/JQ7YbISSOdRdQjcJ8KQjT1CQhLxM18RD6w4eYO6mXBRECw0iU
+# aBoHOUDTZ3LgjK4N+PjX6MXUXh119dwxtR6Fafqgr3wx9fBq3akmp+G+dyAk8fzq
+# 0zvJ74Q/T4/vRERV7QMFMrBxW8vZDa5r1aA+pNQiG1U/JwAslfuAZfY5yV3qAxmp
+# 1YG1WjJ04DcdWe6X7OOLU6AgNeWxDF5xxq46Y2MUeHZ33L6ox1xETN8N0TgufI/H
+# eTIcqurgtjoH99AJaiQpEZJaM32ncgTYi6gw5xq2q7z0ImY3FWXcA1XCVt4YANnG
+# wNJSYevGQOFIgxJiDNhxal2RpsTWiS3b0BHKZFSVfTkD3bSPUexlnOtM75zJTkFH
+# FaS2vL8KQKaX8VY6yjRV7tMkltrn70iykaxWqQVtDWojuGXSIPb0V2Cln9AuE3k7
+# 7wkICYDhdwv3pD5Vm9EY5fT+pe/EcNnkIhSPUo/OwYL95bn5X/2O6cr6FPauPHqc
+# /4+Qh3uuXP6+mrDxKDYhJg==
 # SIG # End signature block
