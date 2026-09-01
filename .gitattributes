@@ -16,6 +16,7 @@
 *.pssc    text eol=crlf
 *.rdp     text eol=crlf
 Desktop.ini text eol=crlf
+desktop.ini text eol=crlf
 
 ###############################################################################
 # Encodings
@@ -27,4 +28,5 @@ Desktop.ini text eol=crlf
 *.pssc    working-tree-encoding=UTF-8
 
 *.rdp     working-tree-encoding=UTF-16LE
-Desktop.ini working-tree-encoding=UTF-16LE
+Desktop.ini     working-tree-encoding=UTF-8
+desktop.ini     working-tree-encoding=UTF-8
