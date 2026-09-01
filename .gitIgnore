@@ -25,6 +25,7 @@ PSModuleAnalyzer.Settings.psd1
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
+*.copilot-recovery
 
 # History and backup extensions
 .history/
@@ -53,7 +54,7 @@ nugets/
 # 5. OS & SYSTEM JUNK
 # Windows
 Thumbs.db
-desktop.ini
+
 $RECYCLE.BIN/
 
 # Archives

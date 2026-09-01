@@ -1,122 +1,30 @@
-# Core behavior
-*                   text=auto
+﻿CHANGELOG.md merge=union
+* text=auto
+*.png binary
+*.rtf binary
+*.sh text eol=lf
 
-# Windows shell and PowerShell
-*.bat               text eol=crlf
-*.cmd               text eol=crlf
-*.ps1               text eol=crlf
-*.psm1              text eol=crlf
-*.psd1              text eol=crlf
-*.ps1xml            text eol=crlf
-*.psc1              text eol=crlf
-*.pssc              text eol=crlf
-*.psrc              text eol=crlf
-*.cdxml             text eol=crlf
-*.sh                text eol=lf
+# Copilot Recommendations
+###############################################################################
+# Line endings
+* text=auto
+*.ps1     text eol=crlf
+*.psm1    text eol=crlf
+*.psd1    text eol=crlf
+*.ps1xml  text eol=crlf
+*.cdxml   text eol=crlf
+*.pssc    text eol=crlf
+*.rdp     text eol=crlf
+Desktop.ini text eol=crlf
 
-# Windows UTF-16/Unicode files
-*.rdp               text working-tree-encoding=UTF-16LE-BOM eol=crlf
-*.reg               text
-*.rc                text eol=crlf
-*.sql               text eol=crlf
-desktop.ini         text
+###############################################################################
+# Encodings
+*.ps1     working-tree-encoding=UTF-8
+*.psm1    working-tree-encoding=UTF-8
+*.psd1    working-tree-encoding=UTF-8
+*.ps1xml  working-tree-encoding=UTF-8
+*.cdxml   working-tree-encoding=UTF-8
+*.pssc    working-tree-encoding=UTF-8
 
-# Source, config, and notes
-*.json              text eol=lf
-*.xml               text
-*.yaml              text
-*.yml               text
-*.md                text
-*.txt               text
-*.css               text
-*.js                text
-*.ts                text
-*.ipynb             text
-*.canvas            text
-*.excalidraw        text
-*.opf               text
-
-# Git and project metadata
-*.sln                  text eol=crlf
-.git-blame-ignore-revs text
-.git-credentials       text
-.gitattributes         text
-.gitconfig*            text
-.gitignore             text
-.gitignore_global      text
-.gitkeep               text
-.gitmailmap            text
-.gitmodules            text
-.gitproxy              text
-.lesshst               text
-CHANGELOG.md           merge=union
-
-# Cloud office shortcuts
-*.gdoc              text eol=lf
-*.gsheet            text eol=lf
-*.gslides           text eol=lf
-*.gdraw             text eol=lf
-*.gtable            text eol=lf
-*.protondoc         text eol=lf
-
-# Git LFS managed binaries
-*.iso               filter=lfs diff=lfs merge=lfs -text
-*.wim               filter=lfs diff=lfs merge=lfs -text
-*.esd               filter=lfs diff=lfs merge=lfs -text
-*.vhd               filter=lfs diff=lfs merge=lfs -text
-*.vhdx              filter=lfs diff=lfs merge=lfs -text
-*.avhdx             filter=lfs diff=lfs merge=lfs -text
-
-*.epub              filter=lfs diff=lfs merge=lfs -text
-*.mobi              filter=lfs diff=lfs merge=lfs -text
-*.azw3              filter=lfs diff=lfs merge=lfs -text
-*.cb?               filter=lfs diff=lfs merge=lfs -text
-*.pdf               filter=lfs diff=lfs merge=lfs -text
-*.calibre-data      filter=lfs diff=lfs merge=lfs -text
-*.zip               filter=lfs diff=lfs merge=lfs -text
-*.7z                filter=lfs diff=lfs merge=lfs -text
-*.cr2               filter=lfs diff=lfs merge=lfs -text
-*.cr3               filter=lfs diff=lfs merge=lfs -text
-*.nef               filter=lfs diff=lfs merge=lfs -text
-*.arw               filter=lfs diff=lfs merge=lfs -text
-*.dng               filter=lfs diff=lfs merge=lfs -text
-
-# Binary assets and executables
-*.jpg               binary
-*.png               binary
-*.gif               binary
-*.bmp               binary
-*.ico               binary
-*.webp              binary
-*.xmp               text
-
-*.exe               binary
-*.dll               binary
-*.msi               binary
-*.sys               binary
-
-# Office, CAD, and design formats
-*.docx              diff=word
-*.xlsx              diff=excel
-*.pptx              diff=powerpoint
-*.vsdx              diff=visio
-*.odt               diff=odt
-*.ods               diff=odt
-*.odp               diff=odt
-
-*.doc               binary
-*.xls               binary
-*.ppt               binary
-*.vsd               binary
-*.mpp               binary
-*.pub               binary
-*.dwg               binary
-*.dxf               binary
-*.psd               binary
-*.ai                binary
-*.indd              binary
-
-# Windows themes
-*.theme             text eol=crlf
-*.themepack         filter=lfs diff=lfs merge=lfs -text
-*.desktopthemepack  filter=lfs diff=lfs merge=lfs -text
+*.rdp     working-tree-encoding=UTF-16LE
+Desktop.ini working-tree-encoding=UTF-16LE
