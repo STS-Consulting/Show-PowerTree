@@ -1,0 +1,5 @@
+# Default owners for everything in the repo. The owners will be requested for review when someone opens a pull request.
+*   STS.Consulting@hotmail.com
+
+# Code owners for workflow files - require review for changes to workflows
+.github/workflows/* STS.Consulting@hotmail.com

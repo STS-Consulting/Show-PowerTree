@@ -1,0 +1,243 @@
+---
+applyTo: '**/*.ps1, **/*.ps1xml, **/*.psc1, **/*.psd1, **/*.psm1, **/*.pssc, **/*.psrc, **/*.cdxml, **/*.prf, **/*.psh, **/*.ps2, **/*.ps2xml, **/*.psc2'
+description: 'Comprehensive PowerShell 7.6+ development guidance, Microsoft cmdlet guidelines, CBH/manifest specifications, Authenticode rules, and universal refactoring contract.'
+version: '2609.11.1930'
+---
+
+# PowerShell Development Guidelines
+
+Consolidated, authoritative guidance for authoring, modifying, and reviewing PowerShell code in **STS-Consulting/PowerShell**. This document focuses on security, maintainability, idiomatic PowerShell patterns, and strict adherence to Microsoft cmdlet development standards.
+
+---
+
+## 1. Quick Contract & Mandatory Completion Gate
+
+### What to Produce
+- **Inputs:** Function name, parameters, purpose, pipeline requirements, and environment constraints.
+- **Outputs:** Advanced functions or script modules following PowerShell community standards, comprehensive Comment-Based Help, strict validation, and structured object emissions.
+- **Success Criteria:** Zero syntax errors, passes PSScriptAnalyzer, follows approved verbs, and complies with all rules below.
+
+### Universal Refactoring & Completion Contract
+Treat this section as **fail-closed**. Do not report completion until every check passes:
+1. **Scope:** Apply all requested changes across every in-scope script. Do not leave partial updates.
+2. **Parameters:** Prefer explicit named parameters for cmdlet calls unless positional form is explicitly intended.
+3. **Native Syntax:** Use native PowerShell commands and idioms. Never use bash/sh syntax in PowerShell scripts.
+4. **No Backticks:** Do not use backtick (`` ` ``) line continuation. Use splatting (`@params`) or natural pipeline breaks.
+5. **Pipeline Item:** Use `$PSItem` in pipelines instead of `$_`.
+6. **Error Handling:** Do not use empty catch blocks. Always provide targeted error handling with actionable context.
+7. **Variable Quality:** Use descriptive names. Clean up unused variable assignments introduced during refactoring.
+8. **Output Hygiene:** Never output visual separator lines (e.g., `Write-Information "----------------"`).
+```powershell
+Get-ChildItem -Path .\Scripts\*.ps1 -File | ForEach-Object {
+    $tokens = $null; $errors = $null
+    [void][System.Management.Automation.Language.Parser]::ParseFile($PSItem.FullName, [ref]$tokens, [ref]$errors)
+    "{0}: ParseErrors={1}" -f $PSItem.Name, $errors.Count
+}
+```
+
+---
+
+## 2. Output and Stream Hygiene
+
+### Strict `Write-Host` and `Read-Host` Prohibition
+- **Never use `Write-Host`. Period.**
+- **Never use `Read-Host`. Period.**
+- Use PowerShell streams for operational messaging:
+  - `Write-Information`: Informational messages (with `-InformationAction Continue` where appropriate)
+  - `Write-Verbose`: Detailed diagnostic messages for `-Verbose` runs
+  - `Write-Debug`: Low-level state inspection for debugging
+  - `Write-Warning`: Non-fatal warning messages
+  - `Write-Error`: Non-terminating errors
+- **Interactive Prompts:** Use `ShouldProcess` and `ShouldContinue` for user confirmation. Never build custom CLI prompt loops or multiple-choice console menus.
+- **Message Formatting:**
+  - Do not create messages with a colon immediately after a variable name (`"$var:"` is forbidden; use `"$var"` or `"$PSItem"`).
+  - Do not embed literal line breaks (`\n` or `` `n ``) inside operational stream messages.
+
+```powershell
+# Recommended: Operational Stream
+Write-Information -MessageData "$PSItem ($($module.Version))" -InformationAction Continue
+
+# Avoid (Anti-Pattern): Write-Host and variable followed immediately by colon
+# Write-Host "$moduleName: ($($module.Version))"
+```
+
+---
+
+## 3. Style and Formatting
+
+- **Brace Style:** One True Brace Style (OTBS) — opening brace on the same line, closing brace on a new line.
+- **Indentation:** 4 spaces consistently (never tabs).
+- **Casing:**
+  - `PascalCase` for function names, parameter names, cmdlets, and public variables.
+  - `camelCase` for private or local script variables.
+- **Line Length:** Do not enforce arbitrary line truncation. Allow the editor's word-wrap to manage visual layout on modern displays.
+- **Quotes & Dashes:** Use straight quotes (`'` or `"`) and standard hyphens (`-`). Never emit smart quotes or em/en dashes.
+- **Code Folding (#region):** Use `#region <Description>` and `#endregion` to logically organize blocks (e.g. Helper Functions, Core Execution, Parameter Definition).
+- **Unicode & NerdFonts:** Save all files as **UTF-8 with BOM**. Prefer extended Unicode glyphs (e.g. `…`, `‽`, `󱤹`) over emojis in documentation and messages. Never use glyphs in code identifiers.
+
+---
+
+## 4. Code Signing and Authenticode
+
+- **Respect Signatures:** Cryptographic signatures must be respected. When modifying signed files, remove outdated signatures.
+- **Never Fabricate Signatures:** **NEVER generate, mock, or hallucinate an Authenticode signature block.** Cryptographic signatures can only be generated by genuine cryptographic signing tools (`Set-AuthenticodeSignature`) using valid certificates.
+- **Sign After Verification:** Scripts are signed in CI/CD after automated verification and linting pass.
+- **Applies to all PowerShell assets:** `.ps1`, `.psm1`, `.psd1`, and `.ps1xml`.
+
+---
+
+## 5. Comment-Based Help and Script Metadata
+
+### Mandatory Function Comment-Based Help (CBH)
+Every public or reusable function must include a complete CBH block before or immediately inside the function body containing at minimum:
+- `.SYNOPSIS`: Concise, one-line summary.
+- `.DESCRIPTION`: Detailed technical description and operational behavior.
+- `.PARAMETER <Name>`: Document every parameter defined in the `param()` block.
+- `.INPUTS`: Explicitly define .NET types accepted via the pipeline (or `None`).
+- `.OUTPUTS`: Explicitly define .NET types emitted (or `None`).
+- `.NOTES`: Technical execution details, operational gotchas, or unique runtime requirements. **Never duplicate Author, Copyright, or License in `.NOTES` that already exist in the parent script/module manifest.**
+
+### Standalone Scripts (`.ps1`)
+Every standalone script must feature a complete `<#PSScriptInfo ... #>` metadata header:
+
+```powershell
+<#PSScriptInfo
+.VERSION 2609.11.1900
+.GUID FD777A6E-BBC1-4F86-A4FC-EE0E7989372A
+.AUTHOR Scott T Surber
+.COMPANYNAME STS Consulting
+.COPYRIGHT CC BY-NC-SA 󱤹 2026 By STS
+.TAGS Storage, Optimization, Maintenance
+.LICENSEURI https://creativecommons.org/licenses/by-nc-sa/4.0/
+.PROJECTURI https://github.com/STS-Consulting/PowerShell
+.ICONURI    https://github.com/STS-Consulting/PowerShell/raw/monad/Resources/STS.Consulting.png
+.EXTERNALMODULEDEPENDENCIES
+.REQUIREDMODULES @()
+.RELEASENOTES Initial release.
+.PRIVATEDATA
+#>
+```
+
+### Module Manifests (`.psd1`)
+Module manifests must be created and maintained with full metadata keywords. Do not emit truncated or skeletal manifests. Explicitly define `CompatiblePSEditions = @('Core', 'Desktop')`, `PowerShellVersion = '7.6'`, and complete `PrivateData.PSData` tags and URLs.
+
+---
+
+## 6. Parameter Design and Validation
+
+- **Approved Verbs:** Always use approved verbs from `Get-Verb` (`Get`, `Set`, `New`, `Remove`, `Update`, `Invoke`, `Test`, `Sync`, etc.).
+- **Singular Nouns:** Use singular nouns for function names (e.g. `Get-EnterpriseAsset`, not `Get-EnterpriseAssets`).
+- **Standard Parameter Names:** Align with standard cmdlet parameter names (`Path`, `LiteralPath`, `Name`, `Filter`, `Credential`, `Force`, `PassThru`).
+- **Validation Attributes:** Always declare parameter types and boundaries:
+  - `[ValidateNotNullOrEmpty()]`
+  - `[ValidateSet('OptionA', 'OptionB')]`
+  - `[ValidateRange(1, 100)]`
+  - `[ValidatePattern('^[A-Z]{3}-\d{4}$')]`
+- **Switch Parameters:** Use `[switch]` for boolean flags. Never create parameters expecting `$true` or `$false`.
+- **ShouldProcess & Force Pairing:** If a function specifies `[CmdletBinding(SupportsShouldProcess = $true)]`, it **must** provide a `[switch]$Force` parameter to allow automated execution without prompting.
+
+---
+
+## 7. Pipeline and Object Handling
+
+- **Emit Structured Objects:** Emit `[PSCustomObject]` or strongly typed .NET objects. Never emit raw unstructured string messages intended as data.
+- **Pipeline Processing Lifecycle:**
+```powershell
+function Invoke-PipelineSample {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline = $true)]
+        [psobject]$InputObject
+    )
+    begin {
+        # Initialize buffers or connections once
+    }
+    process {
+        # Process each pipelined object ($PSItem or $InputObject)
+    }
+    end {
+        # Clean up or flush aggregate output
+    }
+    clean {
+        # Tear down unmanaged resources if supported
+    }
+}
+```
+- **Pipeline Attributes:** Use `ValueFromPipeline = $true` and `ValueFromPipelineByPropertyName = $true` where appropriate.
+
+---
+
+## 8. Error Handling and Safety
+
+- **Terminating vs Non-Terminating Errors:**
+  - Non-terminating: Call `$PSCmdlet.WriteError(...)` when an individual item fails but the command should continue processing subsequent pipeline items.
+  - Terminating: Use `throw` or `$PSCmdlet.ThrowTerminatingError(...)` when a critical prerequisite fails.
+- **Try-Catch Blocks:**
+  - Catch specific exception types where possible (e.g. `catch [System.IO.IOException]`).
+  - Access error details via `$PSItem.Exception.Message`.
+  - Never suppress errors with an empty `catch { }` block without documented justification.
+
+---
+
+## 9. Security Guidelines
+
+- **Credential Management:** Never store plain-text passwords or tokens. Use `[PSCredential]` objects or retrieve secrets dynamically using `Microsoft.PowerShell.SecretManagement`.
+- **Path Sanitization:** Use `Resolve-Path` or `[System.IO.Path]::GetFullPath()` to guard against directory traversal attacks.
+- **Execution Boundaries:** Restrict file access to authorized workspace paths.
+
+---
+
+## 10. Performance Optimization
+
+- **String Building:** When concatenating strings inside loops, use `[System.Text.StringBuilder]` instead of string `+=`.
+- **Collection Growth:** Use `[System.Collections.Generic.List[object]]` with `.Add()` instead of array `+=`, which reallocates the array on every element.
+- **Streaming Over Caching:** Process items through the pipeline in `process { }` rather than reading massive datasets into memory with `@(...)`.
+
+---
+
+## 11. Complete Compliant Cmdlet Example
+
+```powershell
+function Convert-EpochToDateTime {
+    <#
+    .SYNOPSIS
+        Converts a Unix epoch timestamp into a standard PowerShell DateTime object.
+    .DESCRIPTION
+        Accepts a 10-digit (seconds) or 13-digit (milliseconds) integer representation of a Unix timestamp
+        and converts it to local or UTC time. It validates input boundaries to prevent overflow errors.
+    .PARAMETER EpochTimestamp
+        The raw integer timestamp value parsed from API responses or log exports.
+    .PARAMETER UseUtc
+        Forces the output DateTime object to reflect Coordinated Universal Time (UTC).
+    .INPUTS
+        System.Int64. You can pipe Unix epoch integers directly into this parameter.
+    .OUTPUTS
+        System.DateTime. Emits an object representing the exact point in time.
+    .NOTES
+        Execution requires a minimum framework tier of .NET Standard 2.0 / CoreCLR execution.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]
+        [ValidateRange(0, 253402300799)]
+        [int64]$EpochTimestamp,
+
+        [Parameter(Mandatory = $false)]
+        [switch]$UseUtc
+    )
+
+    process {
+        try {
+            $dateObject = [DateTimeOffset]::FromUnixTimeSeconds($EpochTimestamp)
+
+            if ($UseUtc) {
+                $dateObject.UtcDateTime
+            } else {
+                $dateObject.LocalDateTime
+            }
+        } catch {
+            $PSCmdlet.WriteError($PSItem)
+        }
+    }
+}
+```

@@ -1,0 +1,63 @@
+name: Sign and Publish PowerShell Scripts
+on:
+
+  workflow_dispatch:
+    push:
+        branches:
+            - monad
+            - main
+            - master
+
+permissions:
+  contents: read
+
+jobs:
+    sign-and-publish:
+        runs-on: windows-latest
+        permissions:
+            contents: read
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup PowerShell
+              uses: actions/setup-powershell@v2
+
+            - name: Install PowerShell PSGallery modules
+              shell: pwsh
+              run: |
+                  # Ensure Publish-Script is available (PowerShellGet)
+                  Install-Module -Name PowerShellGet -Force -Scope CurrentUser -AllowClobber -ErrorAction SilentlyContinue
+                  # Install SecretManagement modules so the runner can retrieve secrets
+                  Install-Module -Name Microsoft.PowerShell.SecretManagement -Force -Scope CurrentUser -ErrorAction SilentlyContinue
+                  Install-Module -Name Microsoft.PowerShell.SecretStore -Force -Scope CurrentUser -ErrorAction SilentlyContinue
+
+            - name: Configure SecretStore and seed PFX password
+              shell: pwsh
+              env:
+                  CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
+              run: |
+                  # Initialize SecretStore non-interactively with default password
+                  Import-Module Microsoft.PowerShell.SecretStore -Force
+                  Import-Module Microsoft.PowerShell.SecretManagement -Force
+                  if (-not (Get-SecretStoreConfiguration -ErrorAction SilentlyContinue)) {
+                    # Initialize with a blank password and allow promptless use for this ephemeral runner
+                    Initialize-SecretStore -Password (ConvertTo-SecureString -String '' -AsPlainText -Force) -Scope CurrentUser -Force -SkipPassword
+                  }
+                  # If CERT_PASSWORD is provided as a repo secret, store it under the name 'CERT_PASSWORD_SECRET'
+                  if ($env:CERT_PASSWORD) {
+                    $secure = ConvertTo-SecureString -String $env:CERT_PASSWORD -AsPlainText -Force
+                    Set-Secret -Name 'CERT_PASSWORD_SECRET' -Secret $secure -Force
+                  }
+
+            - name: Run Sign-And-Publish
+              shell: pwsh
+              env:
+                  CERT_PFX_BASE64: ${{ secrets.CERT_PFX_BASE64 }}
+                  CERT_PASSWORD_SECRET_NAME: "CERT_PASSWORD_SECRET"
+                  PSREPO_API_KEY: ${{ secrets.PSREPO_API_KEY }}
+              run: |
+                  $script = '${{ github.workspace }}\Scripts\ci\Sign-And-Publish.ps1'
+                  Write-Host "Invoking $script"
+                  & pwsh -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $script -Path '${{ github.workspace }}' -Verbose

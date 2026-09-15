@@ -1,0 +1,34 @@
+name: Pester Unit Tests
+on:
+
+  workflow_dispatch:
+  push:
+    branches: [ monad ]
+  pull_request:
+    branches: [ monad ]
+
+permissions:
+  contents: read
+
+jobs:
+  tests-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PowerShell
+        uses: actions/setup-powershell@v2
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          Install-Module -Name Pester -Force -Scope CurrentUser -SkipPublisherCheck
+
+      - name: Run Pester tests (runner)
+        shell: pwsh
+        run: |
+          Write-Host 'Running Pester unit tests via runner script'
+          $runner = Join-Path ${{ github.workspace }} 'tests\Unit\RunAllTests.ps1'
+          if (-not (Test-Path $runner)) { Write-Host 'No test runner found' ; exit 0 }
+          & $runner

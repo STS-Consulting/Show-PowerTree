@@ -1,180 +1,135 @@
 # Show-PowerTree
 
-A modern replacement for the `tree` command that lets you explore directory structures and Windows Registry with detailed information and advanced filtering possibilities.
+![STS Logo](https://github.com/STS-Consulting/Show-PowerTree/raw/monad/Resources/STS.Consulting.png)
 
-[![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/Show-PowerTree)](https://www.powershellgallery.com/packages/Show-PowerTree)
-[![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/Show-PowerTree)](https://www.powershellgallery.com/packages/Show-PowerTree)
-![License](https://img.shields.io/github/license/spaansba/PowerTree)
-![Platform](https://img.shields.io/badge/platform-windows%20%7C%20macOS%20%7C%20linux-blue)
-![PowerShell Version](https://img.shields.io/badge/PowerShell-7.0%2B-blue)
+PowerShell 7.6 module providing rich graphical tree views and directory visualizations in the terminal.
 
-## Preview Videos
+![Maturity: Experimental](https://img.shields.io/badge/maturity-experimental-yellow)
+![Development: Active](https://img.shields.io/badge/development-active-blue)
+![Support: Limited](https://img.shields.io/badge/support-limited-yellow)
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](LICENSE.md)
 
-<details>
-<summary>🎥 File System Explorer Demo</summary>
-https://github.com/user-attachments/assets/3fbe8eb4-0844-4df8-925a-0608e391be17
-</details>
-<details>
-<summary>🗂️ Registry Explorer Demo</summary>
-https://github.com/user-attachments/assets/f95b4eb9-72ce-48db-aeca-0b16e81b14bf
-</details>
+## Table of Contents
 
-## What is PowerTree?
+- [Read Me](#readme)
+- [Governance](#governance)
+- [AI Policy](#ai-policy)
+- [Authors](#authors)
+- [Accessibility](#accessibility)
+  - [Accessibility Challenge template](#accessibility-challenge-template)
+- [Support](#support)
+- [Code Owners](#code-owners)
+- [Changelog](#changelog)
+- [Code of Conduct](#code-of-conduct)
+  - [Conduct Report template](#conduct-report-template)
+- [Contributing](#contributing)
+  - [Pull Request template](#pull-request-template)
+- [Contributors](#contributors)
+- [Acknowledgments](#acknowledgments)
+- [License](#license)
+- [Security](#security)
+  - [Security Notification template](#security-notification-template)
 
-Show-PowerTree is a comprehensive tree visualization tool that provides two main capabilities:
+## Read Me
 
-- **File System Explorer**: A modern alternative to the traditional `tree` command with advanced filtering, sorting, and display options
-- **Registry Explorer**: Windows Registry visualization in tree format (Windows only)
+This document.
 
-Unlike standard tree commands, Show-PowerTree offers detailed information display, multiple sorting options, filtering capabilities, and customizable configuration.
+![Maturity: Experimental](https://img.shields.io/badge/maturity-experimental-yellow)
 
-## Installation
+## Governance
 
-From [PowerShell Gallery](https://www.powershellgallery.com/packages/PowerTree):
+See [Governance](.github/GOVERNANCE.md) for details on how this project is governed.
 
-```powershell
-Install-Module Show-PowerTree
-```
+## AI Policy
 
-# Commands
+See [AI Policy](.github/AI_POLICY.md) for our guidelines, human accountability standards, and disclosure requirements regarding Artificial Intelligence (AI) usage in this project.
 
-## Show-PowerTree <sup><sub>Alias: `ptree`, `PowerTree`</sub></sup>
+> **"A computer can never be held accountable, therefore a computer must never make a management decision."**
+>
+>           - 1979 IBM internal training manual and presentation.
 
-A modern replacement for the tree command that lets you explore directory structures with detailed information and advanced filtering possibilities. Explore all available parameters and advanced features in the [full documentation](documentation/Show-PowerTree.md).
+## Authors
 
-### Example Images
+Authored by **Scott T Surber** (<STS.Consulting@hotmail.com>).
 
-<details>
-  <summary>File system with sizes sorted by size descending</summary>
-  <br>
+Spell checking and code improvements by various LLM / AI.
 
-```powershell
-Show-PowerTree -DisplaySize -Descending -SortBySize
-```
+See [Authors](.github/AUTHORS.md).
 
-  <img src="./images/Size_SortSize_Desc.JPG" alt="PowerTree with file sizes sorted by size">
-</details>
+## Accessibility
 
-<details>
-  <summary>All display options with name sorting</summary>
-  <br>
+We are committed to digital accessibility and making this project inclusive for everyone, including people using assistive technologies such as screen readers, keyboard navigation, and voice control. In alignment with guidance from [The A11Y Project](https://www.a11yproject.com/) and [WCAG 2.2 Level AA](https://www.w3.org/TR/WCAG22/), this repository and its documentation are developed with accessibility in mind.
 
-```powershell
-Show-PowerTree -DisplayAll -Descending -SortByName
-```
+Accessibility is an ongoing commitment. While we strive to adhere to established guidelines and eliminate barriers, accessibility issues may still exist. If you encounter any accessibility barriers or have suggestions for improvement, please [open an accessibility challenge](https://github.com/STS-Consulting/Show-PowerTree/issues/new?template=accessibility-challenge.md) to let us know.
 
-  <img src="./images/All_Display_Options.JPG" alt="PowerTree with all display options">
-</details>
+### Accessibility Challenge Template
 
-<details>
-  <summary>File size filtering</summary>
-  <br>
+See [Accessibility Challenge template](.github/ISSUE_TEMPLATE/accessibility-challenge.md) for reporting accessibility barriers and challenges.
 
-```powershell
-Show-PowerTree -FileSizeMinimum "1kb" -DisplaySize
-```
+## Support
 
-  <img src="./images/File_Size_Minimum.JPG" alt="PowerTree with file size filtering">
-</details>
+![Support: Limited](https://img.shields.io/badge/support-limited-yellow)
 
-<details>
-  <summary>Directory only view</summary>
-  <br>
+[Healthy expectations in open source](https://www.donmccurdy.com/2023/07/03/expectations-in-open-source/)
 
-```powershell
-Show-PowerTree -DirectoryOnly -DisplaySize
-```
+See [Support](.github/SUPPORT.md) for how to file issues and get help.
 
-  <img src="./images/Directory_Only.JPG" alt="PowerTree directory only view">
-</details>
+## Code Owners
 
-## Show-PowerTreeRegistry <sup><sub>Alias: `ptreer`, `PowerRegistry`</sub></sup>
+See [Code Owners](.github/CODEOWNERS.md) for responsibility.
 
-Shows Windows Registry keys and values in tree format. Displays both registry keys and their values, making it easy to see the structure of any registry hive or specific key. Explore all available parameters and advanced features in the [full documentation](documentation/Show-PowerTreeRegistry.md).
+## Changelog
 
-### Example Images
+See [Changelog](.github/CHANGELOG.md) for the latest updates. This project adheres to **Calendar Versioning (yyMM.dd.HH00 or yyMM.dd.HHmm - e.g., $exampleVer)**.
 
-<details>
-    <summary>Default Registry View</summary>
-    <br>
-  
-```powershell
-PowerRegistry HKLM:\SOFTWARE\ 
-```
- <br>
-    <img src="./images/Registry_Default.JPG" alt="Default PowerTree Registry View">
-</details>
+## Code of Conduct
 
-<details>
-    <summary>Filtered Registry View</summary>
-    <br>
-  
-```powershell
-PowerRegistry HKLM:\SOFTWARE\ -DisplayItemCounts -Exclude "*data*" -l 2 -UseRegistryDataTypes
-```
- <br>
-    <img src="./images/Registry_Filtered.JPG" alt="Filtered PowerTree Registry View">
-</details>
+We are committed to a welcoming community. See [Code of Conduct](.github/CODE_OF_CONDUCT.md).
 
-## Edit-PowerTreeConfiguration <sup><sub>Alias: `Edit-PowerTree`, `Edit-ptree`</sub></sup>
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-3.0-4baaaa.svg)](.github/CODE_OF_CONDUCT.md)
 
-Opens the configuration file to change default settings. Set which directories to always exclude, default sorting, and tree display style. Explore all available parameters and advanced features in the [full documentation](documentation/Edit-PowerTreeConfiguration.md).
+### Conduct Report Template
 
-## Common Use Cases
-
-### System Administration
-
-```powershell
-# Find large files consuming disk space
-Show-PowerTree -DisplaySize -SortBySize -Descending -FileSizeMinimum 100MB
-
-# Document directory structure for compliance
-Show-PowerTree -DisplayAll -OutFile system_audit.txt
-
-# Audit installed software and versions
-Show-PowerTreeRegistry -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall" -Depth 2 -OutFile "output.txt"
-```
-
-### Development Workflows
-
-```powershell
-# Exclude build artifacts and show only source files
-Show-PowerTree -ExcludeDirectories bin,obj,node_modules -IncludeExtensions cs,js,ts
-
-# Check project structure and sizes
-Show-PowerTree -DisplaySize -ExcludeDirectories .git,.vs -Depth 3
-
-# Export project documentation
-Show-PowerTree -IncludeExtensions md,txt -OutFile project_docs.txt
-```
-
-## Documentation
-
-For detailed parameter references and advanced usage examples:
-
-- **[Show-PowerTree](documentation/Show-PowerTree.md)**
-- **[Show-PowerTreeRegistry](documentation/Show-PowerTreeRegistry.md)**
-- **[Edit-PowerTreeConfiguration](documentation/Edit-PowerTreeConfiguration.md)**
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Author
-
-Created by Bart Spaans
+See [Conduct Report template](.github/CONDUCT_REPORT_TEMPLATE.md) for reporting code of conduct incidents.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+We welcome contributions! See [Contributing](.github/CONTRIBUTING.md) and our [AI Policy](.github/AI_POLICY.md).
 
-### Upcoming Features
+### Pull Request Template
 
-- Git integration (automatic .gitignore exclusion)
-- Export function signatures from JavaScript/TypeScript files
-- Access Control List (ACL) display options
-- Enhanced registry data type visualization
+See [Pull Request template](.github/PULL_REQUEST_TEMPLATE.md) for submitting pull requests.
 
-## Media
+## Contributors
 
-Florian Burnel created a great article about PowerTree which you can read [here](https://www.it-connect.fr/powershell-visualisez-arborescence-de-vos-donnees-avec-powertree/) (in French)
+See [Contributors](.github/CONTRIBUTORS.md) for the list of people who have contributed.
+
+## Acknowledgments
+
+One person can make a difference.
+
+See [Acknowledgments](.github/ACKNOWLEDGMENTS.md).
+
+## License
+
+This work is licensed under a
+[Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License][cc-by-nc-sa].
+
+See [License](LICENSE.md).
+
+[![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
+
+[![CC BY-NC-SA 4.0][cc-by-nc-sa-image]][cc-by-nc-sa]
+
+[cc-by-nc-sa]: http://creativecommons.org/licenses/by-nc-sa/4.0/
+[cc-by-nc-sa-image]: https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png
+[cc-by-nc-sa-shield]: https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg
+
+## Security
+
+See [Security](.github/SECURITY.md) for our security policy.
+
+### Security Notification Template
+
+See [Security Notification template](.github/SECURITY_NOTIFICATION_TEMPLATE.md) for reporting security issues.
+

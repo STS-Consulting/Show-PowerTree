@@ -1,0 +1,97 @@
+name: Validate Instructions & Prompts
+
+on:
+  push:
+    paths:
+      - '.github/instructions/**'
+      - '.github/prompts/**'
+      - '.github/copilot-instructions.md'
+  pull_request:
+    paths:
+      - '.github/instructions/**'
+      - '.github/prompts/**'
+      - '.github/copilot-instructions.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-yaml-frontmatter:
+    name: Validate Frontmatter & Syntax
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Validate Instructions Frontmatter
+        shell: pwsh
+        run: |
+          $instructions = Get-ChildItem -Path .github/instructions/*.instructions.md
+          $failed = $false
+
+          foreach ($file in $instructions) {
+              $content = Get-Content -Path $file.FullName -Raw
+              if ($content -notmatch '(?s)^---\r?\n(.*?)\r?\n---') {
+                  Write-Error "File $($file.Name) is missing valid YAML frontmatter"
+                  $failed = $true
+                  continue
+              }
+
+              $frontmatter = $matches[1]
+              if ($frontmatter -notmatch 'description:\s*.+') {
+                  Write-Error "File $($file.Name) frontmatter missing 'description'"
+                  $failed = $true
+              }
+              if ($frontmatter -notmatch 'applyTo:\s*.+') {
+                  Write-Error "File $($file.Name) frontmatter missing 'applyTo'"
+                  $failed = $true
+              }
+              if ($frontmatter -notmatch 'version:\s*.+') {
+                  Write-Error "File $($file.Name) frontmatter missing 'version'"
+                  $failed = $true
+              }
+              Write-Information "Validated $($file.Name)" -InformationAction Continue
+          }
+
+          $prompts = Get-ChildItem -Path .github/prompts/*.prompt.md
+          foreach ($file in $prompts) {
+              $content = Get-Content -Path $file.FullName -Raw
+              if ($content -notmatch '(?s)^---\r?\n(.*?)\r?\n---') {
+                  Write-Error "File $($file.Name) is missing valid YAML frontmatter"
+                  $failed = $true
+                  continue
+              }
+
+              $frontmatter = $matches[1]
+              if ($frontmatter -notmatch 'version:\s*.+') {
+                  Write-Error "File $($file.Name) frontmatter missing 'version'"
+                  $failed = $true
+              }
+              Write-Information "Validated prompt $($file.Name)" -InformationAction Continue
+          }
+
+          if ($failed) {
+              throw "One or more instruction or prompt files failed validation."
+          }
+
+      - name: Validate PowerShell Snippets
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem -Path .github/instructions/*.md
+          $totalSnippets = 0
+
+          foreach ($file in $files) {
+              $content = Get-Content -Path $file.FullName -Raw
+              $matches = [regex]::Matches($content, '```powershell\r?\n(.*?)\r?\n```', 'Singleline')
+              foreach ($m in $matches) {
+                  $code = $m.Groups[1].Value
+                  $tokens = $null; $errors = $null
+                  [void][System.Management.Automation.Language.Parser]::ParseInput($code, [ref]$tokens, [ref]$errors)
+                  if ($errors.Count -gt 0) {
+                      Write-Warning "$($file.Name): Code block has $($errors.Count) parse warning/errors (verify if intentional snippet)"
+                  }
+                  $totalSnippets++
+              }
+          }
+          Write-Information "Validated $totalSnippets PowerShell snippets." -InformationAction Continue

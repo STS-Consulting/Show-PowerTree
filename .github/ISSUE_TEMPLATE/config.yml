@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Questions & Discussions 💬
+    url: https://github.com/STS-Consulting/PowerShell/discussions
+    about: Please use GitHub discussions for questions or broad proposals.
+  - name: Repository Documentation 📚
+    url: https://github.com/STS-Consulting/PowerShell/tree/monad/Documentation
+    about: Review project documentation, standards, and architecture guides.
