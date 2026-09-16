@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to **Calendar Versioning (yyMM.dd.HH00 or yyMM.dd.HHmm - e.g., $exampleVer)**.
+and this project adheres to **Calendar Versioning (YYYY.MM.DD.HHmm - e.g., $exampleVer)**.
 
 ## Unreleased
 

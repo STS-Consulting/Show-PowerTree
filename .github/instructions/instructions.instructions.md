@@ -1,7 +1,7 @@
 ---
 description: 'Guidelines for creating high-quality custom instruction files for GitHub Copilot'
 applyTo: '**/*.instructions.md'
-version: '2609.11.1930'
+version: '2026.09.11.1930'
 ---
 
 # Custom Instructions File Guidelines
@@ -24,7 +24,7 @@ Every instruction file must include YAML frontmatter with the following fields:
 ---
 description: 'Brief description of the instruction purpose and scope'
 applyTo: 'glob pattern for target files (e.g., **/*.ps1, **/*.Tests.ps1)'
-version: '2609.11.1930'
+version: '2026.09.11.1930'
 ---
 ```
 
@@ -36,7 +36,7 @@ version: '2609.11.1930'
   - Multiple patterns: `'**/*.ps1, **/*.psm1, **/*.psd1'`
   - Specific directories: `'.github/workflows/*.yml'`
   - All files: `'**'`
-- **version**: Single-quoted string following the STS timestamp format `'YYMM.DD.HHMM'` (e.g. `'2609.11.1930'`). Required on all instruction and prompt documents to track revisions and enable deterministic CI auditing.
+- **version**: Single-quoted string following the STS timestamp format `'YYYY.MM.DD.HHmm'` (e.g. `'2026.09.11.1930'`). Required on all instruction and prompt documents to track revisions and enable deterministic CI auditing.
 
 ## File Structure
 

@@ -1,7 +1,7 @@
 ---
 applyTo: '**/*.Tests.ps1, **/tests/**/*.ps1'
 description: 'PowerShell Pester v5 testing best practices, mocking patterns, assertions, and Behavior-Driven Development (BDD) with Gherkin.'
-version: '2609.11.1930'
+version: '2026.09.11.1930'
 ---
 
 # PowerShell Pester v5 Testing Guidelines

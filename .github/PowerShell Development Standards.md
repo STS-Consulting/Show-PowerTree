@@ -1,5 +1,5 @@
 ---
-version: '2609.11.1930'
+version: '2026.09.11.1930'
 ---
 
 ## PowerShell Development Standards
@@ -31,7 +31,7 @@ version: '2609.11.1930'
     # Script module or binary module associated with this manifest.
     RootModule = 'MyAutomationModule.psm1'
     # Version number of this module.
-    ModuleVersion = '2605.20.1800'
+    ModuleVersion = '2026.05.20.1800'
     # Supported PSEditions
     CompatiblePSEditions = @('Core', 'Desktop')
     # ID used to uniquely identify this module
@@ -110,7 +110,7 @@ version: '2609.11.1930'
 
 ```powershell
 <#PSScriptInfo
-.VERSION 2605.20.1800
+.VERSION 2026.05.20.1800
 .GUID FD777A6E-BBC1-4F86-A4FC-EE0E7989372A
 .AUTHOR Scott T Surber
 .COMPANYNAME STS Consulting

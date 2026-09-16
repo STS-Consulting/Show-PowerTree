@@ -1,7 +1,7 @@
 ---
 description: 'Guidelines for localizing markdown documents'
 applyTo: '**/*.md'
-version: '2609.11.1930'
+version: '2026.09.11.1930'
 ---
 
 # Guidance for Localization

@@ -1,5 +1,5 @@
 ---
-version: '2609.11.0846'
+version: '2026.09.11.0846'
 ---
 
 # GitHub Copilot Repository Instructions
@@ -98,6 +98,6 @@ Contextual instructions are automatically loaded by GitHub Copilot based on acti
 
 
 ### Versioning Specification (Calendar Versioning - CalVer)
-- **Strict Requirement:** All releases, module manifests, git tags, changelog entries, and instruction headers strictly adhere to **Calendar Versioning (CalVer)** using yyMM.dd.HH00 or yyMM.dd.HHmm (e.g., $exampleVer).
+- **Strict Requirement:** All releases, module manifests, git tags, changelog entries, and instruction headers strictly adhere to **Calendar Versioning (CalVer)** using YYYY.MM.DD.HHmm (e.g., $exampleVer).
 - **Prohibition:** Semantic Versioning (SemVer / MAJOR.MINOR.PATCH) is **strictly prohibited**.
 

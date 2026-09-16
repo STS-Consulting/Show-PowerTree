@@ -2,7 +2,7 @@
 description: 'Audit PowerShell scripts against STS Universal Refactoring Contract and completion gate'
 mode: 'agent'
 tools: ['fetch', 'edit_file']
-version: '2609.11.1930'
+version: '2026.09.11.1930'
 ---
 
 # Audit PowerShell Script Compliance

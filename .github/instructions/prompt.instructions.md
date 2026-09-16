@@ -1,7 +1,7 @@
 ---
 description: 'Guidelines for creating high-quality prompt files for GitHub Copilot'
 applyTo: '**/*.prompt.md'
-version: '2609.11.1930'
+version: '2026.09.11.1930'
 ---
 
 # Copilot Prompt Files Guidelines
@@ -14,7 +14,7 @@ Instructions for creating effective and maintainable prompt files that guide Git
 - Primary references: VS Code documentation on prompt files and organization-specific conventions.
 
 ## Frontmatter Requirements
-- Include `description` (single sentence, actionable outcome), `mode` (explicitly choose `ask`, `edit`, or `agent`), `tools` (minimal set of tool bundles required to fulfill the prompt), and `version` (STS timestamp string, e.g. `'2609.11.1930'`).
+- Include `description` (single sentence, actionable outcome), `mode` (explicitly choose `ask`, `edit`, or `agent`), `tools` (minimal set of tool bundles required to fulfill the prompt), and `version` (STS timestamp string, e.g. `'2026.09.11.1930'`).
 - Declare `model` when the prompt depends on a specific capability tier; otherwise inherit the active model.
 - Preserve any additional metadata (`language`, `tags`, `visibility`, etc.) required by your organization.
 - Use consistent quoting (single quotes recommended) and keep one field per line for readability and version control clarity.

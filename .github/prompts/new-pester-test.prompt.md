@@ -2,7 +2,7 @@
 description: 'Generate comprehensive Pester v5 test fixtures and mocks for a PowerShell cmdlet'
 mode: 'agent'
 tools: ['fetch', 'edit_file']
-version: '2609.11.1930'
+version: '2026.09.11.1930'
 ---
 
 # Generate Pester v5 Test Suite

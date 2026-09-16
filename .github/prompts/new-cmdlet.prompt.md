@@ -2,7 +2,7 @@
 description: 'Scaffold a production-grade PowerShell 7.6+ advanced function following STS-Consulting standards'
 mode: 'agent'
 tools: ['fetch', 'edit_file']
-version: '2609.11.1930'
+version: '2026.09.11.1930'
 ---
 
 # Scaffold New PowerShell Cmdlet

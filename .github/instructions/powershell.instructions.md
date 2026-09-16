@@ -1,7 +1,7 @@
 ---
 applyTo: '**/*.ps1, **/*.ps1xml, **/*.psc1, **/*.psd1, **/*.psm1, **/*.pssc, **/*.psrc, **/*.cdxml, **/*.prf, **/*.psh, **/*.ps2, **/*.ps2xml, **/*.psc2'
 description: 'Comprehensive PowerShell 7.6+ development guidance, Microsoft cmdlet guidelines, CBH/manifest specifications, Authenticode rules, and universal refactoring contract.'
-version: '2609.11.1930'
+version: '2026.09.11.1930'
 ---
 
 # PowerShell Development Guidelines
@@ -102,7 +102,7 @@ Every standalone script must feature a complete `<#PSScriptInfo ... #>` metadata
 
 ```powershell
 <#PSScriptInfo
-.VERSION 2609.11.1900
+.VERSION 2026.09.11.1900
 .GUID FD777A6E-BBC1-4F86-A4FC-EE0E7989372A
 .AUTHOR Scott T Surber
 .COMPANYNAME STS Consulting

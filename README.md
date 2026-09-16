@@ -80,7 +80,7 @@ See [Code Owners](.github/CODEOWNERS.md) for responsibility.
 
 ## Changelog
 
-See [Changelog](.github/CHANGELOG.md) for the latest updates. This project adheres to **Calendar Versioning (yyMM.dd.HH00 or yyMM.dd.HHmm - e.g., $exampleVer)**.
+See [Changelog](.github/CHANGELOG.md) for the latest updates. This project adheres to **Calendar Versioning (YYYY.MM.DD.HHmm - e.g., $exampleVer)**.
 
 ## Code of Conduct
 

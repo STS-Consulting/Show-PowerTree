@@ -1,7 +1,7 @@
 ---
 applyTo: '.github/workflows/*.yml'
 description: 'Comprehensive guide for building robust, secure, and efficient CI/CD pipelines using GitHub Actions. Covers workflow structure, jobs, steps, environment variables, secret management, caching, matrix strategies, testing, and deployment strategies.'
-version: '2609.11.1930'
+version: '2026.09.11.1930'
 ---
 
 # GitHub Actions CI/CD Best Practices
