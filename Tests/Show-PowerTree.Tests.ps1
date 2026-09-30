@@ -1,4 +1,4 @@
-
+﻿
 
 Describe 'Show-PowerTree Module' {
     BeforeAll {
@@ -21,11 +21,17 @@ Describe 'Show-PowerTree Module' {
         }
     }
 
+    Context 'Configuration' {
+        It 'Returns preferred PowerTree.config.json as first path' {
+            $paths = & (Get-Module -Name Show-PowerTree) { Get-ConfigurationPaths }
+            $paths | Should -Not -BeNullOrEmpty
+            $firstPath = $paths[0]
+            $firstPath | Should -Match '(\\|\/)\.PowerTree(\\|\/)PowerTree\.config\.json$'
+        }
+    }
+
     Context 'Execution' {
         It 'Show-PowerTree Runs Without Error' {
-            # We use a small depth to avoid long output, and expect it to run
-            # We can't easily mock the console output here without more complex mocking,
-            # but we can ensure it doesn't throw.
             { Show-PowerTree -Depth 0 } | Should -Not -Throw
         }
     }
@@ -34,8 +40,8 @@ Describe 'Show-PowerTree Module' {
 # SIG # Begin signature block
 # MIIcRAYJKoZIhvcNAQcCoIIcNTCCHDECAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCC14q8P7eRbgtsb
-# f0WyJDseDiqwtQHmlahmC0hNQpWEJqCCFnYwggM4MIICIKADAgECAhBq68etXxgs
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAdG+vYmQbkmi48
+# W8mBmrluwuGP51WyAtHeSE/UbUdWAqCCFnYwggM4MIICIKADAgECAhBq68etXxgs
 # l0IzUnGnriXYMA0GCSqGSIb3DQEBCwUAMDQxMjAwBgNVBAMMKUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjYwOC4zMC4yMTM5MB4XDTI2MDgzMTA0MjkyNFoX
 # DTI3MDgzMTA0NDkyNFowNDEyMDAGA1UEAwwpQXV0aGVudGljb2RlIENvZGVTaWdu
@@ -159,28 +165,28 @@ Describe 'Show-PowerTree Module' {
 # dGljb2RlIENvZGVTaWduaW5nQ2VydCAyNjA4LjMwLjIxMzkCEGrrx61fGCyXQjNS
 # caeuJdgwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
 # ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgAxqM1B0i55x97E1RcR9SBUnGlB/C
-# +80eyvlRRv2cL38wDQYJKoZIhvcNAQEBBQAEggEAn69Y3L53lstjNfgw6d3wtpIy
-# GGdjzJHu8Wth49A70S69tkT4GPsr+wXIqecg8ty6XMzmHF0npp/TbizbNmqa1y7K
-# CJpxpas2PQw/FxRNRsg092ff304FnUFrM5H1UMPoiU2SjiChOJK0NmNxsRNdlv17
-# 5UqKvi4vXMegKeMUK2hv6gTDTRQynztDQN/qvbXqO5cpVAsiIhOPuWMFEnSWv+3X
-# fe5cO811Yu/uGKSrzk5evhqnfqwPZyfmH8zG3ZUNWWlSQTRjhd4jYfXdeuwkcLNk
-# TRqY/RSGWHi2h9RqLUjuUqRHMdXv9GaYVaKwUaYbjZMnCXRU7xRCo2PXedS1EKGC
+# KwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgCvlmZ4Whslg49SbIEC/0RqIT9NJm
+# 6s4CmiLy2GkETN4wDQYJKoZIhvcNAQEBBQAEggEAM54qTkFKLplyo2KtojzJtQk2
+# urOYmUWrmL7ix8RU20fq6o+o1nXDyaOev/Cu1yMK5pqXumTvDYkp0bS7Sa/7miTI
+# jvopTmV9kSJ6nca3ZadGEUGVqsCwckXQCfDhMXDqIwN9KUjYEcblub4aRM4FIX93
+# UyiPXDa/6mB78gU1FR+L34vwLFOosVyvreQi3RPzkiFU1ICv+b+Jj/gz4oPWnlZQ
+# b7mF1C5x4FWoWSY5W+BuRTomSm5cQgFeeHIgegVNkkfFa1ZGUaOGojliidiFfMm9
+# izXTpQNZE/CCOkuWaZY8QGDtXcQO7nTN0ZXrYWFaW4Rc6ejy6mLe/CYcJlgRIqGC
 # AyYwggMiBgkqhkiG9w0BCQYxggMTMIIDDwIBATB9MGkxCzAJBgNVBAYTAlVTMRcw
 # FQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFBMD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3Rl
 # ZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5NiBTSEEyNTYgMjAyNSBDQTECEAhP3DNP
 # fkVO28MPj/mSGDUwDQYJYIZIAWUDBAIBBQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZI
-# hvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNjA5MTkwNjIwMjBaMC8GCSqGSIb3DQEJ
-# BDEiBCAFTuzubLFZ9UdLx1Y4/nTAuer08ZjZg8zMXiJvfL+f/TANBgkqhkiG9w0B
-# AQEFAASCAgBwgQnDxS3P8fZ3Z7/6bGX3HCmyUGERZvXApv3M/nE4hjDGONguslUf
-# fhu0R80olqUuryGI6M+D0gF8sKo1js8HTEFy6d6Ohy0rvE7vDwC+Gl3ybOCs/U7R
-# IumFD0Nx8x4tiQ1xNwIDHX1TUmWQ7AWPQmdXpGqMyuMiIDVcwNo+v7LsimS3Hubd
-# xY1eoFtyXM/ORpVsT8UamJ9WJ1mP+1NKmOo4i2fGzPrc+SL7dNqajWoGmts9hcux
-# OHraACR0t+Ccm8rVxzVWXXEy5Tn4POyOKNLJwBxpCExNDNmAUW+O/SQZw9KsnPQQ
-# NTweLkxcgjyodwww7NZBUUdu5UWgPTF2FHVOr8szGADfbk4vNm/LJHROfLYLmoEB
-# wf5/rJ6TiiSp9+/sM3kWSsIOQt9eTrTf2lMfiUK6LR6QjFFnE9We67hv/8E6GG86
-# Xq751B/a0pRbVhWGFCu7vUtZXly1r5c96XmqdgcXBWGVyiOu+UCWLYux2T3UZ40I
-# Oyx08gOK7bDHm9nZJtuOoIIfGdyZYrWxBilemAYeMNOd8aiWefTX/0xdtPb8hqNX
-# VyRUf4MWY4b3W1CyCQyj2Gph/2LS4ifADQA2QExjUkw7b2c30RNzEOQFojjDzC80
-# xWkiwweL+k206L0foHanAntmTLkgzZ/E8UL6dj/kHRWDjakIoXp7HA==
+# hvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNjA5MzAwMTE3MjFaMC8GCSqGSIb3DQEJ
+# BDEiBCAGId4oDS8lTF3Z8Mv6xaWiU9uyTTrhsaM4+uZwIYWJIDANBgkqhkiG9w0B
+# AQEFAASCAgBhpS3AtIOtvYmnYyLFUgp6Yo7MhF9GD8GFEC3nln8GRiwqdnYXnYeL
+# V0yubB0FJL8VR7H7d3yeUxrGNF896/pBdjVQZxRie45rh270G/pKhmquRZPNmSqA
+# +hi+qZvNIJKpC2ur0QBR00wjJ+9j1PqE0aW9aS+fcmNSgdxdw6HQCByxe82uIDXw
+# T5+MTV/1e2Y8Ck5MiyI3vXVkByyN6EIyR8D0nBG3SHuWczxbM93bKaNEt7ZUUd5s
+# hZN6tRRd89lGYYVIVK0yRPmsEl1Gy4L3b+j9hCdHfDGguNSm2pl3Txb6luiLdGPB
+# 18WVUG+OeVkOyRBrRD6a/ZjILDx3pM7voJUL//iFyxUXGnL6TRv4KS5XQZApqq15
+# tZilSfLvBLhz4yFBQi53ysd2a5hFOW2zDNrFdnZfU4dV/8xgOwmDZgvV373RIr4h
+# eBLOUT6YRDWddH+SlbZ1PAbCugSpR3h6KpOXn+DYB7TcK2499ydKGbO5kNC90QEo
+# gnqhMrdGDBFiKp4Vi4zywozBWhMqk7JHPCb4khPJIswmNkPXxT2f2WzWgO5Y5cAm
+# /bc7apMLaghU1GDJfYJNCBebBebdMtwqJkuWppu3inM1/nekIQKByuL3Ay3vaYf0
+# IjaGa+ihaqAvSOnMEuv+QnqvLjKQeNnM+gXrdGuUxDB92RN8ajDYlw==
 # SIG # End signature block

@@ -1,6 +1,26 @@
-function Initialize-ConfigurationFile {
+﻿function Initialize-ConfigurationFile {
     [CmdletBinding()]
     param()
+
+    if ($IsWindows -or $null -eq $IsWindows) {
+        $configurationDirectory = Join-Path -Path $env:USERPROFILE -ChildPath '.PowerTree'
+    } else {
+        $configurationDirectory = Join-Path -Path $env:HOME -ChildPath '.PowerTree'
+    }
+
+    $preferredPath = Join-Path -Path $configurationDirectory -ChildPath 'PowerTree.config.json'
+    $legacyPath = Join-Path -Path $configurationDirectory -ChildPath 'config.json'
+
+    # Check for legacy migration: if PowerTree.config.json doesn't exist, but legacy config.json exists
+    if (-not (Test-Path -Path $preferredPath) -and (Test-Path -Path $legacyPath)) {
+        try {
+            Copy-Item -Path $legacyPath -Destination $preferredPath -Force
+            Write-Verbose -Message "Migrated legacy configuration from $legacyPath to $preferredPath"
+            return
+        } catch {
+            Write-Warning "Failed to migrate legacy configuration file: $PSItem"
+        }
+    }
 
     $configurationPaths = Get-ConfigurationPaths
     $existingConfiguration = $configurationPaths | Where-Object { Test-Path $PSItem } | Select-Object -First 1
@@ -11,23 +31,15 @@ function Initialize-ConfigurationFile {
     }
 
     # No configuration file exists, create one
-    if ($IsWindows -or $null -eq $IsWindows) {
-        $configurationDirectory = Join-Path -Path $env:USERPROFILE -ChildPath '.PowerTree'
-    } else {
-        $configurationDirectory = Join-Path -Path $env:HOME -ChildPath '.PowerTree'
-    }
-
     if (-not (Test-Path -Path $configurationDirectory)) {
         New-Item -Path $configurationDirectory -ItemType Directory -Force | Out-Null
         Write-Verbose -Message "Created directory: $configurationDirectory"
     }
 
-    $configurationPath = Join-Path -Path $configurationDirectory -ChildPath 'config.json'
-
     try {
         $defaultConfiguration = Get-DefaultConfiguration
-        $defaultConfiguration | ConvertTo-Json -Depth 4 | Out-File -FilePath $configurationPath -Encoding utf8
-        Write-Verbose -Message "Created new configuration file at: $configurationPath"
+        $defaultConfiguration | ConvertTo-Json -Depth 4 | Out-File -FilePath $preferredPath -Encoding utf8
+        Write-Verbose -Message "Created new configuration file at: $preferredPath"
     } catch {
         Write-Warning "Failed to create configuration file: $PSItem"
     }
@@ -36,8 +48,8 @@ function Initialize-ConfigurationFile {
 # SIG # Begin signature block
 # MIIcRAYJKoZIhvcNAQcCoIIcNTCCHDECAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDR5MqLZeMnuceU
-# DyKcPdqzBQj+fOwSsBR6lYUF72iI9aCCFnYwggM4MIICIKADAgECAhBq68etXxgs
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDeVxsBdHh6XFJr
+# 0xoBkf8C4YYaZwgmUMCb28m61gGvMaCCFnYwggM4MIICIKADAgECAhBq68etXxgs
 # l0IzUnGnriXYMA0GCSqGSIb3DQEBCwUAMDQxMjAwBgNVBAMMKUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjYwOC4zMC4yMTM5MB4XDTI2MDgzMTA0MjkyNFoX
 # DTI3MDgzMTA0NDkyNFowNDEyMDAGA1UEAwwpQXV0aGVudGljb2RlIENvZGVTaWdu
@@ -161,28 +173,28 @@ function Initialize-ConfigurationFile {
 # dGljb2RlIENvZGVTaWduaW5nQ2VydCAyNjA4LjMwLjIxMzkCEGrrx61fGCyXQjNS
 # caeuJdgwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
 # ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgsow4Arpe3fVa8R8xrwIbBvax4SQZ
-# n8aFlebTuHDHibswDQYJKoZIhvcNAQEBBQAEggEAJ8PV2kmek51ImFs8F3ru5kIl
-# qyrzCReki5c92EhRH+GC6AfP2P48nVghhDZV5lurgoiS/rJVCfhg8udir2igq64h
-# ecjNh6bNlxBBrn7AloFZMPzoF00JhNBg9GP3HQ+xuKW4lCSBhUvRiHwFp/JgBqLs
-# GQuIbMlrW1aG1B2xZ//vb7eeFGOrHiR7AubMryhR4GlI+P+tRGa6oJhswjCuSUef
-# 4FBhx+dIPPJKuTVln5g4Adgmau0DNfWzp1qrRvZ9tDAFBo3iiZmm1h7b7tCcnt1E
-# MrBSo4ZWE9bq5n3rH/OKQRs0tqxtCeVofwYqLddKxbZ5P6TdVaLMMw2GWWxI1KGC
+# KwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgQYf/5qGvDCJpbZJZc+LNtWwUDu5Z
+# Y1qxVkh3hH0/gf0wDQYJKoZIhvcNAQEBBQAEggEAq1LmSGqmdHvEw0tZYhj0qLzF
+# Nxc4CEQtBW+h00cLwKhS/OoLa6bp1Ho5GIUgWs9wjBVBofX9dz8VX4P0YctduqYw
+# aVLvUZS20tAvwdL0antuzNIDK1eJh4F52qrqNmjygPdXvZXjh+rcWV9+9vUnvSPW
+# +vs4vaLLqnC94DbLOOTWU+hPSYBcseTB1aAhiRRRWZxWOPfm0JifMzwAhdQh0yS5
+# W3W0ii7CGgecBzaWf+c5Gow0VxiNzX67JDs7waJWsBxaXyL6StVcRkmTuBy35Qi1
+# mSQtIK6gRSC1RBZ30FU/Vp0LNHzANP/wcc9gfPZ/D6HYs4vhYc8MMyOuxWKbUKGC
 # AyYwggMiBgkqhkiG9w0BCQYxggMTMIIDDwIBATB9MGkxCzAJBgNVBAYTAlVTMRcw
 # FQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFBMD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3Rl
 # ZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5NiBTSEEyNTYgMjAyNSBDQTECEAhP3DNP
 # fkVO28MPj/mSGDUwDQYJYIZIAWUDBAIBBQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZI
-# hvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNjA5MTkwNjIwMDdaMC8GCSqGSIb3DQEJ
-# BDEiBCCyixb/N8CZ0xAPLuQJjqdT7YI3vFh2gHM/pj8gasIcKTANBgkqhkiG9w0B
-# AQEFAASCAgA2fEXaMmNzUJ0g+bSUJhIdwfdMy4UjBnTm/DbkSeiVWRTPo84iBYjo
-# y01es7ol4cc3XXZM3qa8IjrMVEGkn1+yOjBiZ+IiMHn3dC+O4lJdROlWPMB3mOvp
-# +iYbVT0hf+mQwx8Ovl4pbU+lQxCbwHYLM+cnMgYUYVigidCRjQm9qcYxKNLl7BcC
-# dTNrfKMb8kyVndz2fcIm/X5BUqjlRBzMoXnuJm8R/2J2eUZkPB6u7iBjQE7JaxFE
-# JyEGnfZ1bIpqlVkWD2FlLW6GkaQWUgOqRF7p70fkMQtcjTacmJvM2jS0pNi+E38Q
-# Yn8OJakBV4mOGbjJk4ddxiJcmGcjJuUosaz+EQE6t1vVLz+QF9wdJaSxLs2Ubv1P
-# +bPSD23eKuDawzb5ztXKEPgTqD6IdRT8EARD/vqXO1q5xr5n780gSjwuBHg8Bixo
-# KK0Xqg4RVCKpdvCB/zsJVdzsTtSJw6s3XgwQ63Zu57Vibh4xlbwWP3eO/PZ4TxqY
-# u8PyFNpJB6dsE61guscAoctxmLxeO8BOcnWxueQD20t6jsm4X89YEdxeuSMYOaCs
-# WKK4+fu+ZHyOrVaEQWZB3+vVA+1xnzASieZIsBlkFfyHbjcYBwhjmZTigdE2isg9
-# xDmyvDOhzs3rJnXvbbQS0PfNJ/hxHv2tElbMoM4yrYwXTmqSTuS0dA==
+# hvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNjA5MzAwMTE3MDhaMC8GCSqGSIb3DQEJ
+# BDEiBCCR9gXBBJ0vEiZvBMGA9zoHUDGR3U6WVXCgtnIVzIL8IzANBgkqhkiG9w0B
+# AQEFAASCAgCW7ozEOPEk5BOxBI6N+KVc4PXF5a2KksNg33I1fVTpUhPINjRxRbVx
+# 6MqTEhzqFsy4EQPdQBzA0OgmpxhdhgmwKhKO3GBzUW86Dc0tBq8chRVhRyFvKpR0
+# m5iP/FcThADnkldjN44irJ/snfeBrqw4hgyDbHX/IgmG7/H7169HU6OKxqLOIXob
+# dEYIupjP8Sei60iOS6+opHo2VMzEmeE6CB4uTR9RJWsMBq5AzALOMPVgbv6O/0W1
+# bqhjqK9c3+0MjnzDRJRzEJylbwAsCl9Co4NgH+lpqQaB2SGBlHJurY4njOTGfiTR
+# Gi9ihLsAP/qB4rdTBugb/MrmNv67DqC7zzMvYb9xdMQmUIrnL+jTyepF77JSaNaa
+# xTodoT9S6/C6VQvqGfFPZ0BJ1UJNNWaRXkYhCEYAJ+MqbkQ9nyj77llyPIkHf7KB
+# K16SXD7Sb7ZBfTVvDQgt9n5pkXJzyq9O4JAC/NDgiDK+3Mc+00++ywThBZq+lpGF
+# Vc4VDNkQaC/mbvMVM5kqMymipfblytD/cJXcubagJl7KhnC0n38DYDgDb7amweH8
+# EF7YmBWwK+o5hef6jNG2SQkgOKwOjpoQwWP4I6Rp2s0KmnAn93E+5mYrw6Kz58sK
+# 9aMafgiP9Z+F1l3XlX9WkE+T4NLooZ3Ka0qojkmz9dh77PyILs7uuA==
 # SIG # End signature block

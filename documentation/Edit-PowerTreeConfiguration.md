@@ -35,8 +35,8 @@ Opens the PowerTree configuration file in the default editor. If no configuratio
 
 **Configuration File Location:**
 
-- **Windows:** `$env:USERPROFILE\.PowerTree\config.json`
-- **macOS/Linux:** `$HOME/.PowerTree/config.json`
+- **Windows:** `$env:USERPROFILE\.PowerTree\PowerTree.config.json`
+- **macOS/Linux:** `$HOME/.PowerTree/PowerTree.config.json`
 
 **Default Editor Behavior:**
 

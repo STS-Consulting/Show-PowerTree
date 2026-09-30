@@ -1,4 +1,4 @@
-function Write-ConfigurationToHost {
+﻿function Write-ConfigurationToHost {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
@@ -31,7 +31,7 @@ function Write-ConfigurationToHost {
 
         Microsoft.PowerShell.Utility\Write-Information -MessageData "$headerColor`Configuration$resetColor" -InformationAction Continue
         Microsoft.PowerShell.Utility\Write-Information -MessageData "$headerColor$($lineStyle * 13)$resetColor" -InformationAction Continue
-        Write-Verbose -Message 'Some settings might be sourced from the configuration file (.config.json)'
+        Write-Verbose -Message 'Some settings might be sourced from the configuration file (PowerTree.config.json)'
 
         # Display configuration data
         foreach ($configurationLine in $configurationData) {
@@ -41,7 +41,7 @@ function Write-ConfigurationToHost {
         # Fallback to plain text if PSStyle is somehow missing (though unlikely in PS 7.5+)
         Microsoft.PowerShell.Utility\Write-Information -MessageData 'Configuration' -InformationAction Continue
         Microsoft.PowerShell.Utility\Write-Information -MessageData ($lineStyle * 13) -InformationAction Continue
-        Write-Verbose -Message 'Some settings might be sourced from the configuration file (.config.json)'
+        Write-Verbose -Message 'Some settings might be sourced from the configuration file (PowerTree.config.json)'
 
         # Display configuration data
         foreach ($configurationLine in $configurationData) {
@@ -55,8 +55,8 @@ function Write-ConfigurationToHost {
 # SIG # Begin signature block
 # MIIcRAYJKoZIhvcNAQcCoIIcNTCCHDECAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCf5SDpruToeQE6
-# TsmMltWTf8ii/nWQQ1/hHkKCFxLByaCCFnYwggM4MIICIKADAgECAhBq68etXxgs
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAJJGKQFZA6VEyJ
+# x3cHtr+2gcQUET0YT3dckynOLcZDR6CCFnYwggM4MIICIKADAgECAhBq68etXxgs
 # l0IzUnGnriXYMA0GCSqGSIb3DQEBCwUAMDQxMjAwBgNVBAMMKUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjYwOC4zMC4yMTM5MB4XDTI2MDgzMTA0MjkyNFoX
 # DTI3MDgzMTA0NDkyNFowNDEyMDAGA1UEAwwpQXV0aGVudGljb2RlIENvZGVTaWdu
@@ -180,28 +180,28 @@ function Write-ConfigurationToHost {
 # dGljb2RlIENvZGVTaWduaW5nQ2VydCAyNjA4LjMwLjIxMzkCEGrrx61fGCyXQjNS
 # caeuJdgwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
 # ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgoqCHDUrrfypopKCOIB45mf2Y6yCw
-# /gTwAFAF6+0V6/gwDQYJKoZIhvcNAQEBBQAEggEAH0GoYr3wBtoXlJfMGOPvKw8Y
-# 6suQE8vFEBM78d8HJihO00jTAW9s/f5fgZPyolnGmepli8l3Rb9tCdLEuF6ox3fr
-# pQ1x80gMMfe40quO78gJV7bxZK0advAQW/rUtMrfrX9n/3fG9tIvPkGgEOvG8r6x
-# qBRIYorWW2T93P/VBgxgISL6lA83ln7VOjNXr/5DtGU/D0DQbfeZw53xcZoEGyEy
-# 9mzt2stLgOPScOe3h825qOjFvab+2/Fkwn1n7RvPCVGPkoGJU3vRYMDZau/Fr3Nn
-# fYQPHThSZs3FmDYXfXNsa7JRyI9VhrYaJrgUdyDLLTvvC+MTOUSdsAUSJPRwUqGC
+# KwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgT8dDtcO3a1hEEDVyaNLxr/3LQfPz
+# z917djgtNUrVGCwwDQYJKoZIhvcNAQEBBQAEggEAWuBRcish5P1HoRV/IddHksG7
+# Le+Wnb0xNpc4rRYEuHMCj1Pgil5Tgchnr0O+mG/W34I1RX4lWT8vZMWlkBe3ZqI8
+# tN4PtLq19NSJDsQ/Z4v5jnxGeVjkKNvIopYKDG7KaQwGGdt1FBafIkE4gqDhAb2J
+# y9vq/hSuc9l9J7o7b+5P8lMlzuRU0cYSgQQ7E9zje/t4jrMXTrC+IFih0Ac0nVQN
+# J+4vhd2FM4yBcXmwvASS/HGm5djU59gPBdo9S49lCdVGoSnrCRzE1r8OC4Cbttpt
+# q7gm4ZvNxGr/KVt7F9X2A2v1NUv/3BDtwJPvicFXMzvi7fzKSM74l3Ipd7O6qqGC
 # AyYwggMiBgkqhkiG9w0BCQYxggMTMIIDDwIBATB9MGkxCzAJBgNVBAYTAlVTMRcw
 # FQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFBMD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3Rl
 # ZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5NiBTSEEyNTYgMjAyNSBDQTECEAhP3DNP
 # fkVO28MPj/mSGDUwDQYJYIZIAWUDBAIBBQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZI
-# hvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNjA5MTkwNjIwMDhaMC8GCSqGSIb3DQEJ
-# BDEiBCC0zpbjFEIx3GXrwnrl6v6MH7RMo87D2HeMKX0uW5IOnDANBgkqhkiG9w0B
-# AQEFAASCAgBoOV7mDm+PeD4cN4WV5wMxnh997AWZO+VTJFz8seTx7ZAG8hLfpXNg
-# z2EQ3M1ddTTlLVWN6QJYiwECiUzqg620imYgonRvyjzQ3O6Jj9YT2jaj/Kxf7exM
-# aM9RkUYZI6PDsBe/OapMfP9TP0oPtUvokkpgl8RReWLVWoNh9ZEsLIkJ8Q0/Z/S4
-# dsfUaJI+TIcdhfyv60GCJoEYU0mWvFiStOF2x2OOHUco2LeynKjVEHhbju+AUA//
-# +rXEU48YHv3FTyFrKFV5AYCSbMbptLtX4g/8GktZWdxz1M/eEo2hD3pFu50QdaNc
-# UkhCV3dbgXgF4DwO3da4nMbAmH/EGHPpr9/zGZs3Zcvg+NJpvIUsiDw8vZklPReA
-# gB3UDpxJ6K4c/pyXZKG0x2lNvlMombhsY/O5TDznvgtG+nTO78c0mfxKYoaCc+Mp
-# BCOGj7IcFX5+LMvDhqV1BC+f9t1OX05Te5Gjn1/7W8QWVBr9IaFVtkDWARXycxT6
-# UhXy3HFX6m89HI5PF0gLhM/dPzexkMwyi3FLKaZdwTTY2NW6HYu3S7mdgcmjXMbx
-# sJASHGMEMk2wsvLDhIm2Qs+mtqGcLPjzmmlLDWirAr55HzuGd72p7iASfO7NZa2w
-# jVaAg2AE2R+DBM0X5iCOyGEmCgVz4cU5vA2OtcFkk0io1us7ndZEZA==
+# hvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNjA5MzAwMTE3MDlaMC8GCSqGSIb3DQEJ
+# BDEiBCBO4VUkASCytl5IWvUnubFskm7DGe//dkW6l/R+YymxdDANBgkqhkiG9w0B
+# AQEFAASCAgBcg98FcdQRo5KXZO0PXTYtJVYCQFUomNuCVJm0eu9FGV2kceQBkJjU
+# iEYjs/VxtLgjrbE8NVbXLQbJdz4a26XPmhREKUGLNTISVGDQi9xRXgYM6Gv4bhui
+# 5uhm+IFVF4zEoC+nhlILhyKq/7H1k7e7etbis/rG8bjw1D1LtVjXbcWbpZsM6L3O
+# nnW8FMCj1/E8MM16jFa3Lr1en/KjTcwHnnwKILC9p+3z9hX1Q/lczRF72wP9+gOM
+# GPti6PHFgpoQ1hBNselbTSLxWkJdIdlsOLfSln5j/f+hHIwqk2rFvF8bFHelsLY/
+# nDVHxSPmYczf/9RFcSfe5N676usPQkzq6deskFo4XW6oLL0cVYIIxxI4T0PEJnry
+# TtE4vhYK5Yc3GYP9tmBkApzbtpc+zWxneE1zyfHYAIzcVCbXlVdIYUVK4gBg/H/B
+# vHIwzeqBqjcuJvPUBF+5kkXSwtLVM2ByucYu0e6SaOXVvgJJmLEG3jmfi7ROv67i
+# 0cR6cvLKjN+ryU4fWHXRAJ13UUQdJxo0fJ6x4lhBrtlGwumtmqiao+Uq/zfyA+N8
+# D2CM/E3dv/gV3S8DyHs3C6OlpQIiABXiD7gOCE7oMfdRweECpP20CXW69kSY3O7Q
+# tR7BXbb5Y/CCR2XGI9yjCSk3IXSi9ZC7nAe8Xpyizd8Z9P/D4kXm0Q==
 # SIG # End signature block

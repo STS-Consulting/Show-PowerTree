@@ -1,18 +1,37 @@
-function Edit-PowerTreeConfiguration {
+﻿function Edit-PowerTreeConfiguration {
     <#
     .SYNOPSIS
         Opens the PowerTree configuration file in the default editor.
 
     .DESCRIPTION
         The Edit-PowerTreeConfiguration cmdlet (alias 'Edit-PowerTree', 'Edit-Ptree') finds or creates the
-        'config.json' configuration file for PowerTree and opens it. If the file does not exist, it creates a default one.
+        'PowerTree.config.json' configuration file for PowerTree and opens it. If the file does not exist, it creates a default one.
 
     .EXAMPLE
         Edit-PowerTreeConfiguration
-        Opens the local or user-profile configuration file (config.json).
+        Opens the local or user-profile configuration file (PowerTree.config.json).
     #>
     [CmdletBinding()]
     param()
+
+    if ($IsWindows -or $null -eq $IsWindows) {
+        $configurationDirectory = Join-Path -Path $env:USERPROFILE -ChildPath '.PowerTree'
+    } else {
+        $configurationDirectory = Join-Path -Path $env:HOME -ChildPath '.PowerTree'
+    }
+
+    $preferredPath = Join-Path -Path $configurationDirectory -ChildPath 'PowerTree.config.json'
+    $legacyPath = Join-Path -Path $configurationDirectory -ChildPath 'config.json'
+
+    # Check for legacy migration: if PowerTree.config.json doesn't exist, but legacy config.json exists
+    if (-not (Test-Path -Path $preferredPath) -and (Test-Path -Path $legacyPath)) {
+        try {
+            Copy-Item -Path $legacyPath -Destination $preferredPath -Force
+            Microsoft.PowerShell.Utility\Write-Information -MessageData "$($PSStyle.Foreground.Cyan)Migrated legacy configuration from $legacyPath to: $preferredPath$($PSStyle.Reset)" -InformationAction Continue
+        } catch {
+            Write-Warning "Failed to migrate legacy configuration file: $PSItem"
+        }
+    }
 
     $configurationPaths = Get-ConfigurationPaths
     $existingConfiguration = $configurationPaths | Where-Object { Test-Path $PSItem } | Select-Object -First 1
@@ -20,18 +39,12 @@ function Edit-PowerTreeConfiguration {
     if ($existingConfiguration) {
         $configurationPath = $existingConfiguration
     } else {
-        if ($IsWindows -or $null -eq $IsWindows) {
-            $configurationDirectory = Join-Path -Path $env:USERPROFILE -ChildPath '.PowerTree'
-        } else {
-            $configurationDirectory = Join-Path -Path $env:HOME -ChildPath '.PowerTree'
-        }
-
         if (-not (Test-Path -Path $configurationDirectory)) {
             New-Item -Path $configurationDirectory -ItemType Directory -Force | Out-Null
             Microsoft.PowerShell.Utility\Write-Information -MessageData "$($PSStyle.Foreground.Cyan)Created directory: $configurationDirectory$($PSStyle.Reset)" -InformationAction Continue
         }
 
-        $configurationPath = Join-Path -Path $configurationDirectory -ChildPath 'config.json'
+        $configurationPath = $preferredPath
     }
 
     $configurationExists = Test-Path -Path $configurationPath
@@ -88,8 +101,8 @@ function Edit-PowerTreeConfiguration {
 # SIG # Begin signature block
 # MIIcRAYJKoZIhvcNAQcCoIIcNTCCHDECAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBqOxYdv4NGozMQ
-# rK23YqDxE5Up4oIJK8EkT/EFg0bQmaCCFnYwggM4MIICIKADAgECAhBq68etXxgs
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAHg+RlRorjPLzL
+# rCmDmZTBZiDMXtJdchcErQ4S5s2O4aCCFnYwggM4MIICIKADAgECAhBq68etXxgs
 # l0IzUnGnriXYMA0GCSqGSIb3DQEBCwUAMDQxMjAwBgNVBAMMKUF1dGhlbnRpY29k
 # ZSBDb2RlU2lnbmluZ0NlcnQgMjYwOC4zMC4yMTM5MB4XDTI2MDgzMTA0MjkyNFoX
 # DTI3MDgzMTA0NDkyNFowNDEyMDAGA1UEAwwpQXV0aGVudGljb2RlIENvZGVTaWdu
@@ -213,28 +226,28 @@ function Edit-PowerTreeConfiguration {
 # dGljb2RlIENvZGVTaWduaW5nQ2VydCAyNjA4LjMwLjIxMzkCEGrrx61fGCyXQjNS
 # caeuJdgwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKA
 # ADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYK
-# KwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgh8bIDpBEgZ4u518JRORVVTP+F3At
-# hQZu+funGkq1c5MwDQYJKoZIhvcNAQEBBQAEggEAhfpy6HxiC0sHurRalg7VOMza
-# +BDBK+Kt6g2muhL7O5KOolBy5GGqWXn9s4CgaT+wY/X1K3V6dUHPJeRTE/ECRuoi
-# dkOB+ENACVGBJtEW1UtSj812YNIIZ0+p5uRpNX4xA5XMHAMhepVsyFoMrp8Li+pn
-# x+QJqJ8RAMv+o1N1O7WOXuTcWHl6f/8L5wiUgz/2FECabKRlMyuOPQ1rJcbdlnfx
-# 0AGT/Vvp1yJVZhMOfeLHmwdmY1munbvuPGQI+qLBzZrvUZxwjqq1piPHluKvZV37
-# 2Puvf0fqUA9fQ/BdDvApCYZyZH0ZqNitjHGbWQyQOIxR2d4H4zO3JA6phmRUp6GC
+# KwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQghcFWqKIV/X4wA7TFqThNodAtar44
+# 7VpX/dyIjmvSLEEwDQYJKoZIhvcNAQEBBQAEggEACEZ7cRHMIjmJiL2c5JwVZ7tx
+# X6rjOfqA75Z9ShEzWjn1W6qYM3Rwmh2WUdHi0mqfBV1i/uu96lfe5xxTYBZutqUS
+# FsHM011nq9xa5z482GQlGJqtv3FGmYJqbfPzIhrnm/POP5kaC1eaJ9IkaDJs4bud
+# OX2tUjjPGNi2+lRm52sgH30kE1RpdwkZFuWrN9MQEhOR7Fv2+kqR2dnPq/ShNLKq
+# /Ldlg3gmIfBy33KhyP3nZvEZf5vqj6UwZX0gdEIZdRMzwXp+ITIB/fKcb70ag7HU
+# JrsjKtp9EcYApgqrgA5cKEJ9oi58SE5Ncg8JxPW4czN7XHUSMz4ySS9DnXeNR6GC
 # AyYwggMiBgkqhkiG9w0BCQYxggMTMIIDDwIBATB9MGkxCzAJBgNVBAYTAlVTMRcw
 # FQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFBMD8GA1UEAxM4RGlnaUNlcnQgVHJ1c3Rl
 # ZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5NiBTSEEyNTYgMjAyNSBDQTECEAhP3DNP
 # fkVO28MPj/mSGDUwDQYJYIZIAWUDBAIBBQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZI
-# hvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNjA5MTkwNjIwMTlaMC8GCSqGSIb3DQEJ
-# BDEiBCD36NK/ZZ8+BuS0zZWOOTHwoPUxyifUdtvI0/vmCiRffDANBgkqhkiG9w0B
-# AQEFAASCAgAueHTxnI3Sal3dvQFSqsOZgvXlLXtpTVFsP3NGq/yah7mdY4E6Gdqk
-# HopaXdtShjpUAUFXUP42ZGMogEuKkYbwDJx7TTLdUWaqwq7OvP17BH6CdNQna3kI
-# kGInU50f7ham5aVP0O56vr4+UKOxEn3mAX70hKeX2lgMg7MbOmjVkmilZ4oNTG6l
-# f0XLpYcqruLL2IVTmoAVXHiKXmT+oJnob2ou+/RPgLRFJeey4Mi23vOz/Jqimxoo
-# WthKc0qoA0y9eEScUnWeQV4OXWQzHLz2N0vqTTSmu1q2G4Sb1T00j8adXIYGXpq+
-# 1+sQHeRxc3sP8xveQFEdXHuNYgk+c8h4PM5vIJloRqdEiRcacW/SsMUJYw+90VMM
-# p2mgvh12FtAZRa+yWyt3GApO31A+Ltoux0nc9i3O9LoZA5I1pNA/Jcb6TuJr3p1O
-# D5jGSdY8CLThIPZTe7pi/euj9KB1o27ITMXxcjywEPbbSYKFMEiCyBWxbgvk6au5
-# JZH5mgODsgdu+w/QBsT2oe4aR3bQ/yv1I+Rx44ALKMHVzHJnXxi3TPARxeFa3iaq
-# QGJmu0AS/V8N5XOERa+w2bJaGo8DnYVG1x+scaj9P9/YozWmbdqW0hfFH/AZgXCG
-# 7KwvWktPgzn/fsFilaD9HeG4gs9aTrgKPDYUvc28wmByvgX8aWa2iw==
+# hvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNjA5MzAwMTE3MjBaMC8GCSqGSIb3DQEJ
+# BDEiBCBNt7J++lNLedg3as057rAgma8DGls6YUs95u1sLiYW8jANBgkqhkiG9w0B
+# AQEFAASCAgB+UNWmbjfJqtooz1I6Js75qKCN2ORdu6U3AKFP6Kr58HZy/Xsgv0Cc
+# 3EjX23o85Z2hDP94o2oLQGu2KegsDHhQ8ADNcWRyWoL9zexjr9nAF66+jo5Lc4bb
+# Qk3usFNDqLP95oUUS5Xz7ll1qJFRypkJEJ4pEm4wUIqmrsHeem97Xu8b+WA9qnx0
+# xsx3bYkJUqNYKyozeMmJK4o7JqZnm0yRQRSeBnsyGNBdqb6aUe6g+qpCaqbiPTiD
+# o5wxDQB8ljhV8bcdZov0irAD3Etjn09NeVzy6cZcnMqFtDsIrQGd5vhFKBKwrR18
+# nIHXIeapS/O6uarB97uNH5YhvD/bZjUE6tD4pW1m7ygbCWC5RQcADZ50LV9tSvI1
+# cOP4uRTtUnK0/cyyD8lxK+tL9fW09N+uddyW39yUmGQFD6At1QoYuij1ze+zXSI6
+# 8eJIX7VIO6b5JZ5r0aQi49DnbPZzddFpK12/RV30TdGbL88055BUfOLr6QX6b9as
+# iaA/zvxDuNh62g85c6gckOcire9yIWf77Nun0JNgKpDYrm9RgGlLnZ7/NR+JxNO4
+# SG8V/zLiQS9ucDov2MU5OrjN99E9+Xvpa7b+1t4v0EvQ0QfNXz6gY8DoiYJu+dRz
+# c/mCBByNxqSS8ohJZXFgkmavaeIXOj6t1X0BYPw03mUWSMvJvaXFTw==
 # SIG # End signature block
