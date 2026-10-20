@@ -7,6 +7,7 @@ PowerShell 7.6 module providing rich graphical tree views and directory visualiz
 ![Maturity: Experimental](https://img.shields.io/badge/maturity-experimental-yellow)
 ![Development: Active](https://img.shields.io/badge/development-active-blue)
 ![Support: Limited](https://img.shields.io/badge/support-limited-yellow)
+[![CalVer - YYYY.0M.0D](https://img.shields.io/badge/calver-YYYY.0M.0D-22bfda.svg)](https://calver.org/)
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](LICENSE.md)
 
 ## Table of Contents
@@ -44,6 +45,7 @@ See [Governance](.github/GOVERNANCE.md) for details on how this project is gover
 
 See [AI Policy](.github/AI_POLICY.md) for our guidelines, human accountability standards, and disclosure requirements regarding Artificial Intelligence (AI) usage in this project.
 
+
 > **"A computer can never be held accountable, therefore a computer must never make a management decision."**
 >
 >           - 1979 IBM internal training manual and presentation.
@@ -80,7 +82,9 @@ See [Code Owners](.github/CODEOWNERS.md) for responsibility.
 
 ## Changelog
 
-See [Changelog](.github/CHANGELOG.md) for the latest updates. This project adheres to **Calendar Versioning (YYYY.MM.DD.HHmm - e.g., $exampleVer)**.
+See [Changelog](.github/CHANGELOG.md) for the latest updates. 
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+This project adheres to **Calendar Versioning (yyyy.0M.0D.HH00)**.
 
 ## Code of Conduct
 
