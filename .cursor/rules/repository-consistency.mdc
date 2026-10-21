@@ -1,0 +1,26 @@
+---
+description: Repository Consistency and Changelog synchronization across documentation, code, and metadata
+globs: "**/*"
+alwaysApply: true
+---
+
+# Repository Consistency
+
+Documentation, code examples, changelog entries, licensing references, configuration samples, version identifiers, and repository metadata must remain consistent and aligned with the current state of the project. Changes in one artifact must be reflected in all related artifacts, and conflicting information must be corrected before publication.
+
+## Core Rules
+
+1. **Changelog Updates (.github/CHANGELOG.md)**:
+   - Every modification that alters code functionality, behavior, dependencies, configuration, or documentation must have an entry added under ## [Unreleased].
+   - Adhere strictly to [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) categories: Added, Changed, Deprecated, Removed, Fixed, Security.
+   - Format release headers with Calendar Versioning: ## [YYYY.0M.0D] - YYYY-MM-DD.
+
+2. **Metadata & Licensing Alignment**:
+   - Scripts and modules must reference canonical URIs:
+     - License URI: https://creativecommons.org/licenses/by-nc-sa/4.0/
+     - Project URI: https://github.com/STS-Consulting/Show-PowerTree
+     - Icon URI: https://github.com/STS-Consulting/Show-PowerTree/raw/monad/Resources/STS.Consulting.png
+   - All modules declared in #Requires -Modules must be mirrored in .EXTERNALMODULEDEPENDENCIES in the <#PSScriptInfo> header.
+
+3. **Code Examples**:
+   - Every code example in markdown documentation must be syntactically valid PowerShell 7.6+ and parse with zero errors.

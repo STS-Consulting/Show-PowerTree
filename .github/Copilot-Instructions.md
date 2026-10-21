@@ -46,6 +46,8 @@ Before completing any script creation, edit, or refactor:
 1. **Parse Validation:** Verify every modified `.ps1`, `.psm1`, or `.psd1` file with `[System.Management.Automation.Language.Parser]::ParseFile` to guarantee `ParseErrors = 0`.
 2. **Rule Consistency:** Verify that all code examples and comments match the rules defined in the repository.
 3. **No Dangling Changes:** Ensure no unfinished refactoring or commented-out debris is left behind.
+5. **Repository Consistency:** Verify that documentation, code examples, changelog entries (.github/CHANGELOG.md), licensing references, configuration samples, version identifiers, and repository metadata remain consistent and aligned with the current state of the project. Changes in one artifact must be reflected in all related artifacts, and conflicting information must be corrected before publication.
+6. **Changelog Maintenance:** Every checkin containing functional, behavioral, or structural changes must include a corresponding entry in .github/CHANGELOG.md under ## [Unreleased] adhering to Keep a Changelog 1.1.0 and Calendar Versioning (YYYY.0M.0D).
 
 ---
 
@@ -100,4 +102,5 @@ Contextual instructions are automatically loaded by GitHub Copilot based on acti
 ### Versioning Specification (Calendar Versioning - CalVer)
 - **Strict Requirement:** All releases, module manifests, git tags, changelog entries, and instruction headers strictly adhere to **Calendar Versioning (CalVer)** using YYYY.MM.DD.HHmm (e.g., $exampleVer).
 - **Prohibition:** Semantic Versioning (SemVer / MAJOR.MINOR.PATCH) is **strictly prohibited**.
+
 

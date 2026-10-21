@@ -44,6 +44,10 @@ All contributions involving AI-assisted logic must undergo standard validation p
 - **Avoid Verbatim Ingestion:** Contributors must avoid prompting AI tools to reproduce copyrighted proprietary or restrictive-licensed third-party code verbatim.
 - **Duplication Filters:** Where available (e.g., GitHub Copilot), configure tools to block suggestions matching public code.
 
+### 3.5 Repository Consistency & Artifact Synchronization
+Documentation, code examples, changelog entries, licensing references, configuration samples, version identifiers, and repository metadata must remain consistent and aligned with the current state of the project. Changes in one artifact must be reflected in all related artifacts, and conflicting information must be corrected before publication.
+
+---
 ---
 
 ## 4. Limitations & Risk Awareness
@@ -107,3 +111,4 @@ Before submitting a Pull Request containing AI-assisted or AI-generated contribu
 
 ## 7. Inquiries & Feedback
 If you have questions, suggestions, or concerns regarding AI usage or governance within this repository, please open an issue or contact the repository maintainers.
+

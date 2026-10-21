@@ -13,6 +13,7 @@ PowerShell 7.6 module providing rich graphical tree views and directory visualiz
 ## Table of Contents
 
 - [Read Me](#readme)
+- [Module Guide](Show-PowerTree.README.md)
 - [Governance](#governance)
 - [AI Policy](#ai-policy)
 - [Authors](#authors)
@@ -33,7 +34,9 @@ PowerShell 7.6 module providing rich graphical tree views and directory visualiz
 
 ## Read Me
 
-This document.
+This document provides repository governance and index for `Show-PowerTree`.
+
+- For module overview, syntax, and usage examples, see [Show-PowerTree Module Guide](Show-PowerTree.README.md).
 
 ![Maturity: Experimental](https://img.shields.io/badge/maturity-experimental-yellow)
 
@@ -136,4 +139,5 @@ See [Security](.github/SECURITY.md) for our security policy.
 ### Security Notification Template
 
 See [Security Notification template](.github/SECURITY_NOTIFICATION_TEMPLATE.md) for reporting security issues.
+
 
