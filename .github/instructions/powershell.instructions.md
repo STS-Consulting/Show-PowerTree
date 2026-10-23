@@ -1,4 +1,4 @@
----
+﻿---
 applyTo: '**/*.ps1, **/*.ps1xml, **/*.psc1, **/*.psd1, **/*.psm1, **/*.pssc, **/*.psrc, **/*.cdxml, **/*.prf, **/*.psh, **/*.ps2, **/*.ps2xml, **/*.psc2'
 description: 'Comprehensive PowerShell 7.6+ development guidance, Microsoft cmdlet guidelines, CBH/manifest specifications, Authenticode rules, and universal refactoring contract.'
 version: '2026.09.11.1930'
@@ -30,7 +30,7 @@ Treat this section as **fail-closed**. Do not report completion until every chec
 ```powershell
 Get-ChildItem -Path .\Scripts\*.ps1 -File | ForEach-Object {
     $tokens = $null; $errors = $null
-    [void][System.Management.Automation.Language.Parser]::ParseFile($PSItem.FullName, [ref]$tokens, [ref]$errors)
+    $null = [System.Management.Automation.Language.Parser]::ParseFile($PSItem.FullName, [ref]$tokens, [ref]$errors)
     "{0}: ParseErrors={1}" -f $PSItem.Name, $errors.Count
 }
 ```
@@ -52,6 +52,11 @@ Get-ChildItem -Path .\Scripts\*.ps1 -File | ForEach-Object {
 - **Message Formatting:**
   - Do not create messages with a colon immediately after a variable name (`"$var:"` is forbidden; use `"$var"` or `"$PSItem"`).
   - Do not embed literal line breaks (`\n` or `` `n ``) inside operational stream messages.
+
+### Strict Output Discarding Prohibition
+- **Never use `Out-Null`. Period.**
+- **Never cast to `[void]`. Period.**
+- When discarding unneeded output, assign directly to `$null` (e.g., `$null = [System.IO.Path]::GetFullPath($Path)`).
 
 ```powershell
 # Recommended: Operational Stream

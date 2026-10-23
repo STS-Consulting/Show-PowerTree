@@ -1,4 +1,4 @@
----
+﻿---
 version: '2026.09.11.1930'
 ---
 
@@ -25,6 +25,7 @@ version: '2026.09.11.1930'
   - `.OUTPUTS`: Explicitly define the .NET objects/types emitted by the function.
   - `.NOTES`: Technical execution details, operational gotchas, or unique context.
 - CRITICAL: Never duplicate information inside `.NOTES` that already lives in the parent Script or Module header (e.g., Author, Copyright, CompanyName).
+- **Discarding Output:** Do not use Out-Null and do not cast to [void]. Discard output by assigning to $null (e.g., $null = ...).
 
 ```powershell
 @{

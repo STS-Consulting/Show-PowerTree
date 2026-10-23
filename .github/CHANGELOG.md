@@ -15,6 +15,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.0M.
 - Tooling: Configured `.vscode/PSScriptAnalyzerSettings.psd1` enforcing OTBS formatting, explicit parameter typing, `$PSItem`, and PowerShell 7.6+ standards.
 
 ### Changed
+- Coding Standards: Prohibited casting to [void] in addition to Out-Null; unneeded output must be discarded by assigning to $null = ....
 
 - Module Codebase: Refactored module functions across `Private/` and `Public/` (`Show-PowerTree.ps1`, `Show-PowerTreeRegistry.ps1`, `Edit-PowerTreeConfiguration.ps1`, tree rendering, formatting, and sizing helpers) to adhere to PowerShell 7+ standards, parameter splatting, explicit typing, and `$PSItem` pipeline variable usage.
 - Documentation: Realigned `README.md` and AI policy directives in `.github/AI_POLICY.md` and `.github/Copilot-Instructions.md`.
