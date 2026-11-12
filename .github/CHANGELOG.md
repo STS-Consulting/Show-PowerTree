@@ -7,6 +7,12 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.0M.
 
 ## [Unreleased]
 
+## [2026.11.11] - 2026-11-11
+
+### Changed
+
+- Maintenance and version synchronization release.
+
 ## [2026.10.25] - 2026-10-25
 
 ### Changed
@@ -85,5 +91,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.0M.
 
 [2026.10.25]: https://github.com/STS-Consulting/Show-PowerTree/compare/2026.10.20...2026.10.25
 
-[unreleased]: https://github.com/STS-Consulting/Show-PowerTree/compare/2026.10.25...HEAD
 [2026.10.25]: https://github.com/STS-Consulting/Show-PowerTree/compare/2026.10.20...2026.10.25
+
+[unreleased]: https://github.com/STS-Consulting/Show-PowerTree/compare/2026.11.11...HEAD
+[2026.11.11]: https://github.com/STS-Consulting/Show-PowerTree/compare/2026.10.20...2026.11.11
